@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>PartyMode for YouTube</title>
+        <link rel="stylesheet" type="text/css" href="player.css">
+    </head>
+     <body>
+         <!-- Include an invisible curtain to prevent things interacting with the page-->
+        <div id="invisible_curtain"></div>
+        <div id="auth_info_panel">
+            <div id="auth_header">Add music to the queue:</div>
+            <div id="host">{{hostUrl}}</div>
+            <div id="pass_phrase">{{authString}}</div>
+        </div>
+        {{{body}}}
+     </body>
+</html>
