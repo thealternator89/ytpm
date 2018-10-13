@@ -10,6 +10,12 @@ export class ApiEndpointHandler {
 
     public registerApiEndpoints(app: any) {
 
+        app.get('/api/poll', (request, response) => {
+            // TODO also check the autoQueue
+            const itemsAvailableToPlay = !playerQueue.isEmpty();
+            response.send(JSON.stringify({itemsAvailableToPlay}));
+        })
+
         app.get('/api/auth', (request, response) => {
             const providedAuthString = request.query['auth'];
             const providedUserName = request.query['name'];
@@ -56,7 +62,7 @@ export class ApiEndpointHandler {
                 queuePosition = playerQueue.length();
             }
 
-            response.send(JSON.stringify({videoId, queuePosition}));
+            response.send(JSON.stringify({...queueItem.videoDetails, queuePosition}));
         });
 
         app.get('/api/dequeue', (request, response) => {
