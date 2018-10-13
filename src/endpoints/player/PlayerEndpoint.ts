@@ -14,9 +14,15 @@ export class PlayerEndpointHandler {
             if(playerQueue.isEmpty()){
                 response.render('player-notplaying.hbs', baseObject);
             } else {
+                const queueItem = playerQueue.dequeue();
+                const videoDetails = queueItem.videoDetails;
+
                 response.render('player-playing.hbs', {
                     ...baseObject,
-                    videoId: playerQueue.dequeue().videoId,
+                    videoId: videoDetails.videoId,
+                    videoTitle: videoDetails.title,
+                    thumbnailSrc: videoDetails.thumbnailUrl,
+                    addedBy: userAuthHandler.getNameForToken(queueItem.user),
                 });
             }
         });

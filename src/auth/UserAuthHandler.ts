@@ -26,6 +26,10 @@ class UserAuthHandler {
         return false;
     }
 
+    public getNameForToken(token: string): string|undefined {
+        return this.authedUsers[token];
+    }
+
     private generatePreSharedKey(): string {
         //return 'JD7VU4';
         // TODO: Hardcoded PSK for dev only. Uncomment this.

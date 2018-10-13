@@ -1,3 +1,9 @@
+<div id="song_info">
+    <img id="song_thumb" src="{{thumbnailSrc}}">
+    <div id="song_title">{{videoTitle}}</div>
+    <div id="song_added_by">Added by {{addedBy}}</div>
+</div>
+
 <div id="player"></div>
 
 <script>
@@ -22,4 +28,8 @@ function onPlayerStateChange(event) {
         location.reload();
     }
 }
+
+setTimeout(() => {
+    document.getElementById('song_info').style = 'visibility: hidden;';
+}, 10000);
 </script>

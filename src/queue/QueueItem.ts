@@ -1,5 +1,7 @@
+import { YouTubeVideoDetails } from "../api-client/YouTubeVideoDetails";
+
 export interface IQueueItem {
-    videoId: string;
+    videoDetails: YouTubeVideoDetails;
     user: string;
     autoQueueInfluence: number;
 }

@@ -1,34 +1,75 @@
 import * as ytsearch from 'youtube-search';
+import { YouTubeVideoDetails } from './YouTubeVideoDetails';
+import { youTubeVideoDetailsCache } from './YouTubeVideoDetailsCache';
 
-export interface YouTubeSearchResult {
-    videoId: string;
-    title: string;
-    thumbnailUrl?: string;
-    channelName?: string;
-}
-
-export class YouTubeClient {
+class YouTubeClient {
     private readonly options: ytsearch.YouTubeSearchOptions = {
-        maxResults: 20,
+        maxResults: 30,
         key: 'AIzaSyCSaI3PV7rkNt2uqrCCx_kPNCUN-FAI0xA',
+        type: 'video',
+        topicId: '/m/04rlf', // Music topic
     }
 
-    public async search(query: string): Promise<YouTubeSearchResult[]> {
-        let results: {results: ytsearch.YouTubeSearchResults[], pageInfo: ytsearch.YouTubeSearchPageResults};
+    public async search(query: string): Promise<YouTubeVideoDetails[]> {
+        let response: {results: ytsearch.YouTubeSearchResults[], pageInfo: ytsearch.YouTubeSearchPageResults};
         try {
-            results = await ytsearch(query, this.options);
+            response = await ytsearch(query, this.options);
         } catch (error) {
             throw new Error(`An error occurred retrieving search results: ${error.message}`);
         }
         
-        return results.results.map((result) => {
-            console.dir(result.thumbnails);
-            return {
-                videoId: result.id,
-                title: result.title,
-                //thumbnailUrl: result.thumbnails.standard.url,
-                channelName: result.channelTitle
-            };
-        });
+        const results = response.results
+            .filter((result) => result.id !== result.channelId) //Exclude channel results
+            .map((result) => {
+                return {
+                    videoId: result.id,
+                    title: result.title,
+                    thumbnailUrl: result.thumbnails.default.url,
+                    channelName: result.channelTitle,
+                };
+            });
+
+        // Add each item into the cache
+        for(const result of results) {
+            youTubeVideoDetailsCache.addOrReplaceInCache(result);
+        }
+
+        return results;
+    }
+
+    public async searchRelatedVideos(videoId: string): Promise<YouTubeVideoDetails[]> {
+        let response: {results: ytsearch.YouTubeSearchResults[], pageInfo: ytsearch.YouTubeSearchPageResults};
+        try {
+            response = await ytsearch(undefined, {
+                ...this.options,
+                relatedToVideoId: videoId
+            });
+        } catch (error) {
+            throw new Error(`An error occurred retrieving search results: ${error.message}`);
+        }
+        
+        const results = response.results
+            .map((result) => {
+                return {
+                    videoId: result.id,
+                    title: result.title,
+                    thumbnailUrl: result.thumbnails.default.url,
+                    channelName: result.channelTitle,
+                };
+            });
+
+        // Add each item into the cache
+        for(const result of results) {
+            youTubeVideoDetailsCache.addOrReplaceInCache(result);
+        }
+
+        return results;
+        return null;
+    }
+
+    public async getDetails(videoId: string): Promise<YouTubeVideoDetails> {
+        return null;
     }
 }
+
+export const youTubeClient = new YouTubeClient();

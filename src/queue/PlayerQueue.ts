@@ -11,7 +11,10 @@ class PlayerQueue {
         this.queue.unshift(item);
     }
 
-    public dequeue(position = 0): IQueueItem | undefined {
+    public dequeue(position = 0, token?: string): IQueueItem | undefined {
+        if(token && this.queue[position].user !== token) {
+            throw new Error('Item in queue not owned by the user');
+        }
         return this.queue.splice(position, 1)[0];
     }
 
@@ -24,7 +27,7 @@ class PlayerQueue {
     }
 
     public findPosition(videoId: string): number {
-        return this.queue.findIndex((item) => item.videoId === videoId);
+        return this.queue.findIndex((item) => item.videoDetails.videoId === videoId);
     }
 
     public getAllQueuedItems(): IQueueItem[] {
