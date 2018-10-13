@@ -26,7 +26,7 @@ class UserAuthHandler {
     }
     generatePreSharedKey() {
         return randomstring.generate({
-            length: 6,
+            length: 5,
             readable: true,
             charset: 'alphanumeric',
             capitalization: 'uppercase'

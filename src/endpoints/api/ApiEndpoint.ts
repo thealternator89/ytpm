@@ -33,6 +33,7 @@ export class ApiEndpointHandler {
 
             const videoToQueue = request.query['videoId'];
             const addNext = request.query['next'] === 'true';
+            const noInfluence = request.query['noinfluence'] === 'true';
 
             if(!videoToQueue) {
                 response.status(400).send('Invalid request');
@@ -42,9 +43,9 @@ export class ApiEndpointHandler {
             const queueItem: IQueueItem = {
                 videoId: videoToQueue,
                 user: this.getAuthToken(request),
-                autoQueueInfluence: CONSTANTS.AUTO_QUEUE_INFLUENCE.USER_ADDED
+                autoQueueInfluence: noInfluence ? CONSTANTS.AUTO_QUEUE_INFLUENCE.NO_INFLUENCE : CONSTANTS.AUTO_QUEUE_INFLUENCE.USER_ADDED
             }
-            
+
             if (addNext) {
                 playerQueue.addToFront(queueItem);
             } else {
@@ -71,6 +72,14 @@ export class ApiEndpointHandler {
 
             playerQueue.dequeue(videoPosition);
             response.send(`Dequeued: ${videoToDequeue}`);
+        });
+
+        app.get('/api/queue_list', (request, response) => {
+            if(!this.validateToken(request, response)) {
+                return;
+            }
+
+            response.send(JSON.stringify(playerQueue.getAllQueuedItems()));
         });
     }
 

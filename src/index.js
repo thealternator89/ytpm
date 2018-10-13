@@ -17,7 +17,7 @@ app.set('view-engine', '.hbs');
 app.set('views', path.join(__dirname, 'views'));
 playerEndpointHandler.registerApiEndpoints(app);
 apiEndpointHandler.registerApiEndpoints(app);
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, '..', 'static')));
 app.use((err, request, response, next) => {
     console.log(err);
     response.status(500).send('Something broke!');

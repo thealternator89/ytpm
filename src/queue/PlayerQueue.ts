@@ -12,7 +12,7 @@ class PlayerQueue {
     }
 
     public dequeue(position = 0): IQueueItem | undefined {
-        return this.queue.splice(position)[0];
+        return this.queue.splice(position, 1)[0];
     }
 
     public length(): number {
@@ -27,8 +27,8 @@ class PlayerQueue {
         return this.queue.findIndex((item) => item.videoId === videoId);
     }
 
-    public getAllQueuedIds(): string[] {
-        return this.queue.map((item) => item.videoId);
+    public getAllQueuedItems(): IQueueItem[] {
+        return [...this.queue];
     }
 }
 

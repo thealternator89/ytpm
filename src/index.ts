@@ -23,7 +23,8 @@ app.set('views', path.join(__dirname, 'views'));
 playerEndpointHandler.registerApiEndpoints(app);
 apiEndpointHandler.registerApiEndpoints(app);
 
-app.use(express.static(path.join(__dirname, 'public')));
+// Provide static files (handy for CSS)
+app.use(express.static(path.join(__dirname, '..', 'static')));
 
 app.use((err, request, response, next) => {
     // log the error, for now just console.log

@@ -57,6 +57,12 @@ class ApiEndpointHandler {
             PlayerQueue_1.playerQueue.dequeue(videoPosition);
             response.send(`Dequeued: ${videoToDequeue}`);
         });
+        app.get('/api/queue_list', (request, response) => {
+            if (!this.validateToken(request, response)) {
+                return;
+            }
+            response.send(JSON.stringify(PlayerQueue_1.playerQueue.getAllQueuedItems()));
+        });
     }
     validateToken(request, response) {
         const token = this.getAuthToken(request);

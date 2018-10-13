@@ -27,8 +27,10 @@ class UserAuthHandler {
     }
 
     private generatePreSharedKey(): string {
+        //return 'JD7VU4';
+        // TODO: Hardcoded PSK for dev only. Uncomment this.
         return randomstring.generate({
-            length: 6,
+            length: 5,
             readable: true,
             charset: 'alphanumeric',
             capitalization: 'uppercase'
