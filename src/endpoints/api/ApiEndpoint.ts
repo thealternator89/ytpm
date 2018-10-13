@@ -2,6 +2,7 @@ import { playerQueue } from '../../queue/PlayerQueue';
 import { userAuthHandler } from '../../auth/UserAuthHandler';
 import { IQueueItem } from '../../queue/QueueItem';
 import { Constants as CONSTANTS } from '../../constants';
+import { YouTubeClient } from '../../api-client/YouTubeClient';
 
 
 export class ApiEndpointHandler {
@@ -80,6 +81,24 @@ export class ApiEndpointHandler {
             }
 
             response.send(JSON.stringify(playerQueue.getAllQueuedItems()));
+        });
+
+        app.get('/api/search', async (request, response) => {
+            if(!this.validateToken(request, response)) {
+                return;
+            }
+
+            const searchQuery = request.query['q'];
+            
+            if(!searchQuery){
+                response.status(400).send('No search query provided');
+                return;
+            }
+
+            const client = new YouTubeClient();
+            const results = await client.search(searchQuery);
+
+            response.send(JSON.stringify(results));
         });
     }
 
