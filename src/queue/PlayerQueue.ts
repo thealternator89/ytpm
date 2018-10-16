@@ -4,6 +4,7 @@ import * as moment from 'moment';
 export class PlayerQueue {
     private queue: IQueueItem[] = [];
     private lastTouched: moment.Moment;
+    private accessUrl: string = '';
 
     public constructor() {
         this.lastTouched = moment();
@@ -49,5 +50,13 @@ export class PlayerQueue {
 
     public getTimeLastTouched(): moment.Moment {
         return this.lastTouched;
+    }
+
+    public getAccessUrl(): string {
+        return this.accessUrl;
+    }
+
+    public setAccessUrl(url: string): void {
+        this.accessUrl = url;
     }
 }

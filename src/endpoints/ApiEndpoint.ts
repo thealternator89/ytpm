@@ -125,6 +125,22 @@ class ApiEndpointHandler {
             response.type('json').send(JSON.stringify(queueList));
         });
 
+        app.get('/api/queue_settings', (request, response) => {
+            if(!this.validateToken(request, response)) {
+                return;
+            }
+
+            const queue = this.getQueueByAuthToken(request,response);
+            if(!queue) {
+                return;
+            }            
+
+            const accessUrl = request.query['accessurl'];
+            queue.setAccessUrl(accessUrl);
+
+            response.type('json').send(JSON.stringify({accessUrl}));
+        });
+
         app.get('/api/search', async (request, response) => {
             if(!this.validateToken(request, response)) {
                 return;
@@ -142,23 +158,6 @@ class ApiEndpointHandler {
             response.type('json').send(JSON.stringify(results));
         });
 
-        app.get('/api/search_related', async (request, response) => {
-            if(!this.validateToken(request, response)) {
-                return;
-            }
-
-            const videoId = request.query['videoId'];
-            
-            if (!videoId) {
-                response.status(400).send('No search query provided');
-                return;
-            }
-
-            const results = await youTubeClient.searchRelatedVideos(videoId);
-
-            response.type('json').send(JSON.stringify(results));
-        });
-
         app.get(`/api/internal/queue_states`, async (request, response: Response) => {
             const queueKeys = playerQueuesManager.getAllQueueKeys();
 
@@ -172,12 +171,6 @@ class ApiEndpointHandler {
             });
             response.type('json').send(JSON.stringify(queues));
         })
-
-        app.get('/api/internal/count_queues', async (request, response) => {
-            response.type('json').send(JSON.stringify({
-                queues: playerQueuesManager.numQueues(),
-            }));
-        });
 
         app.get('/api/internal/clean_queues', async (request, response) => {
             const beforeCount = playerQueuesManager.numQueues();

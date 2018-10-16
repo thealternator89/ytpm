@@ -47,6 +47,10 @@ iframe {
     font-size: 80px;
 }
 
+#current_queue {
+    text-align: right;
+}
+
 #song_info {
     border-radius: 0px 0px 15px 0px;
     background-color: #282828;
