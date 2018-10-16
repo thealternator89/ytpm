@@ -4,11 +4,11 @@ import * as exphbs from 'express-handlebars';
 import * as bodyParser from 'body-parser';
 import * as cookieParser from 'cookie-parser';
 
-import {HostDetails} from './HostDetails';
-
 import {apiEndpointHandler} from './endpoints/ApiEndpoint';
 import {playerEndpointHandler} from './endpoints/PlayerEndpoint';
 import {webClientEndpointHandler} from './endpoints/WebClientEndpoint';
+
+const SERVER_PORT = process.env.PORT || 8080;
 
 const app = express();
 
@@ -34,11 +34,11 @@ playerEndpointHandler.registerApiEndpoints(app);
 apiEndpointHandler.registerApiEndpoints(app);
 webClientEndpointHandler.registerApiEndpoints(app);
 
-app.listen(HostDetails.getPort(), (err) => {
+app.listen(SERVER_PORT, (err) => {
     if (err) {
       return console.log('something bad happened', err)
     }
   
-    console.log(`server is listening on ${HostDetails.getPort()}`)
+    console.log(`server is listening on ${SERVER_PORT}`)
 });
 
