@@ -1,16 +1,1 @@
 <div id="NoMusicError">No music to play.<br>Add music to the queue to see it here.</div>
-<script>
-    setInterval(() => {
-        var xhttp = new XMLHttpRequest();
-        xhttp.onreadystatechange = function () {
-            if (this.readyState == 4 && this.status == 200) {
-                var response = JSON.parse(this.responseText);
-                if (response.itemsAvailableToPlay) {
-                    location.reload();
-                }
-            }
-        }
-        xhttp.open('GET', '/api/poll', true);
-        xhttp.send();
-    }, 500);
-</script>

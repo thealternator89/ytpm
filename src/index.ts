@@ -1,16 +1,16 @@
 import * as path from 'path';
 import * as express from 'express';
 import * as exphbs from 'express-handlebars';
+import * as bodyParser from 'body-parser';
+import * as cookieParser from 'cookie-parser';
 
 import {HostDetails} from './HostDetails';
 
-import {ApiEndpointHandler} from './endpoints/api/ApiEndpoint';
-import {PlayerEndpointHandler} from './endpoints/player/PlayerEndpoint';
+import {apiEndpointHandler} from './endpoints/ApiEndpoint';
+import {playerEndpointHandler} from './endpoints/PlayerEndpoint';
+import {webClientEndpointHandler} from './endpoints/WebClientEndpoint';
 
 const app = express();
-
-const apiEndpointHandler = new ApiEndpointHandler();
-const playerEndpointHandler = new PlayerEndpointHandler();
 
 app.engine('.hbs', exphbs({
     extname: '.hbs',
@@ -20,17 +20,19 @@ app.engine('.hbs', exphbs({
 app.set('view-engine', '.hbs');
 app.set('views', path.join(__dirname, 'views'));
 
-playerEndpointHandler.registerApiEndpoints(app);
-apiEndpointHandler.registerApiEndpoints(app);
-
-// Provide static files (handy for CSS)
 app.use(express.static(path.join(__dirname, '..', 'static')));
+app.use(bodyParser.urlencoded({extended: true}));
+app.use(cookieParser());
 
 app.use((err, request, response, next) => {
     // log the error, for now just console.log
     console.log(err)
     response.status(500).send('Something broke!')
 });
+
+playerEndpointHandler.registerApiEndpoints(app);
+apiEndpointHandler.registerApiEndpoints(app);
+webClientEndpointHandler.registerApiEndpoints(app);
 
 app.listen(HostDetails.getPort(), (err) => {
     if (err) {

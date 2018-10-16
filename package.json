@@ -19,10 +19,12 @@
   "author": "Mark Benson",
   "license": "UNLICENSED",
   "dependencies": {
+    "cookie-parser": "^1.4.3",
     "express": "^4.16.4",
     "express-handlebars": "^3.0.0",
     "handlebars": "^4.0.12",
     "ip": "^1.1.5",
+    "moment": "^2.22.2",
     "randomstring": "^1.1.5",
     "uuid": "^3.3.2",
     "youtube-search": "^1.1.3"

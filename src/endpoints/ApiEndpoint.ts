@@ -1,19 +1,27 @@
-import { playerQueue } from '../../queue/PlayerQueue';
-import { userAuthHandler } from '../../auth/UserAuthHandler';
-import { IQueueItem } from '../../queue/QueueItem';
-import { Constants as CONSTANTS } from '../../constants';
-import { youTubeClient } from '../../api-client/YouTubeClient';
-import { youTubeVideoDetailsCache } from '../../api-client/YouTubeVideoDetailsCache';
+import { userAuthHandler } from '../auth/UserAuthHandler';
+import { IQueueItem } from '../queue/QueueItem';
+import { Constants as CONSTANTS } from '../constants';
+import { youTubeClient } from '../api-client/YouTubeClient';
+import { youTubeVideoDetailsCache } from '../api-client/YouTubeVideoDetailsCache';
+import { playerQueuesManager } from '../queue/PlayerQueuesManager';
+import { PlayerQueue } from '../queue/PlayerQueue';
+import { Response } from 'express';
 
-
-export class ApiEndpointHandler {
+class ApiEndpointHandler {
 
     public registerApiEndpoints(app: any) {
 
         app.get('/api/poll', (request, response) => {
-            // TODO also check the autoQueue
-            const itemsAvailableToPlay = !playerQueue.isEmpty();
-            response.send(JSON.stringify({itemsAvailableToPlay}));
+            const queue = this.getQueueByKey(request, response);
+            if(!queue){
+                return;
+            }
+
+            // TODO also check the autoQueue for itemsAvailableToPlay
+            response.type('json').send(JSON.stringify({
+                itemsAvailableToPlay: !queue.isEmpty(),
+                queueLength: queue.length()
+            }));
         })
 
         app.get('/api/auth', (request, response) => {
@@ -39,6 +47,11 @@ export class ApiEndpointHandler {
                 return;
             }
 
+            const queue = this.getQueueByAuthToken(request,response);
+            if(!queue) {
+                return;
+            }
+
             const videoId = request.query['videoId'];
             const addNext = request.query['next'] === 'true';
             const noInfluence = request.query['noinfluence'] === 'true';
@@ -56,13 +69,13 @@ export class ApiEndpointHandler {
 
             let queuePosition = 1;
             if (addNext) {
-                playerQueue.addToFront(queueItem);
+                queue.addToFront(queueItem);
             } else {
-                playerQueue.enqueue(queueItem);
-                queuePosition = playerQueue.length();
+                queue.enqueue(queueItem);
+                queuePosition = queue.length();
             }
 
-            response.send(JSON.stringify({...queueItem.videoDetails, queuePosition}));
+            response.type('json').send(JSON.stringify({...queueItem.videoDetails, queuePosition}));
         });
 
         app.get('/api/dequeue', (request, response) => {
@@ -70,9 +83,14 @@ export class ApiEndpointHandler {
                 return;
             }
 
+            const queue = this.getQueueByAuthToken(request,response);
+            if(!queue) {
+                return;
+            }
+
             const videoToDequeue = request.query['videoId'];
             const token = request.query['token'];
-            const videoPosition = playerQueue.findPosition(videoToDequeue);
+            const videoPosition = queue.findPosition(videoToDequeue);
 
             if(videoPosition === -1) {
                 response.status(400).send(`Item not in queue: ${videoToDequeue}`);
@@ -80,7 +98,7 @@ export class ApiEndpointHandler {
             }
 
             try {
-                playerQueue.dequeue(videoPosition, token);
+                queue.dequeue(videoPosition, token);
             } catch (error) {
                 response.status(400).send(`Dequeue failed: ${error.message}`);
             }
@@ -92,14 +110,19 @@ export class ApiEndpointHandler {
                 return;
             }
 
-            const queue = playerQueue.getAllQueuedItems().map((queueItem) => {
+            const queue = this.getQueueByAuthToken(request,response);
+            if(!queue) {
+                return;
+            }            
+
+            const queueList = queue.getAllQueuedItems().map((queueItem) => {
                 return {
                     ...queueItem.videoDetails,
                     user: userAuthHandler.getNameForToken(queueItem.user),
                 };
             });
 
-            response.send(JSON.stringify(queue));
+            response.type('json').send(JSON.stringify(queueList));
         });
 
         app.get('/api/search', async (request, response) => {
@@ -116,7 +139,7 @@ export class ApiEndpointHandler {
 
             const results = await youTubeClient.search(searchQuery);
 
-            response.send(JSON.stringify(results));
+            response.type('json').send(JSON.stringify(results));
         });
 
         app.get('/api/search_related', async (request, response) => {
@@ -133,7 +156,36 @@ export class ApiEndpointHandler {
 
             const results = await youTubeClient.searchRelatedVideos(videoId);
 
-            response.send(JSON.stringify(results));
+            response.type('json').send(JSON.stringify(results));
+        });
+
+        app.get(`/api/internal/queue_states`, async (request, response: Response) => {
+            const queueKeys = playerQueuesManager.getAllQueueKeys();
+
+            const queues = queueKeys.map((key) => {
+                const queue = playerQueuesManager.getPlayerQueue(key);
+                return {
+                    key,
+                    length: queue.length(),
+                    lastTouched: queue.getTimeLastTouched(),
+                };
+            });
+            response.type('json').send(JSON.stringify(queues));
+        })
+
+        app.get('/api/internal/count_queues', async (request, response) => {
+            response.type('json').send(JSON.stringify({
+                queues: playerQueuesManager.numQueues(),
+            }));
+        });
+
+        app.get('/api/internal/clean_queues', async (request, response) => {
+            const beforeCount = playerQueuesManager.numQueues();
+            playerQueuesManager.cleanUpOldPlayerQueues();
+            const afterCount = playerQueuesManager.numQueues();
+            response.type('json').send(JSON.stringify({
+                    deleted: (beforeCount - afterCount),
+            }));
         });
     }
 
@@ -146,7 +198,36 @@ export class ApiEndpointHandler {
         return true;
     }
 
+    private getQueueByKey(request, response): PlayerQueue|undefined {
+        const queueKey = request.query['key'];
+        if(!queueKey) {
+            response.status(400).send('Invalid request');
+            return undefined;
+        }
+        const queue = playerQueuesManager.getPlayerQueue(queueKey);
+        if(!queue) {
+            response.status(400).send('Invalid request');
+            return undefined;
+        }
+
+        return queue;
+    }
+
+    private getQueueByAuthToken(request, response): PlayerQueue|undefined {
+        const token = this.getAuthToken(request);
+        const queue = userAuthHandler.getQueueForToken(token);
+
+        if(!queue) {
+            response.status(400).send('Invalid request');
+            return undefined;
+        }
+
+        return queue;
+    }
+
     private getAuthToken(request): string|undefined {
         return request.query['token'];
     }
 }
+
+export const apiEndpointHandler = new ApiEndpointHandler();

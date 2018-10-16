@@ -8,10 +8,31 @@
          <!-- Include an invisible curtain to prevent things interacting with the page-->
         <div id="invisible_curtain"></div>
         <div id="auth_info_panel">
-            <div id="auth_header">Add music to the queue:</div>
+            <div id="auth_header">Currently queued: <span id="queue_size">{{queueSize}}</span></div>
             <div id="host">{{hostUrl}}</div>
             <div id="pass_phrase">{{authString}}</div>
         </div>
         {{{body}}}
+        <script>
+            var queueKey = new URL(window.location.href).searchParams.get('key');
+            if(queueKey) {
+                setInterval(() => {
+                    var xhttp = new XMLHttpRequest();
+                    xhttp.onreadystatechange = function () {
+                        if (this.readyState == 4 && this.status == 200) {
+                            var response = JSON.parse(this.responseText);
+                            // If 'YT' exists, we're playing something. It will tell us to reload when it's finished so leave it to that.
+                            // If it doesn't exist, and something is available to play, we should reload to play it.
+                            if (typeof(YT) === 'undefined' && response.itemsAvailableToPlay) {
+                                location.reload();
+                            }
+                            document.getElementById('queue_size').innerText = response.queueLength;
+                        }
+                    }
+                    xhttp.open('GET', '/api/poll?key=' + queueKey, true);
+                    xhttp.send();
+                }, 1000);
+            }
+        </script>
      </body>
 </html>

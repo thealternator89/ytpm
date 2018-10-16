@@ -1,21 +1,18 @@
 import * as randomstring from 'randomstring';
 import * as uuid from 'uuid';
+import { playerQueuesManager } from '../queue/PlayerQueuesManager';
+import { PlayerQueue } from '../queue/PlayerQueue';
 
 class UserAuthHandler {
 
-    private readonly preSharedKey: string = this.generatePreSharedKey();
-    private authedUsers: {[token: string]: string} = {};
+    private authedUsers: {[token: string]: {name: string, queue: string}} = {};
 
-    public getPreSharedKey() : string {
-        return this.preSharedKey;
-    }
-
-    public authenticateNewUser(providedKey: string, name: string): string {
-        if (providedKey.toUpperCase() !== this.preSharedKey) {
+    public authenticateNewUser(queue: string, name: string): string {
+        if (!playerQueuesManager.queueExists(queue)) {
             throw new Error('Invalid key');
         }
         const token = uuid.v4();
-        this.authedUsers[token] = name;
+        this.authedUsers[token] = {name, queue};
         return token;
     }
 
@@ -27,18 +24,15 @@ class UserAuthHandler {
     }
 
     public getNameForToken(token: string): string|undefined {
-        return this.authedUsers[token];
+        return this.authedUsers[token].name;
     }
 
-    private generatePreSharedKey(): string {
-        //return 'JD7VU4';
-        // TODO: Hardcoded PSK for dev only. Uncomment this.
-        return randomstring.generate({
-            length: 5,
-            readable: true,
-            charset: 'alphanumeric',
-            capitalization: 'uppercase'
-        });
+    public getQueueForToken(token: string): PlayerQueue|undefined {
+        const user = this.authedUsers[token];
+        if(!user){
+            return undefined;
+        }
+        return playerQueuesManager.getPlayerQueue(user.queue);
     }
 }
 
