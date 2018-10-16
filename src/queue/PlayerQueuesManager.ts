@@ -8,10 +8,12 @@ class PlayerQueuesManager {
     private playerQueues: {[key: string]: PlayerQueue} = {};
 
     public getPlayerQueue(key: string): PlayerQueue {
-        return this.playerQueues[key];
+        // toUpperCase as generatePreSharedKey generates an upper case string.
+        return this.playerQueues[key.toUpperCase()];
     }
 
     public queueExists(key: string): boolean {
+        // toUpperCase as generatePreSharedKey generates an upper case string.
         return !!this.playerQueues[key.toUpperCase()];
     }
 
