@@ -4,6 +4,8 @@ import { playerQueuesManager } from '../queue/PlayerQueuesManager';
 import { youTubeVideoDetailsCache } from '../api-client/YouTubeVideoDetailsCache';
 import { IQueueItem } from '../queue/QueueItem';
 
+const DEFAULT_ACCESS_URL = 'ytpm.thealternator.nz';
+
 export class PlayerEndpointHandler {
     public registerApiEndpoints(app: any) {
         app.get('/player', async (request, response) => {
@@ -17,7 +19,7 @@ export class PlayerEndpointHandler {
 
             const baseObject = {
                 layout: 'player.hbs',
-                hostUrl: queue.getAccessUrl(),
+                hostUrl: queue.getAccessUrl() || DEFAULT_ACCESS_URL,
                 authString: request.query['key'],
                 queueSize: queue.length(),
             };
