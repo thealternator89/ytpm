@@ -1,10 +1,12 @@
 import { userAuthHandler } from '../auth/UserAuthHandler';
 import { HostDetails } from '../HostDetails';
 import { playerQueuesManager } from '../queue/PlayerQueuesManager';
+import { youTubeVideoDetailsCache } from '../api-client/YouTubeVideoDetailsCache';
+import { IQueueItem } from '../queue/QueueItem';
 
 export class PlayerEndpointHandler {
     public registerApiEndpoints(app: any) {
-        app.get('/player', (request, response) => {
+        app.get('/player', async (request, response) => {
             if(!request.query['key'] || !playerQueuesManager.queueExists(request.query['key'])) {
                 const newKey = playerQueuesManager.createNewPlayerQueue();
                 response.redirect(`/player?key=${newKey}`);
@@ -20,18 +22,19 @@ export class PlayerEndpointHandler {
                 queueSize: queue.length(),
             };
 
-            if(queue.isEmpty()){
+            const queueItem = queue.getSongToPlay();
+            if(!queueItem){
                 response.render('player-notplaying.hbs', baseObject);
             } else {
-                const queueItem = queue.dequeue();
-                const videoDetails = queueItem.videoDetails;
+                const videoDetails = await youTubeVideoDetailsCache.getFromCacheOrApi(queueItem.videoId);
+                let userAuthToken = (queueItem as IQueueItem).user;
 
                 response.render('player-playing.hbs', {
                     ...baseObject,
                     videoId: videoDetails.videoId,
                     videoTitle: videoDetails.title,
                     thumbnailSrc: videoDetails.thumbnailUrl,
-                    addedBy: userAuthHandler.getNameForToken(queueItem.user),
+                    addedBy: userAuthToken ? userAuthHandler.getNameForToken(userAuthToken) : '',
                 });
             }
         });

@@ -62,7 +62,7 @@ class ApiEndpointHandler {
             }
 
             const queueItem: IQueueItem = {
-                videoDetails: await youTubeVideoDetailsCache.getFromCacheOrApi(videoId),
+                videoId,
                 user: this.getAuthToken(request),
                 autoQueueInfluence: noInfluence ? CONSTANTS.AUTO_QUEUE_INFLUENCE.NO_INFLUENCE : CONSTANTS.AUTO_QUEUE_INFLUENCE.USER_ADDED
             }
@@ -75,7 +75,9 @@ class ApiEndpointHandler {
                 queuePosition = queue.length();
             }
 
-            response.type('json').send(JSON.stringify({...queueItem.videoDetails, queuePosition}));
+            const details = await youTubeVideoDetailsCache.getFromCacheOrApi(videoId);
+
+            response.type('json').send(JSON.stringify({...details, queuePosition}));
         });
 
         app.get('/api/dequeue', (request, response) => {
@@ -114,15 +116,18 @@ class ApiEndpointHandler {
             if(!queue) {
                 return;
             }            
-
-            const queueList = queue.getAllQueuedItems().map((queueItem) => {
+            
+            const queueListPromise = queue.getAllQueuedItems().map(async (queueItem) => {
+                const videoDetails = await youTubeVideoDetailsCache.getFromCacheOrApi(queueItem.videoId)
                 return {
-                    ...queueItem.videoDetails,
+                    ...videoDetails,
                     user: userAuthHandler.getNameForToken(queueItem.user),
                 };
             });
 
-            response.type('json').send(JSON.stringify(queueList));
+            const queueListResolved = Promise.all(queueListPromise);
+
+            response.type('json').send(JSON.stringify(queueListResolved));
         });
 
         app.get('/api/queue_settings', (request, response) => {
