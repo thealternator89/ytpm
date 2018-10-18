@@ -45,6 +45,7 @@ iframe {
 #pass_phrase {
     font-weight: bold;
     font-size: 80px;
+    text-align: center;
 }
 
 #current_queue {
