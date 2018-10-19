@@ -7,8 +7,9 @@ import * as cookieParser from 'cookie-parser';
 import {apiEndpointHandler} from './endpoints/ApiEndpoint';
 import {playerEndpointHandler} from './endpoints/PlayerEndpoint';
 import {webClientEndpointHandler} from './endpoints/WebClientEndpoint';
+import { envUtil } from './util/EnvUtil';
 
-const SERVER_PORT = process.env.PORT || 8080;
+const SERVER_PORT = envUtil.getServerPort(8080);
 
 const app = express();
 

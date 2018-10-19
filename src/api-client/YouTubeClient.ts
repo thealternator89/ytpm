@@ -1,10 +1,11 @@
 import * as ytsearch from 'youtube-search';
 import { YouTubeVideoDetails } from './YouTubeVideoDetails';
 import { youTubeVideoDetailsCache } from './YouTubeVideoDetailsCache';
+import { envUtil } from '../util/EnvUtil';
 
 class YouTubeClient {
     private readonly options: ytsearch.YouTubeSearchOptions = {
-        key: 'AIzaSyCSaI3PV7rkNt2uqrCCx_kPNCUN-FAI0xA',
+        key: envUtil.getYouTubeApiKey(),
         type: 'video',
         topicId: '/m/04rlf', // Music topic
     }
