@@ -103,7 +103,7 @@ export class PlayerQueue {
 
     private getNextAutoPlaySong(): IAutoQueueItem {
         const autoQueueItems = Object.values(this.autoPlayItems);
-        autoQueueItems.sort((o1, o2) => o1.score - o2.score);
+        autoQueueItems.sort((o1, o2) => o2.score - o1.score);
 
         return autoQueueItems.find((item) =>
             !this.autoQueueBlacklist[item.videoId] || this.autoQueueBlacklist[item.videoId] < this.playHistory.length

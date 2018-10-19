@@ -4,7 +4,6 @@ import { youTubeVideoDetailsCache } from './YouTubeVideoDetailsCache';
 
 class YouTubeClient {
     private readonly options: ytsearch.YouTubeSearchOptions = {
-        maxResults: 30,
         key: 'AIzaSyCSaI3PV7rkNt2uqrCCx_kPNCUN-FAI0xA',
         type: 'video',
         topicId: '/m/04rlf', // Music topic
@@ -13,7 +12,10 @@ class YouTubeClient {
     public async search(query: string): Promise<YouTubeVideoDetails[]> {
         let response: {results: ytsearch.YouTubeSearchResults[], pageInfo: ytsearch.YouTubeSearchPageResults};
         try {
-            response = await ytsearch(query, this.options);
+            response = await ytsearch(query, {
+                ...this.options,
+                maxResults: 30,
+            });
         } catch (error) {
             throw new Error(`An error occurred retrieving search results: ${error.message}`);
         }
@@ -42,6 +44,7 @@ class YouTubeClient {
         try {
             response = await ytsearch(undefined, {
                 ...this.options,
+                maxResults: 15,
                 relatedToVideoId: videoId
             });
         } catch (error) {
