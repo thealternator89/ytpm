@@ -8,7 +8,6 @@ export class PlayerQueue {
     private queue: IQueueItem[] = [];
     private playHistory: string[] = [];
 
-    // value represents the minimum number of plays which must occur before the song with the videoId is available to be played.
     private autoPlayItems: {[videoId: string]: IAutoQueueItem} = {};
     private autoQueueBlacklist: {[videoId: string]: number} = {};
 
@@ -79,6 +78,11 @@ export class PlayerQueue {
     private async processPlayedSong(queueItem: IQueueItem | IAutoQueueItem): Promise<void> {
         this.autoQueueBlacklist[queueItem.videoId] = this.playHistory.length + MIN_PLAYS_BEFORE_AVAILABLE_TO_AUTOPLAY;
         this.playHistory.push(queueItem.videoId);
+
+        // Short circuit if influence is 0
+        if (queueItem.autoQueueInfluence === 0) {
+            return;
+        }
 
         const relatedVideos = await youTubeClient.searchRelatedVideos(queueItem.videoId)
         let score = 0;
