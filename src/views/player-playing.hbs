@@ -29,6 +29,13 @@ function onPlayerStateChange(event) {
     }
 }
 
+// If the video hasn't changed from 'unstarted' within 10 seconds, reload to get a new song.
+setTimeout(() => {
+    if(player.getPlayerState() === YT.PlayerState.UNSTARTED){
+        location.reload();
+    }
+}, 10000);
+
 setTimeout(() => {
     document.getElementById('song_info').style.visibility = 'visible';
 }, 1000);
