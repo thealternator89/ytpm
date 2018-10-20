@@ -68,11 +68,22 @@ export class PlayerQueue {
         return [...this.playHistory];
     }
 
-    public getUpNext(): string {
+    public getUpNext(): {videoId: string, auto: boolean} {
+        let videoId: string;
+        let auto: boolean;
+
         if(this.queue.length > 0) {
-            return this.queue[0].videoId;
+            videoId = this.queue[0].videoId;
+            auto = false;
         } else {
-            return this.getNextAutoPlayItem();
+            videoId = this.getNextAutoPlayItem();
+            auto = true;
+        }
+
+        if(videoId) {
+            return {videoId, auto};
+        } else {
+            return undefined;
         }
     }
 

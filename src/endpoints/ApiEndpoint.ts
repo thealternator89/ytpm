@@ -156,10 +156,14 @@ class ApiEndpointHandler {
             if(!queue) {
                 return;
             }            
-            
-            const nextVideo = await youTubeVideoDetailsCache.getFromCacheOrApi(queue.getUpNext());
 
-            response.type('json').send(JSON.stringify(nextVideo));
+            const upNext = queue.getUpNext();
+            const nextVideo = await youTubeVideoDetailsCache.getFromCacheOrApi(upNext.videoId);
+
+            response.type('json').send(JSON.stringify({
+                ...nextVideo,
+                auto: upNext.auto
+            }));
         });
 
         app.get('/api/queue_settings', (request, response) => {
