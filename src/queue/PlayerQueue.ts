@@ -10,6 +10,7 @@ export class PlayerQueue {
 
     private autoPlayItems: {[videoId: string]: IAutoQueueItem} = {};
     private autoQueueBlacklist: {[videoId: string]: number} = {};
+    private nextAutoPlayVideoId: string;
 
     private lastTouched: moment.Moment;
     private accessUrl: string = '';
@@ -63,6 +64,22 @@ export class PlayerQueue {
         return [...this.queue];
     }
 
+    public getAllPlayedVideoIds(): string[] {
+        return [...this.playHistory];
+    }
+
+    public getUpNext(): string {
+        if(this.queue.length > 0) {
+            return this.queue[0].videoId;
+        } else {
+            return this.getNextAutoPlayItem();
+        }
+    }
+
+    public getNextAutoPlayItem(): string {
+        return this.nextAutoPlayVideoId;
+    }
+
     public getTimeLastTouched(): moment.Moment {
         return this.lastTouched;
     }
@@ -103,6 +120,8 @@ export class PlayerQueue {
                 }
             }
         }
+
+        this.nextAutoPlayVideoId = this.getNextAutoPlaySong().videoId;
     }
 
     private getNextAutoPlaySong(): IAutoQueueItem {

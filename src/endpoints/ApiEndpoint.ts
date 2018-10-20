@@ -130,6 +130,38 @@ class ApiEndpointHandler {
             response.type('json').send(JSON.stringify(queueListResolved));
         });
 
+        app.get('/api/play_history', (request, response) => {
+            if(!this.validateToken(request, response)) {
+                return;
+            }
+
+            const queue = this.getQueueByAuthToken(request,response);
+            if(!queue) {
+                return;
+            }
+
+            const queueListPromise = queue.getAllPlayedVideoIds().map(async (videoId) => {
+                return youTubeVideoDetailsCache.getFromCacheOrApi(videoId);
+            });
+            const queueListResolved = Promise.all(queueListPromise);
+            response.type('json').send(JSON.stringify(queueListResolved));
+        });
+
+        app.get('/api/up_next', async (request, response) => {
+            if(!this.validateToken(request, response)) {
+                return;
+            }
+
+            const queue = this.getQueueByAuthToken(request,response);
+            if(!queue) {
+                return;
+            }            
+            
+            const nextVideo = await youTubeVideoDetailsCache.getFromCacheOrApi(queue.getUpNext());
+
+            response.type('json').send(JSON.stringify(nextVideo));
+        });
+
         app.get('/api/queue_settings', (request, response) => {
             if(!this.validateToken(request, response)) {
                 return;

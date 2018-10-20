@@ -67,6 +67,38 @@ This allows a user to see what items are currently in the play queue.
 * Errors:
     * `401: Unauthorized` - Token not provided or invalid
 
+### Play History
+
+This allows a user to see which items have previously been played.
+
+* Endpoint: `/api/play_history`
+* Query Parameters:
+    * `token` - the token returned by `/api/auth`
+* Response: An array of objects representing the history:
+    * `videoId` - The ID of the video
+    * `title` - The video title
+    * `thumbnailUrl` - Url to a thumbnail image
+    * `channelName` - The name of the channel which uploaded the video
+* Errors:
+    * `401: Unauthorized` - Token not provided or invalid
+
+### Up Next
+
+This allows a user to see what is coming up next; either from the queue, or auto-played.
+
+**Note:** the result of this may change if an item is enqueued
+
+* Endpoint: `/api/up_next`
+* Query Parameters:
+    * `token` - the token returned by `/api/auth`
+* Response: An object representing the song which will play next:
+    * `videoId` - The ID of the video
+    * `title` - The video title
+    * `thumbnailUrl` - Url to a thumbnail image
+    * `channelName` - The name of the channel which uploaded the video
+* Errors:
+    * `401: Unauthorized` - Token not provided or invalid
+
 ### Search
 
 This allows a user to search for videos to add to the queue.
