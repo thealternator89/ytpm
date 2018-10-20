@@ -8,6 +8,7 @@ class YouTubeClient {
         key: envUtil.getYouTubeApiKey(),
         type: 'video',
         topicId: '/m/04rlf', // Music topic
+        regionCode: 'NZ'
     }
 
     public async search(query: string): Promise<YouTubeVideoDetails[]> {
