@@ -1,4 +1,4 @@
-import { IQueueItem, IAutoQueueItem } from './QueueItem';
+import { IQueueItem, IAutoQueueItem } from '../models/QueueItem';
 import * as moment from 'moment';
 import { youTubeClient } from '../api-client/YouTubeClient';
 
@@ -139,8 +139,10 @@ export class PlayerQueue {
         const autoQueueItems = Object.values(this.autoPlayItems);
         autoQueueItems.sort((o1, o2) => o2.score - o1.score);
 
-        return autoQueueItems.find((item) =>
-            !this.autoQueueBlacklist[item.videoId] || this.autoQueueBlacklist[item.videoId] < this.playHistory.length
-        );
+        return autoQueueItems.find((item) => {
+            return !this.autoQueueBlacklist[item.videoId] ||                        // Song not in blacklist, OR
+                this.autoQueueBlacklist[item.videoId] < this.playHistory.length ||  // Song was blacklisted, but play count is high enough to play again, OR
+                this.autoQueueBlacklist[item.videoId] === -1                        // Song is permanently blacklisted
+        });
     }
 }

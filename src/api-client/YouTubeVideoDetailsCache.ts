@@ -1,4 +1,4 @@
-import { YouTubeVideoDetails } from "./YouTubeVideoDetails";
+import { YouTubeVideoDetails } from "../models/YouTubeVideoDetails";
 import { youTubeClient } from "./YouTubeClient";
 
 class YouTubeVideoDetailsCache {

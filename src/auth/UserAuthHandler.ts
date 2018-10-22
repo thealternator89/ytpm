@@ -1,4 +1,3 @@
-import * as randomstring from 'randomstring';
 import * as uuid from 'uuid';
 import { playerQueuesManager } from '../queue/PlayerQueuesManager';
 import { PlayerQueue } from '../queue/PlayerQueue';

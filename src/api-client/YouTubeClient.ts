@@ -1,35 +1,43 @@
-import * as ytsearch from 'youtube-search';
-import { YouTubeVideoDetails } from './YouTubeVideoDetails';
+import * as YouTube from 'simple-youtube-api';
+import { YouTubeVideoDetails } from '../models/YouTubeVideoDetails';
 import { youTubeVideoDetailsCache } from './YouTubeVideoDetailsCache';
-import { envUtil } from '../util/EnvUtil';
+// import { envUtil } from '../util/EnvUtil';
+
+const SEARCH_RESULT_LIMIT_STANDARD = 30;
+const SEARCH_RESULT_LIMIT_RELATED = 15;
 
 class YouTubeClient {
-    private readonly options: ytsearch.YouTubeSearchOptions = {
-        key: envUtil.getYouTubeApiKey(),
+    private readonly options: any = {
         type: 'video',
         topicId: '/m/04rlf', // Music topic
         regionCode: 'NZ'
     }
 
+    private readonly youtube: YouTube;
+
+    public constructor() {
+        // TODO: Remove before committing
+        this.youtube = new YouTube('AIzaSyB9AXgka5X7iIP6sIlfN5cHVrjWJsp5-rc');
+        //this.youtube = new YouTube(envUtil.getYouTubeApiKey());
+    }
+
     public async search(query: string): Promise<YouTubeVideoDetails[]> {
-        let response: {results: ytsearch.YouTubeSearchResults[], pageInfo: ytsearch.YouTubeSearchPageResults};
+        let response: any[];
         try {
-            response = await ytsearch(query, {
+            response = await this.youtube.search(query, SEARCH_RESULT_LIMIT_STANDARD, {
                 ...this.options,
-                maxResults: 30,
             });
         } catch (error) {
             throw new Error(`An error occurred retrieving search results: ${error.message}`);
         }
         
-        const results = response.results
-            .filter((result) => result.id !== result.channelId) //Exclude channel results
+        const results = response
             .map((result) => {
                 return {
                     videoId: result.id,
                     title: result.title,
                     thumbnailUrl: result.thumbnails.default.url,
-                    channelName: result.channelTitle,
+                    channelName: result.channel.title,
                 };
             });
 
@@ -42,25 +50,24 @@ class YouTubeClient {
     }
 
     public async searchRelatedVideos(videoId: string): Promise<YouTubeVideoDetails[]> {
-        let response: {results: ytsearch.YouTubeSearchResults[], pageInfo: ytsearch.YouTubeSearchPageResults};
+        let response: any[];
         try {
-            response = await ytsearch(undefined, {
+            response = await this.youtube.search(undefined, SEARCH_RESULT_LIMIT_RELATED, {
                 ...this.options,
-                maxResults: 15,
                 relatedToVideoId: videoId
             });
         } catch (error) {
             throw new Error(`An error occurred retrieving search results: ${error.message}`);
         }
         
-        const results = response.results
+        const results = response
             .map((result) => {
                 return {
                     videoId: result.id,
                     title: result.title,
                     thumbnailUrl: result.thumbnails.default.url,
-                    channelName: result.channelTitle,
-                };
+                    channelName: result.channel.title,
+                }
             });
 
         // Add each item into the cache
@@ -69,11 +76,31 @@ class YouTubeClient {
         }
 
         return results;
-        return null;
     }
 
     public async getDetails(videoId: string): Promise<YouTubeVideoDetails> {
-        return null;
+        let response: any;
+
+        try {
+            response = await this.youtube.getVideoByID(videoId);
+        } catch (error) {
+            throw new Error(`An error occurred retrieving video information: ${error.message}`);
+        }
+
+        if (!response) {
+            throw new Error(`Video with ID '${videoId}' not found`);
+        }
+
+        const result = {
+            videoId: response.id,
+            title: response.title,
+            thumbnailUrl: response.thumbnails.default.url,
+            channelName: response.channel.title,
+        }
+
+        youTubeVideoDetailsCache.addOrReplaceInCache(result);
+
+        return result;
     }
 }
 

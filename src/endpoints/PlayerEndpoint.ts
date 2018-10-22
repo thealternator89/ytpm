@@ -1,8 +1,7 @@
 import { userAuthHandler } from '../auth/UserAuthHandler';
-import { HostDetails } from '../HostDetails';
 import { playerQueuesManager } from '../queue/PlayerQueuesManager';
 import { youTubeVideoDetailsCache } from '../api-client/YouTubeVideoDetailsCache';
-import { IQueueItem } from '../queue/QueueItem';
+import { IQueueItem } from '../models/QueueItem';
 
 const DEFAULT_ACCESS_URL = 'ytpm.thealternator.nz';
 

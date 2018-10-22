@@ -1,5 +1,5 @@
 import { userAuthHandler } from '../auth/UserAuthHandler';
-import { IQueueItem } from '../queue/QueueItem';
+import { IQueueItem } from '../models/QueueItem';
 import { Constants as CONSTANTS } from '../constants';
 import { youTubeClient } from '../api-client/YouTubeClient';
 import { youTubeVideoDetailsCache } from '../api-client/YouTubeVideoDetailsCache';
