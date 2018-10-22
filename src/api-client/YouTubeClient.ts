@@ -1,7 +1,7 @@
 import * as YouTube from 'simple-youtube-api';
 import { YouTubeVideoDetails } from '../models/YouTubeVideoDetails';
 import { youTubeVideoDetailsCache } from './YouTubeVideoDetailsCache';
-// import { envUtil } from '../util/EnvUtil';
+import { envUtil } from '../util/EnvUtil';
 
 const SEARCH_RESULT_LIMIT_STANDARD = 30;
 const SEARCH_RESULT_LIMIT_RELATED = 15;
@@ -16,9 +16,7 @@ class YouTubeClient {
     private readonly youtube: YouTube;
 
     public constructor() {
-        // TODO: Remove before committing
-        this.youtube = new YouTube('AIzaSyB9AXgka5X7iIP6sIlfN5cHVrjWJsp5-rc');
-        //this.youtube = new YouTube(envUtil.getYouTubeApiKey());
+        this.youtube = new YouTube(envUtil.getYouTubeApiKey());
     }
 
     public async search(query: string): Promise<YouTubeVideoDetails[]> {
