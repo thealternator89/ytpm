@@ -17,10 +17,10 @@ class ApiEndpointHandler {
                 return;
             }
 
-            // TODO also check the autoQueue for itemsAvailableToPlay
             response.type('json').send(JSON.stringify({
-                itemsAvailableToPlay: !queue.isEmpty(),
-                queueLength: queue.length()
+                itemsAvailableToPlay: !!queue.getUpNext(),
+                queueLength: queue.length(),
+                command: queue.getCommand()
             }));
         })
 
@@ -180,6 +180,32 @@ class ApiEndpointHandler {
             queue.setAccessUrl(accessUrl);
 
             response.type('json').send(JSON.stringify({accessUrl}));
+        });
+
+        app.get('/api/set_command', (request, response) => {
+            if(!this.validateToken(request, response)) {
+                return;
+            }
+
+            const queue = this.getQueueByAuthToken(request,response);
+            if(!queue) {
+                return;
+            }
+
+            let command: string|undefined = request.query['command'];
+            if(!command) {
+                response.status(400).send('Command required');
+                return;
+            }
+
+            command = command.toUpperCase();
+            if(['PAUSE','PLAY','NEXTTRACK'].indexOf(command) === -1) {
+                response.status(400).send(`Invalid command: ${command}`);
+                return;
+            }
+
+            queue.setCommand(command as any);
+            response.type('json').send(JSON.stringify({command}));
         });
 
         app.get('/api/search', async (request, response) => {

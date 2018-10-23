@@ -13,7 +13,10 @@ export class PlayerQueue {
     private nextAutoPlayVideoId: string;
 
     private lastTouched: moment.Moment;
+
+    // Settings
     private accessUrl: string = '';
+    private command: 'PAUSE'|'PLAY'|'NEXTTRACK'|undefined = undefined;
 
     public constructor() {
         this.lastTouched = moment();
@@ -101,6 +104,22 @@ export class PlayerQueue {
 
     public setAccessUrl(url: string): void {
         this.accessUrl = url;
+    }
+
+    public setCommand(command: 'PAUSE'|'PLAY'|'NEXTTRACK'): void {
+        this.command = command;
+    }
+
+    public unsetCommand(): void {
+        this.command = undefined;
+    }
+
+    public getCommand(persist = false): 'PAUSE'|'PLAY'|'NEXTTRACK'|undefined {
+        const tmpCommand = this.command;
+        if(!persist) {
+            this.command = undefined;
+        }
+        return tmpCommand;
     }
 
     private async processPlayedSong(queueItem: IQueueItem | IAutoQueueItem): Promise<void> {
