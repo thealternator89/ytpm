@@ -27,6 +27,19 @@
                             if (typeof(YT) === 'undefined' && response.itemsAvailableToPlay) {
                                 location.reload();
                             }
+                            if (typeof(response.command) !== 'undefined' && typeof(player) !== 'undefined') {
+                                if (response.command === 'PLAY') {
+                                    player.playVideo();
+                                }
+                                if (response.command === 'PAUSE') {
+                                    player.pauseVideo();
+                                }
+                                if (response.command === 'NEXTTRACK') {
+                                    location.reload();
+                                }
+                            }
+                        
+
                             document.getElementById('queue_size').innerText = response.queueLength;
                         }
                     }
