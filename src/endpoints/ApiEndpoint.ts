@@ -6,6 +6,7 @@ import { youTubeVideoDetailsCache } from '../api-client/YouTubeVideoDetailsCache
 import { playerQueuesManager } from '../queue/PlayerQueuesManager';
 import { PlayerQueue } from '../queue/PlayerQueue';
 import { Response } from 'express';
+import { YouTubeVideoDetails } from '../models/YouTubeVideoDetails';
 
 class ApiEndpointHandler {
 
@@ -107,7 +108,7 @@ class ApiEndpointHandler {
             response.send(`Dequeued: ${videoToDequeue}`);
         });
 
-        app.get('/api/queue_list', (request, response) => {
+        app.get('/api/queue_list', async (request, response) => {
             if(!this.validateToken(request, response)) {
                 return;
             }
@@ -115,22 +116,18 @@ class ApiEndpointHandler {
             const queue = this.getQueueByAuthToken(request,response);
             if(!queue) {
                 return;
-            }            
-            
-            const queueListPromise = queue.getAllQueuedItems().map(async (queueItem) => {
-                const videoDetails = await youTubeVideoDetailsCache.getFromCacheOrApi(queueItem.videoId)
-                return {
-                    ...videoDetails,
-                    user: userAuthHandler.getNameForToken(queueItem.user),
-                };
-            });
+            }
 
-            const queueListResolved = Promise.all(queueListPromise);
+            const queueItems: YouTubeVideoDetails[] = [];
 
-            response.type('json').send(JSON.stringify(queueListResolved));
+            for(const queueItem of queue.getAllQueuedItems()) {
+                queueItems.push(await youTubeVideoDetailsCache.getFromCacheOrApi(queueItem.videoId));
+            }
+
+            response.type('json').send(JSON.stringify(queueItems));
         });
 
-        app.get('/api/play_history', (request, response) => {
+        app.get('/api/play_history', async (request, response) => {
             if(!this.validateToken(request, response)) {
                 return;
             }
@@ -140,11 +137,13 @@ class ApiEndpointHandler {
                 return;
             }
 
-            const queueListPromise = queue.getAllPlayedVideoIds().map(async (videoId) => {
-                return youTubeVideoDetailsCache.getFromCacheOrApi(videoId);
-            });
-            const queueListResolved = Promise.all(queueListPromise);
-            response.type('json').send(JSON.stringify(queueListResolved));
+            const historyItems: YouTubeVideoDetails[] = [];
+
+            for(const videoId of queue.getAllPlayedVideoIds()) {
+                historyItems.push(await youTubeVideoDetailsCache.getFromCacheOrApi(videoId));
+            }
+
+            response.type('json').send(JSON.stringify(historyItems));
         });
 
         app.get('/api/up_next', async (request, response) => {
