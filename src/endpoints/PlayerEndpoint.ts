@@ -2,6 +2,7 @@ import { userAuthHandler } from '../auth/UserAuthHandler';
 import { playerQueuesManager } from '../queue/PlayerQueuesManager';
 import { youTubeVideoDetailsCache } from '../api-client/YouTubeVideoDetailsCache';
 import { IQueueItem } from '../models/QueueItem';
+import { htmlEncode } from 'htmlencode';
 
 const DEFAULT_ACCESS_URL = 'ytpm.thealternator.nz';
 
@@ -29,13 +30,14 @@ export class PlayerEndpointHandler {
             } else {
                 const videoDetails = await youTubeVideoDetailsCache.getFromCacheOrApi(queueItem.videoId);
                 let userAuthToken = (queueItem as IQueueItem).user;
+                let userName = userAuthToken ? htmlEncode(userAuthHandler.getNameForToken(userAuthToken)) : '<i>(auto)</i>'
 
                 response.render('player-playing.hbs', {
                     ...baseObject,
                     videoId: videoDetails.videoId,
                     videoTitle: videoDetails.title,
                     thumbnailSrc: videoDetails.thumbnailUrl,
-                    addedBy: userAuthToken ? userAuthHandler.getNameForToken(userAuthToken) : '',
+                    addedBy: userName,
                 });
             }
         });

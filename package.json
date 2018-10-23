@@ -23,6 +23,7 @@
     "express": "^4.16.4",
     "express-handlebars": "^3.0.0",
     "handlebars": "^4.0.12",
+    "htmlencode": "0.0.4",
     "ip": "^1.1.5",
     "moment": "^2.22.2",
     "randomstring": "^1.1.5",
