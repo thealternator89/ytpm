@@ -1,26 +1,31 @@
+import * as path from 'path';
 import { Response, Request } from "express";
 import { userAuthHandler } from "../auth/UserAuthHandler";
 
 export class WebClientEndpointHandler {
     public registerApiEndpoints(app: any) {
         app.get('/', (request: Request, response: Response) => {
+            response.redirect('/client');
+        });
+
+        app.get('/client', (request, response) => {
             if(!this.validateCookie(request, response)) {
                 return;
             }
 
-            response.redirect('/search');
+            response.redirect('/client/home');
         });
 
-        app.get('/login', (request: Request, response: Response) => {
-            response.render('login.hbs');
-        })
+        app.get('/client/login', (request: Request, response: Response) => {
+            response.sendFile(path.join(__dirname, '..' , 'views/html', 'login.html'));
+        });
 
-        app.post('/login', (request: Request, response: Response) => {
+        app.post('/client/login', (request: Request, response: Response) => {
             const psk = request.body['inputPreSharedKey'];
             const name = request.body['inputName'];
             
             if(!name || !psk) {
-                response.redirect('/login');
+                response.redirect('/client/login');
                 return;
             }
 
@@ -35,22 +40,26 @@ export class WebClientEndpointHandler {
 
             response.cookie('token', token);
 
-            response.redirect('/');
-        })
+            response.redirect('/client');
+        });
 
-        app.get('/search', (request, response) => {
+        app.get('/client/home', (request, response) => {
+            response.redirect('/client/search');
+        });
+
+        app.get('/client/search', (request, response) => {
             if(!this.validateCookie(request, response)) {
                 return;
             } 
-            response.send('Search!');
-        })
+            response.sendFile(path.join(__dirname, '..' , 'views/html', 'search.vue.html'));
+        });
     }
 
     private validateCookie(request, response) {
         if (request.cookies['token'] && userAuthHandler.validateToken(request.cookies['token'])) {
             return true;
         } else {
-            response.redirect('/login');
+            response.redirect('/client/login');
             return false;
         }
     }
