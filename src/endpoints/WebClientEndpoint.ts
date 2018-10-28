@@ -44,7 +44,10 @@ export class WebClientEndpointHandler {
         });
 
         app.get('/client/home', (request, response) => {
-            response.redirect('/client/search');
+            if(!this.validateCookie(request, response)) {
+                return;
+            } 
+            response.sendFile(path.join(__dirname, '..' , 'views/html', 'home.html'));
         });
 
         app.get('/client/search', (request, response) => {
