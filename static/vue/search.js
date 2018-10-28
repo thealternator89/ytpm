@@ -53,11 +53,27 @@ function search() {
 function addToQueue(videoId, influenceAutoQueue, next) {
 	var xhttp = new XMLHttpRequest();
 
+	xhttp.onreadystatechange = function () {
+		if(this.readyState == 4 && this.status == 200) {
+			showAddedSnackbar(JSON.parse(this.responseText));
+		}
+	}
+
 	var playNextQs = next ? '&next=true' : '';
 	var influenceAutoQueueQs = influenceAutoQueue ? '&influenceautoqueue=false' : '';
 
 	xhttp.open('GET', '/api/enqueue?videoId=' + encodeURI(videoId) + playNextQs + influenceAutoQueueQs + '&token=' + getCookie('token'), true);
 	xhttp.send();
+}
+
+function showAddedSnackbar(videoDetails) {
+	let toast = Vue.toasted.show('Added: ' + videoDetails.title, { 
+		 theme: "primary",
+		 position: "bottom-center",
+		 icon: "queue",
+		 fullWidth: true,
+		 duration : 5000
+	});
 }
 
 function showLoadingSpinner() {

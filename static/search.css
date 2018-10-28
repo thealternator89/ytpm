@@ -41,6 +41,10 @@
 	visibility: hidden;
 }
 
+#results {
+	padding-top: 86px;
+}
+
 #influence-auto-queue-label{
 	margin-top: 10px;
 	color: white;
