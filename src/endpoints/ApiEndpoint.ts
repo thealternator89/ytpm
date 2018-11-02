@@ -224,6 +224,13 @@ class ApiEndpointHandler {
             response.type('json').send(JSON.stringify(results));
         });
 
+        app.get('/api/autocomplete', async (request, response) => {
+            const searchQuery = request.query['q'];
+
+            const results = await youTubeClient.getSearchAutoComplete(searchQuery);
+            response.type('json').send(JSON.stringify(results));
+        })
+
         app.get(`/api/internal/queue_states`, async (request, response: Response) => {
             const queueKeys = playerQueuesManager.getAllQueueKeys();
 

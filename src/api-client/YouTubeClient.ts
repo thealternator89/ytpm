@@ -1,10 +1,13 @@
 import * as YouTube from 'simple-youtube-api';
+import * as rp from 'request-promise';
 import { YouTubeVideoDetails } from '../models/YouTubeVideoDetails';
 import { youTubeVideoDetailsCache } from './YouTubeVideoDetailsCache';
 import { envUtil } from '../util/EnvUtil';
 
 const SEARCH_RESULT_LIMIT_STANDARD = 30;
 const SEARCH_RESULT_LIMIT_RELATED = 15;
+
+const AUTOCOMPLETE_URL_BASE = 'http://suggestqueries.google.com/complete/search';
 
 class YouTubeClient {
     private readonly options: any = {
@@ -15,11 +18,32 @@ class YouTubeClient {
 
     private readonly youtube: YouTube;
 
+    private readonly searchHistory = [];
+
     public constructor() {
         this.youtube = new YouTube(envUtil.getYouTubeApiKey());
     }
 
+    public async getSearchAutoComplete(query?: string): Promise<string[]> {
+        if(!query) {
+            return this.searchHistory;
+        } else {
+            const response = await rp({
+                uri: AUTOCOMPLETE_URL_BASE,
+                qs: {
+                    ds: 'yt',
+                    client: 'firefox',
+                    q: query,
+                },
+                json: true
+            });
+            // response is an array. First element is the query, Second is an array of suggestions.
+            return response[1]; 
+        }
+    }
+
     public async search(query: string): Promise<YouTubeVideoDetails[]> {
+
         let response: any[];
         try {
             response = await this.youtube.search(query, SEARCH_RESULT_LIMIT_STANDARD, {
