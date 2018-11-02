@@ -31,10 +31,15 @@ class YouTubeClient {
         
         const results = response
             .map((result) => {
+                let thumbnail;
+                if(result.thumbnails && result.thumbnails.default) {
+                    thumbnail = result.thumbnails.default.url;
+                }
+
                 return {
                     videoId: result.id,
                     title: result.title,
-                    thumbnailUrl: result.thumbnails.default.url,
+                    thumbnailUrl: thumbnail,
                     channelName: result.channel.title,
                 };
             });
@@ -76,17 +81,18 @@ class YouTubeClient {
         return results;
     }
 
-    public async getDetails(videoId: string): Promise<YouTubeVideoDetails> {
+    public async getDetails(query: string, isUrl = false): Promise<YouTubeVideoDetails> {
         let response: any;
 
         try {
-            response = await this.youtube.getVideoByID(videoId);
+            // If que
+            response = isUrl ? await this.youtube.getVideo(query) : await this.youtube.getVideoByID(query);
         } catch (error) {
             throw new Error(`An error occurred retrieving video information: ${error.message}`);
         }
 
         if (!response) {
-            throw new Error(`Video with ID '${videoId}' not found`);
+            throw new Error(`Video with ${isUrl? 'URL' : 'ID'} '${query}' not found`);
         }
 
         const result = {
