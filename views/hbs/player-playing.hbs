@@ -6,6 +6,8 @@
 
 <div id="pausedOsd"><i id="pausedIcon" class="material-icons">pause</i></div>
 
+<div id="loading_curtain"></div>
+
 <div id="player"></div>
 
 <script>
@@ -34,6 +36,7 @@ function onPlayerStateChange(event) {
             document.getElementById('pausedOsd').style.visibility = 'visible';
             break;
         default: {
+            document.getElementById('loading_curtain').style.visibility = 'hidden';
             document.getElementById('pausedOsd').style.visibility = 'hidden';
         }
     }
