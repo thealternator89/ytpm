@@ -4,6 +4,8 @@
     <div id="song_added_by">Added by {{addedBy}}</div>
 </div>
 
+<div id="pausedOsd"><i id="pausedIcon" class="material-icons">pause</i></div>
+
 <div id="player"></div>
 
 <script>
@@ -23,9 +25,17 @@ function onYouTubeIframeAPIReady() {
 }
 
 function onPlayerStateChange(event) { 
-    if(event.data === YT.PlayerState.ENDED) {
-        document.getElementById('player').style.visibility = 'hidden';
-        location.reload();
+    switch (event.data) {
+        case YT.PlayerState.ENDED:
+            document.getElementById('player').style.visibility = 'hidden';
+            location.reload();
+            break;
+        case YT.PlayerState.PAUSED:
+            document.getElementById('pausedOsd').style.visibility = 'visible';
+            break;
+        default: {
+            document.getElementById('pausedOsd').style.visibility = 'hidden';
+        }
     }
 }
 

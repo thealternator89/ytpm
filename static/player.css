@@ -53,7 +53,6 @@ iframe {
 }
 
 #song_info {
-    border-radius: 0px 0px 15px 0px;
     background-color: #282828;
     color: white;
     z-index: 1;
@@ -87,4 +86,21 @@ iframe {
     font-size: 50px;
     top: 300px;
     color: darkred;
+}
+
+#pausedOsd {
+    color: white;
+    background-color: rgba(0,0,0,0.4);
+    border-radius: 15px;
+    visibility: hidden;
+    width: 216px;
+    height: 216px;
+    position: absolute;
+    z-index: 2;
+    left: calc(50% - 108px);
+    top: calc(50% - 108px);
+}
+
+#pausedIcon {
+    font-size: 216px;
 }
