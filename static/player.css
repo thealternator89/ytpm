@@ -77,13 +77,9 @@ iframe {
 }
 
 #song_title {
-    font-size: large;
+    font-size: 25px;
     margin-top: 15px;
     margin-bottom: 10px;
-}
-
-#song_added_by {
-    font-size: small;
 }
 
 #NoMusicError {
