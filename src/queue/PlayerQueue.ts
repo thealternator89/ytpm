@@ -126,8 +126,8 @@ export class PlayerQueue {
         this.autoQueueBlacklist[queueItem.videoId] = this.playHistory.length + MIN_PLAYS_BEFORE_AVAILABLE_TO_AUTOPLAY;
         this.playHistory.push(queueItem.videoId);
 
-        // Short circuit if influence is 0
-        if (queueItem.autoQueueInfluence === 0) {
+        // Short circuit if no influence on auto queue
+        if (queueItem.autoQueueInfluence === Constants.AUTO_QUEUE_INFLUENCE.NO_INFLUENCE) {
             return;
         }
 
@@ -146,7 +146,7 @@ export class PlayerQueue {
                 this.autoPlayItems[video.videoId] = {
                     videoId: video.videoId,
                     score: influencedScore,
-                    autoQueueInfluence: 1,
+                    autoQueueInfluence: Constants.AUTO_QUEUE_INFLUENCE.AUTO_ADDED,
                 }
             }
         }
