@@ -24,8 +24,8 @@
                         if (this.readyState == 4 && this.status == 200) {
                             var response = JSON.parse(this.responseText);
                             // If 'YT' exists, we're playing something. It will tell us to reload when it's finished so leave it to that.
-                            // If it doesn't exist, and something is available to play, we should reload to play it.
-                            if (typeof(YT) === 'undefined' && response.itemsAvailableToPlay) {
+                            // If it doesn't exist, and something is in the queue to play, reload to play it.
+                            if (typeof(YT) === 'undefined' && response.queueLength !== 0) {
                                 location.reload();
                             }
                             if (typeof(response.command) !== 'undefined' && typeof(player) !== 'undefined') {

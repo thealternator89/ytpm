@@ -19,7 +19,6 @@ class ApiEndpointHandler {
             }
 
             response.type('json').send(JSON.stringify({
-                itemsAvailableToPlay: !!queue.getUpNext(),
                 queueLength: queue.length(),
                 command: queue.getCommand()
             }));
@@ -81,6 +80,10 @@ class ApiEndpointHandler {
             response.type('json').send(JSON.stringify({...details, queuePosition}));
         });
 
+        // FIXME: There's a couple of big issues here:
+        //  * This will fail if there are two versions of the same video in the queue added by different users
+        //  * This has a race condition; the array can be changed between finding the item to remove and removing it.
+        // This functionality should probably be moved into the queue anyway.
         app.get('/api/dequeue', (request, response) => {
             if(!this.validateToken(request, response)) {
                 return;
@@ -124,6 +127,11 @@ class ApiEndpointHandler {
                 queueItems.push(await youTubeVideoDetailsCache.getFromCacheOrApi(queueItem.videoId));
             }
 
+            if(queueItems.length === 0) {
+                const upNext = queue.getNextAutoPlayItem();
+                queueItems.push(await youTubeVideoDetailsCache.getFromCacheOrApi(upNext));
+            }
+
             response.type('json').send(JSON.stringify(queueItems));
         });
 
@@ -144,25 +152,6 @@ class ApiEndpointHandler {
             }
 
             response.type('json').send(JSON.stringify(historyItems));
-        });
-
-        app.get('/api/up_next', async (request, response) => {
-            if(!this.validateToken(request, response)) {
-                return;
-            }
-
-            const queue = this.getQueueByAuthToken(request,response);
-            if(!queue) {
-                return;
-            }            
-
-            const upNext = queue.getUpNext();
-            const nextVideo = await youTubeVideoDetailsCache.getFromCacheOrApi(upNext.videoId);
-
-            response.type('json').send(JSON.stringify({
-                ...nextVideo,
-                auto: upNext.auto
-            }));
         });
 
         app.get('/api/queue_settings', (request, response) => {
