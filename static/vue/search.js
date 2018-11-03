@@ -67,7 +67,7 @@ function addToQueue(videoId, influenceAutoQueue, next) {
 }
 
 function showAddedSnackbar(videoDetails) {
-	let toast = Vue.toasted.show('Added: ' + videoDetails.title, { 
+	Vue.toasted.show('Added: ' + videoDetails.title, { 
 		 theme: "primary",
 		 position: "bottom-center",
 		 icon: "queue",
