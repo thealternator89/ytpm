@@ -46,7 +46,7 @@
 			</form>
 		</nav>
 		<div id="results">
-			<a href="#" class="list-group-item list-group-item-action flex-column align-items-start list-group-item-dark" v-for="result in results" v-on:click="selectResult(result)">
+			<a href="javascript:void" class="list-group-item list-group-item-action flex-column align-items-start list-group-item-dark" v-for="result in results" v-on:click="selectResult(result)">
 				<img v-bind:src="result.thumbnailUrl" width="80" height="60" style="float: left; margin-left: 5px; margin-right: 7px; clear: both;"> 
 				<p class="mb-1">{{result.title}}</p>
 				<small>{{result.channelName}}</small>

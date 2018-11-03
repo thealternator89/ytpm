@@ -35,8 +35,11 @@ function onPlayerStateChange(event) {
         case YT.PlayerState.PAUSED:
             document.getElementById('pausedOsd').style.visibility = 'visible';
             break;
+        case YT.PlayerState.PLAYING:
+            setTimeout(function() {
+                document.getElementById('loading_curtain').style.visibility = 'hidden';
+            }, 100);
         default: {
-            document.getElementById('loading_curtain').style.visibility = 'hidden';
             document.getElementById('pausedOsd').style.visibility = 'hidden';
         }
     }
