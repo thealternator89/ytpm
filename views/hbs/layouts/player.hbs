@@ -39,12 +39,37 @@
                                     location.reload();
                                 }
                             }
-                        
-
                             document.getElementById('queue_size').innerText = response.queueLength;
                         }
                     }
-                    xhttp.open('GET', '/api/poll?key=' + queueKey, true);
+
+                    var statusString = '';
+                    if (typeof(player) !== 'undefined') {
+                        var playerState;
+                        switch (player.getPlayerState()) {
+                            case YT.PlayerState.UNSTARTED: playerState = 'UNSTARTED';
+                                break;
+                            case YT.PlayerState.ENDED: playerState = 'ENDED';
+                                break;
+                            case YT.PlayerState.PLAYING: playerState = 'PLAYING';
+                                break;
+                            case YT.PlayerState.PAUSED: playerState = 'PAUSED';
+                                break;
+                            case YT.PlayerState.BUFFERING: playerState = 'BUFFERING';
+                                break;
+                            case YT.PlayerState.CUED: playerState = 'CUED';
+                                break;
+                            default: playerState = 'UNKNOWN';
+                        }
+                        var videoId = player.getVideoData().video_id;
+                        var videoPosition = player.getCurrentTime();
+                        var videoDuration = player.getDuration();
+                        statusString = [playerState, videoId, videoPosition, videoDuration].join(';');
+                    }
+
+                    var encodedStatusString = btoa(statusString);
+
+                    xhttp.open('GET', '/api/poll' + (encodedStatusString !== '' ? '?status=' + encodedStatusString + '&' : '?') + 'key=' + queueKey, true);
                     xhttp.send();
                 }, 1000);
             }
