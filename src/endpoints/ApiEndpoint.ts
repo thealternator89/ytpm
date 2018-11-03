@@ -7,6 +7,7 @@ import { playerQueuesManager } from '../queue/PlayerQueuesManager';
 import { PlayerQueue } from '../queue/PlayerQueue';
 import { Response } from 'express';
 import { YouTubeVideoDetails } from '../models/YouTubeVideoDetails';
+import * as atob from 'atob';
 
 class ApiEndpointHandler {
 
@@ -16,6 +17,22 @@ class ApiEndpointHandler {
             const queue = this.getQueueByKey(request, response);
             if(!queue){
                 return;
+            }
+
+            const status: string = request.query['status'];
+            if(status){
+                const statusParts = atob(status).split(';');
+                const statusObj = {
+                    playerState: statusParts[0],
+                    videoId: statusParts[1],
+                    position: parseFloat(statusParts[2]),
+                    duration: parseFloat(statusParts[3]),
+                }
+                queue.setPlayerStatus(statusObj);
+            } else {
+                queue.setPlayerStatus({
+                    playerState: 'NOTPLAYING',
+                });
             }
 
             response.type('json').send(JSON.stringify({

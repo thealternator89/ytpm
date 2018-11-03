@@ -5,6 +5,9 @@ import { Constants } from '../constants';
 
 const MIN_PLAYS_BEFORE_AVAILABLE_TO_AUTOPLAY = 50;
 
+type PlayerState = 'UNKNOWN'|'UNSTARTED'|'ENDED'|'PLAYING'|'PAUSED'|'BUFFERING'|'CUED'|'NOTPLAYING';
+type PlayerStateHealth = 'GOOD'|'OK'|'DEGRADED'|'BAD';
+
 export class PlayerQueue {
     private queue: IQueueItem[] = [];
     private playHistory: string[] = [];
@@ -16,10 +19,37 @@ export class PlayerQueue {
 
     private lastTouched: moment.Moment;
 
+    private playerStatus: {playerState: PlayerState, videoId?: string, position?: number, duration?: number, updated: moment.Moment}|undefined;
+
     private command: 'PAUSE'|'PLAY'|'NEXTTRACK'|undefined = undefined;
 
     public constructor() {
         this.lastTouched = moment();
+    }
+
+    public setPlayerStatus(newState: {playerState: PlayerState, videoId?: string, position?: number, duration?: number}): void {
+        this.playerStatus = {
+            ...newState,
+            updated: moment()
+        };
+    }
+
+    public getPlayerStatus(): {playerState: PlayerState, videoId?: string, position?: number, duration?: number, health: PlayerStateHealth} {
+        const secondsSinceUpdated = moment.duration(moment().diff(this.playerStatus.updated)).asSeconds();
+        let health;
+        if (secondsSinceUpdated < 1){
+            health = 'GOOD';
+        } else if (secondsSinceUpdated < 5) {
+            health = 'OK';
+        } else if (secondsSinceUpdated < 10) {
+            health = 'DEGRADED';
+        } else {
+            health = 'BAD';
+        }
+        return {
+            ... this.playerStatus,
+            health,
+        }
     }
 
     public enqueue(item: IQueueItem): void {
