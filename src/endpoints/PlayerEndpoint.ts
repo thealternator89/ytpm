@@ -18,7 +18,7 @@ export class PlayerEndpointHandler {
 
             const baseObject = {
                 layout: 'player.hbs',
-                hostUrl: queue.getAccessUrl() || DEFAULT_ACCESS_URL,
+                hostUrl: DEFAULT_ACCESS_URL,
                 authString: request.query['key'],
                 queueSize: queue.length(),
             };

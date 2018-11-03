@@ -154,22 +154,6 @@ class ApiEndpointHandler {
             response.type('json').send(JSON.stringify(historyItems));
         });
 
-        app.get('/api/queue_settings', (request, response) => {
-            if(!this.validateToken(request, response)) {
-                return;
-            }
-
-            const queue = this.getQueueByAuthToken(request,response);
-            if(!queue) {
-                return;
-            }            
-
-            const accessUrl = request.query['accessurl'];
-            queue.setAccessUrl(accessUrl);
-
-            response.type('json').send(JSON.stringify({accessUrl}));
-        });
-
         app.get('/api/set_command', (request, response) => {
             if(!this.validateToken(request, response)) {
                 return;

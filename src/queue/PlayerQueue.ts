@@ -1,6 +1,7 @@
 import { IQueueItem, IAutoQueueItem } from '../models/QueueItem';
 import * as moment from 'moment';
 import { youTubeClient } from '../api-client/YouTubeClient';
+import { Constants } from '../constants';
 
 const MIN_PLAYS_BEFORE_AVAILABLE_TO_AUTOPLAY = 50;
 
@@ -11,11 +12,10 @@ export class PlayerQueue {
     private autoPlayItems: {[videoId: string]: IAutoQueueItem} = {};
     private autoQueueBlacklist: {[videoId: string]: number} = {};
     private nextAutoPlayVideoId: string;
+    private shouldAutoPlay: boolean = true;
 
     private lastTouched: moment.Moment;
 
-    // Settings
-    private accessUrl: string = '';
     private command: 'PAUSE'|'PLAY'|'NEXTTRACK'|undefined = undefined;
 
     public constructor() {
@@ -71,39 +71,12 @@ export class PlayerQueue {
         return [...this.playHistory];
     }
 
-    public getUpNext(): {videoId: string, auto: boolean} {
-        let videoId: string;
-        let auto: boolean;
-
-        if(this.queue.length > 0) {
-            videoId = this.queue[0].videoId;
-            auto = false;
-        } else {
-            videoId = this.getNextAutoPlayItem();
-            auto = true;
-        }
-
-        if(videoId) {
-            return {videoId, auto};
-        } else {
-            return undefined;
-        }
-    }
-
     public getNextAutoPlayItem(): string {
         return this.nextAutoPlayVideoId;
     }
 
     public getTimeLastTouched(): moment.Moment {
         return this.lastTouched;
-    }
-
-    public getAccessUrl(): string {
-        return this.accessUrl;
-    }
-
-    public setAccessUrl(url: string): void {
-        this.accessUrl = url;
     }
 
     public setCommand(command: 'PAUSE'|'PLAY'|'NEXTTRACK'): void {
@@ -120,6 +93,14 @@ export class PlayerQueue {
             this.command = undefined;
         }
         return tmpCommand;
+    }
+
+    public getShouldAutoPlay(): boolean {
+        return this.shouldAutoPlay;
+    }
+
+    public setShouldAutoPlay(newValue: boolean): void {
+        this.shouldAutoPlay = newValue;
     }
 
     private async processPlayedSong(queueItem: IQueueItem | IAutoQueueItem): Promise<void> {
