@@ -56,6 +56,13 @@ export class WebClientEndpointHandler {
             } 
             response.sendFile(path.join(__dirname, '..' , 'views/html', 'search.vue.html'));
         });
+
+        app.get('/client/playing', (request, response) => {
+            if(!this.validateCookie(request, response)) {
+                return;
+            } 
+            response.sendFile(path.join(__dirname, '..' , 'views/html', 'playing.vue.html'));
+        });
     }
 
     private validateCookie(request, response) {

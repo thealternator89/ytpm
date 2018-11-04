@@ -69,7 +69,7 @@
 
                     var encodedStatusString = btoa(statusString);
 
-                    xhttp.open('GET', '/api/poll' + (encodedStatusString !== '' ? '?status=' + encodedStatusString + '&' : '?') + 'key=' + queueKey, true);
+                    xhttp.open('GET', '/api/player/poll' + (encodedStatusString !== '' ? '?status=' + encodedStatusString + '&' : '?') + 'key=' + queueKey, true);
                     xhttp.send();
                 }, 1000);
             }

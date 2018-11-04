@@ -55,15 +55,12 @@ class YouTubeClient {
         
         const results = response
             .map((result) => {
-                let thumbnail;
-                if(result.thumbnails && result.thumbnails.default) {
-                    thumbnail = result.thumbnails.default.url;
-                }
-
                 return {
                     videoId: result.id,
                     title: result.title,
-                    thumbnailUrl: thumbnail,
+                    description: result.description,
+                    thumbnailUrl: this.getThumbnailUrl(result.thumbnails, 'default'),
+                    thumbnailUrlBig: this.getThumbnailUrl(result.thumbnails, 'medium'),
                     channelName: result.channel.title,
                 };
             });
@@ -101,7 +98,9 @@ class YouTubeClient {
                 return {
                     videoId: result.id,
                     title: result.title,
-                    thumbnailUrl: result.thumbnails.default.url,
+                    description: result.description,
+                    thumbnailUrl: this.getThumbnailUrl(result.thumbnails, 'default'),
+                    thumbnailUrlBig: this.getThumbnailUrl(result.thumbnails, 'medium'),
                     channelName: result.channel.title,
                 }
             });
@@ -131,13 +130,25 @@ class YouTubeClient {
         const result = {
             videoId: response.id,
             title: response.title,
-            thumbnailUrl: response.thumbnails.default.url,
+            description: response.description,
+            thumbnailUrl: this.getThumbnailUrl(response.thumbnails, 'default'),
+            thumbnailUrlBig: this.getThumbnailUrl(response.thumbnails, 'medium'),
             channelName: response.channel.title,
         }
 
         youTubeVideoDetailsCache.addOrReplaceInCache(result);
 
         return result;
+    }
+
+    // Safely get either a thumbnail url or undefined.
+    // TODO: Probably should return something like '/notfound.jpg' instead.
+    private getThumbnailUrl(thumbnails: any, thumbName: 'default'|'medium'|'high'): string|undefined {
+        if(thumbnails && thumbnails[thumbName]) {
+            return thumbnails[thumbName].url;
+        } else {
+            return undefined;
+        }
     }
 }
 

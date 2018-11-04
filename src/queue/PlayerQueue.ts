@@ -36,6 +36,16 @@ export class PlayerQueue {
 
     public getPlayerStatus(): {playerState: PlayerState, videoId?: string, position?: number, duration?: number, health: PlayerStateHealth} {
         const secondsSinceUpdated = moment.duration(moment().diff(this.playerStatus.updated)).asSeconds();
+
+        // SHORT-CIRCUIT: If we haven't received an update from the player in more than 30 seconds, respond with 'UNKNOWN' playerState.
+        // The player has probably died, or is otherwise dead. Don't pretend to know where it is.
+        if (secondsSinceUpdated >= 30) {
+            return {
+                playerState: 'UNKNOWN',
+                health: 'BAD',
+            }
+        }
+
         let health;
         if (secondsSinceUpdated < 1){
             health = 'GOOD';
@@ -46,8 +56,23 @@ export class PlayerQueue {
         } else {
             health = 'BAD';
         }
+
+        // If we have the position, and the song is playing, add the seconds since updated so we get a time closer to the real time on-player
+        let position = this.playerStatus.position;
+        if(position && this.playerStatus.playerState === 'PLAYING') {
+            position += secondsSinceUpdated;
+
+            // Make sure we don't go over the duration of the video.
+            if(position > this.playerStatus.duration) {
+                position = this.playerStatus.duration;
+            }
+        }
+
         return {
-            ... this.playerStatus,
+            playerState: this.playerStatus.playerState,
+            videoId: this.playerStatus.videoId,
+            position,
+            duration: this.playerStatus.duration,
             health,
         }
     }
@@ -101,15 +126,26 @@ export class PlayerQueue {
         return [...this.playHistory];
     }
 
-    public getNextAutoPlayItem(): string {
-        return this.nextAutoPlayVideoId;
+    public getNextAutoPlayItem(): string|undefined {
+        if(!this.shouldAutoPlay) {
+            return undefined;
+        } else {
+            return this.nextAutoPlayVideoId;
+        }
     }
 
     public getTimeLastTouched(): moment.Moment {
         return this.lastTouched;
     }
 
-    public setCommand(command: 'PAUSE'|'PLAY'|'NEXTTRACK'): void {
+    public setCommand(command: 'PAUSE'|'PLAY'|'NEXTTRACK'|'AUTOPLAY-DISABLE'|'AUTOPLAY-ENABLE'): void {
+        if(command === 'AUTOPLAY-ENABLE') {
+            this.setShouldAutoPlay(true);
+            return;
+        } else if (command === 'AUTOPLAY-DISABLE') {
+            this.setShouldAutoPlay(false);
+            return;
+        }
         this.command = command;
     }
 
@@ -162,10 +198,15 @@ export class PlayerQueue {
             }
         }
 
-        this.nextAutoPlayVideoId = this.getNextAutoPlaySong().videoId;
+        const nextSong = this.getNextAutoPlaySong();
+        this.nextAutoPlayVideoId = nextSong ? nextSong.videoId : undefined;
     }
 
-    private getNextAutoPlaySong(): IAutoQueueItem {
+    private getNextAutoPlaySong(): IAutoQueueItem | undefined {
+        if(!this.shouldAutoPlay) {
+            return undefined;
+        }
+
         const autoQueueItems = Object.values(this.autoPlayItems);
         autoQueueItems.sort((o1, o2) => o2.score - o1.score);
 

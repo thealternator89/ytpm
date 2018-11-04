@@ -9,6 +9,9 @@ class YouTubeVideoDetailsCache {
     }
 
     public async getFromCacheOrApi(videoId: string): Promise<YouTubeVideoDetails|undefined> {
+        if (!videoId){
+            return undefined;
+        }
         if (!this.detailsCache[videoId]){
             const videoDetails = await youTubeClient.getDetails(videoId);
             this.detailsCache[videoDetails.videoId] = videoDetails;

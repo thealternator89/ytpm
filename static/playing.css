@@ -1,0 +1,21 @@
+#player-controls {
+	text-align: center;
+}
+
+#play-button {
+	font-size: 70px;
+	vertical-align: middle;
+}
+
+#skip-button {
+	font-size: 50px;
+	vertical-align: middle;
+}
+
+#player-time {
+	text-align: right;
+}
+
+.btn {
+	width: 100%;
+}

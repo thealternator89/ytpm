@@ -1,6 +1,8 @@
 export interface YouTubeVideoDetails {
     videoId: string;
     title: string;
-    thumbnailUrl: string;
+    description: string;
+    thumbnailUrl?: string;
+    thumbnailUrlBig?: string;
     channelName?: string;
 }

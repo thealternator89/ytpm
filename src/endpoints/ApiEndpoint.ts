@@ -13,7 +13,7 @@ class ApiEndpointHandler {
 
     public registerApiEndpoints(app: any) {
 
-        app.get('/api/poll', (request, response) => {
+        app.get('/api/player/poll', (request, response) => {
             const queue = this.getQueueByKey(request, response);
             if(!queue){
                 return;
@@ -39,7 +39,29 @@ class ApiEndpointHandler {
                 queueLength: queue.length(),
                 command: queue.getCommand()
             }));
-        })
+        });
+
+        app.get('/api/client/poll', async (request, response) => {
+            if(!this.validateToken(request, response)) {
+                return;
+            }
+
+            const queue = this.getQueueByAuthToken(request,response);
+            if(!queue) {
+                response.status(500).send('Queue not found');
+                return;
+            }
+
+            const playerStatus = queue.getPlayerStatus();
+
+            response.type('json').send(JSON.stringify({
+                playerState: playerStatus.playerState,
+                video: await youTubeVideoDetailsCache.getFromCacheOrApi(playerStatus.videoId),
+                position: playerStatus.position,
+                duration: playerStatus.duration,
+                health: playerStatus.health
+            }));
+        });
 
         app.get('/api/auth', (request, response) => {
             const providedAuthString = request.query['auth'];
@@ -188,7 +210,7 @@ class ApiEndpointHandler {
             }
 
             command = command.toUpperCase();
-            if(['PAUSE','PLAY','NEXTTRACK'].indexOf(command) === -1) {
+            if(['PAUSE','PLAY','NEXTTRACK','AUTOPLAY-DISABLE','AUTOPLAY-ENABLE'].indexOf(command) === -1) {
                 response.status(400).send(`Invalid command: ${command}`);
                 return;
             }
