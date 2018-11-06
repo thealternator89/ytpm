@@ -1,0 +1,10 @@
+.topbar {
+    color: white;
+    padding: 20px;
+    font-weight: bold;
+}
+
+.topbar img {
+    margin-left: 10px;
+    margin-right: 20px;
+}

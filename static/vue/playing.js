@@ -1,9 +1,12 @@
 var details = new Vue({
-  el: '#playingDetails',
+  el: '#playing',
 	data: {
 		status: undefined,
 	},
 	methods: {
+		home: function () {
+			window.location = 'home';
+		},
 		playPause: function() {
 			var currentState = details.status.playerState;
 			if(currentState === 'PLAYING'){
@@ -14,7 +17,7 @@ var details = new Vue({
 		},
 		skipTrack: function() {
 			sendCommand('NEXTTRACK');
-		}
+		},
 	}
 });
 

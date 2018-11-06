@@ -1,0 +1,9 @@
+.list-group-item{
+    padding-top: 15px;
+    height: 80px;
+}
+.material-icons {
+    vertical-align: middle;
+    font-size: 50px;
+    margin-right: 20px;
+}

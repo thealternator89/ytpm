@@ -14,26 +14,27 @@
 		<link rel="stylesheet" href="/playing.css">
 	</head>
 	<body class="bg-dark">
-		<nav class="navbar navbar-expand navbar-dark bg-dark">
-			<i class="material-icons">home</i> PartyMode for YouTube
-		</nav>
-		<div id="playingDetails" style="color: white; padding: 5px;">
-			<div style="text-align: center">
-				<img v-bind:src="status.video.thumbnailUrlBig" style="margin-bottom: 10px;" width="320" height="180">
+		<div id="playing">
+			<nav class="navbar navbar-expand navbar-dark bg-dark">
+				<i class="material-icons" v-on:click="home()">home</i> PartyMode for YouTube
+			</nav>
+			<div id="playingDetails">
+				<div style="text-align: center">
+					<img v-bind:src="status.video.thumbnailUrlBig" style="margin-bottom: 10px;" width="320" height="180">
+				</div>
+				<p><large><b>{{status.video.title}}</b></large></p>
+				<p style="height: 75px; overflow: scroll;">{{status.video.description}}</p>
+				<p><small>{{status.video.channelName}}</small></p>
+				<div class="progress">
+					<div class="progress-bar" role="progressbar" v-bind:style="'width: '+status.completionPercent+'%'" v-bind:aria-valuenow="status.completionPercent" aria-valuemin="0" aria-valuemax="100"></div>
+				</div>
+				<p id="player-time">{{status.position}} {{ status.position && status.duration ? '/' : '' }} {{status.duration}}</p>
+				<hr>
+				<div id="player-controls">
+					<i class="material-icons" id="play-button" v-on:click="playPause()">{{ status.playerState === 'PLAYING' ? 'pause' : 'play_arrow'}}</i>
+					<i class="material-icons" id="skip-button" v-on:click="skipTrack()">skip_next</i>
+				</div>
 			</div>
-			<h4>{{status.video.title}}</h4>
-			<p><small>{{status.video.channelName}}</small></p>
-			<div class="progress">
-				<div class="progress-bar" role="progressbar" v-bind:style="'width: '+status.completionPercent+'%'" v-bind:aria-valuenow="status.completionPercent" aria-valuemin="0" aria-valuemax="100"></div>
-			</div>
-			<p id="player-time">{{status.position}} {{ status.position && status.duration ? '/' : '' }} {{status.duration}}</p>
-			<hr>
-			<div id="player-controls">
-				<i class="material-icons" id="play-button" v-on:click="playPause()">{{ status.playerState === 'PLAYING' ? 'pause' : 'play_arrow'}}</i>
-				<i class="material-icons" id="skip-button" v-on:click="skipTrack()">skip_next</i>
-			</div>
-			<hr>
-			<button type="button" class="btn btn-outline-primary">Queue</button>
 		</div>
 		<script src="/vue/playing.js"></script>
 	</body>

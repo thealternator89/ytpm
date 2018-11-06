@@ -1,3 +1,18 @@
+.navbar {
+	height: 70px;
+	color: white;
+}
+
+.navbar i {
+	margin-right: 15px;
+}
+
+#playingDetails {
+	color: white;
+	padding-left: 15px;
+	padding-right: 15px;
+}
+
 #player-controls {
 	text-align: center;
 }
@@ -14,8 +29,4 @@
 
 #player-time {
 	text-align: right;
-}
-
-.btn {
-	width: 100%;
 }
