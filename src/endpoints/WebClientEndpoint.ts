@@ -8,7 +8,7 @@ export class WebClientEndpointHandler {
             response.redirect('/client');
         });
 
-        app.get('/client', (request, response) => {
+        app.get('/client', (request: Request, response: Response) => {
             if(!this.validateCookie(request, response)) {
                 return;
             }
@@ -43,25 +43,25 @@ export class WebClientEndpointHandler {
             response.redirect('/client');
         });
 
-        app.get('/client/home', (request, response) => {
             if(!this.validateCookie(request, response)) {
                 return;
             } 
             response.sendFile(path.join(__dirname, '..' , 'views/html', 'home.html'));
+        app.get('/client/home', (request: Request, response: Response) => {
         });
 
-        app.get('/client/search', (request, response) => {
             if(!this.validateCookie(request, response)) {
                 return;
             } 
             response.sendFile(path.join(__dirname, '..' , 'views/html', 'search.vue.html'));
+        app.get('/client/search', (request: Request, response: Response) => {
         });
 
-        app.get('/client/playing', (request, response) => {
             if(!this.validateCookie(request, response)) {
                 return;
             } 
             response.sendFile(path.join(__dirname, '..' , 'views/html', 'playing.vue.html'));
+        app.get('/client/playing', (request: Request, response: Response) => {
         });
     }
 

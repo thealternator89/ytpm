@@ -13,7 +13,7 @@ class ApiEndpointHandler {
 
     public registerApiEndpoints(app: any) {
 
-        app.get('/api/player/poll', (request, response) => {
+        app.get('/api/player/poll', (request: Request, response: Response) => {
             const queue = this.getQueueByKey(request, response);
             if(!queue){
                 return;
@@ -41,7 +41,7 @@ class ApiEndpointHandler {
             }));
         });
 
-        app.get('/api/client/poll', async (request, response) => {
+        app.get('/api/client/poll', async (request: Request, response: Response) => {
             if(!this.validateToken(request, response)) {
                 return;
             }
@@ -63,7 +63,7 @@ class ApiEndpointHandler {
             }));
         });
 
-        app.get('/api/auth', (request, response) => {
+        app.get('/api/auth', (request: Request, response: Response) => {
             const providedAuthString = request.query['auth'];
             const providedUserName = request.query['name'];
 
@@ -81,7 +81,7 @@ class ApiEndpointHandler {
             }
         });
 
-        app.get('/api/enqueue', async (request, response) => {
+        app.get('/api/enqueue', async (request: Request, response: Response) => {
             if(!this.validateToken(request, response)) {
                 return;
             }
@@ -123,7 +123,7 @@ class ApiEndpointHandler {
         //  * This will fail if there are two versions of the same video in the queue added by different users
         //  * This has a race condition; the array can be changed between finding the item to remove and removing it.
         // This functionality should probably be moved into the queue anyway.
-        app.get('/api/dequeue', (request, response) => {
+        app.get('/api/dequeue', (request: Request, response: Response) => {
             if(!this.validateToken(request, response)) {
                 return;
             }
@@ -150,7 +150,7 @@ class ApiEndpointHandler {
             response.send(`Dequeued: ${videoToDequeue}`);
         });
 
-        app.get('/api/queue_list', async (request, response) => {
+        app.get('/api/queue_state', async (request: Request, response: Response) => {
             if(!this.validateToken(request, response)) {
                 return;
             }
@@ -161,7 +161,6 @@ class ApiEndpointHandler {
             }
 
             const queueItems: YouTubeVideoDetails[] = [];
-
             for(const queueItem of queue.getAllQueuedItems()) {
                 queueItems.push(await youTubeVideoDetailsCache.getFromCacheOrApi(queueItem.videoId));
             }
@@ -227,7 +226,7 @@ class ApiEndpointHandler {
             response.type('json').send(JSON.stringify(historyItems));
         });
 
-        app.get('/api/set_command', (request, response) => {
+        app.get('/api/set_command', (request: Request, response: Response) => {
             if(!this.validateToken(request, response)) {
                 return;
             }
@@ -253,7 +252,7 @@ class ApiEndpointHandler {
             response.type('json').send(JSON.stringify({command}));
         });
 
-        app.get('/api/search', async (request, response) => {
+        app.get('/api/search', async (request: Request, response: Response) => {
             if(!this.validateToken(request, response)) {
                 return;
             }
@@ -270,14 +269,14 @@ class ApiEndpointHandler {
             response.type('json').send(JSON.stringify(results));
         });
 
-        app.get('/api/autocomplete', async (request, response) => {
+        app.get('/api/autocomplete', async (request: Request, response: Response) => {
             const searchQuery = request.query['q'];
 
             const results = await youTubeClient.getSearchAutoComplete(searchQuery);
             response.type('json').send(JSON.stringify(results));
         })
 
-        app.get(`/api/internal/queue_states`, async (request, response: Response) => {
+        app.get(`/api/internal/queue_states`, async (request: Request, response: Response) => {
             const queueKeys = playerQueuesManager.getAllQueueKeys();
 
             const queues = queueKeys.map((key) => {
@@ -291,7 +290,7 @@ class ApiEndpointHandler {
             response.type('json').send(JSON.stringify(queues));
         })
 
-        app.get('/api/internal/clean_queues', async (request, response) => {
+        app.get('/api/internal/clean_queues', async (request: Request, response: Response) => {
             const beforeCount = playerQueuesManager.numQueues();
             playerQueuesManager.cleanUpOldPlayerQueues();
             const afterCount = playerQueuesManager.numQueues();
@@ -301,7 +300,7 @@ class ApiEndpointHandler {
         });
     }
 
-    private validateToken(request, response) {
+    private validateToken(request: Request, response: Response) {
         const token = this.getAuthToken(request);
         if (!userAuthHandler.validateToken(token)) {
             response.status(401).send('Unauthorized');
@@ -310,7 +309,7 @@ class ApiEndpointHandler {
         return true;
     }
 
-    private getQueueByKey(request, response): PlayerQueue|undefined {
+    private getQueueByKey(request: Request, response: Response): PlayerQueue|undefined {
         const queueKey = request.query['key'];
         if(!queueKey) {
             response.status(400).send('Invalid request');
@@ -325,7 +324,7 @@ class ApiEndpointHandler {
         return queue;
     }
 
-    private getQueueByAuthToken(request, response): PlayerQueue|undefined {
+    private getQueueByAuthToken(request: Request, response: Response): PlayerQueue|undefined {
         const token = this.getAuthToken(request);
         const queue = userAuthHandler.getQueueForToken(token);
 
