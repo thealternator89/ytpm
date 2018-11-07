@@ -8,6 +8,7 @@ import { PlayerQueue } from '../queue/PlayerQueue';
 import { Response, Request } from "express";
 import { YouTubeVideoDetails } from '../models/YouTubeVideoDetails';
 import * as atob from 'atob';
+import { URL } from 'url';
 
 class ApiEndpointHandler {
 
@@ -91,9 +92,22 @@ class ApiEndpointHandler {
                 return;
             }
 
-            const videoId = request.query['videoId'];
+            let videoId = request.query['videoId'];
+            const url = request.query['url'];
             const addNext = request.query['next'] === 'true';
             const noInfluence = request.query['noinfluence'] === 'true';
+
+            // Replace the videoId with the one from the URL only if it is undefined.
+            // If both videoId and url params exist, videoId wins.
+            if(!videoId && url) {
+                try {
+                    const videoUrl = new URL(url);
+                    videoId = videoUrl.searchParams.get('v');
+                } catch (error) {
+                    response.status(400).send(`Invalid video URL: ${url}: ${error.message}`)
+                    return;
+                }
+            }
 
             if(!videoId) {
                 response.status(400).send('Invalid request');
