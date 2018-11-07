@@ -220,9 +220,9 @@ export class PlayerQueue {
         autoQueueItems.sort((o1, o2) => o2.score - o1.score);
 
         return autoQueueItems.find((item) => {
-            return !this.autoQueueBlacklist[item.videoId] ||                        // Song not in blacklist, OR
-                this.autoQueueBlacklist[item.videoId] < this.playHistory.length ||  // Song was blacklisted, but play count is high enough to play again, OR
-                this.autoQueueBlacklist[item.videoId] === -1                        // Song is permanently blacklisted
+            return !this.autoQueueBlacklist[item.videoId] ||                        // - Song not in blacklist, OR
+                (this.autoQueueBlacklist[item.videoId] !== -1 &&                    //      - Song is not permanently blacklisted, AND
+                this.autoQueueBlacklist[item.videoId] < this.playHistory.length)    //      - Song was blacklisted, but play count is high enough to play again
         });
     }
 }
