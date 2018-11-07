@@ -184,7 +184,10 @@ class ApiEndpointHandler {
                 queueItems.push(await youTubeVideoDetailsCache.getFromCacheOrApi(upNext));
             }
 
-            response.type('json').send(JSON.stringify(queueItems));
+            response.type('json').send(JSON.stringify({
+                autoPlayEnabled: queue.getShouldAutoPlay(),
+                queue: queueItems,
+            }));
         });
 
         app.get('/api/autoplay_blacklist', (request: Request, response: Response) => {
