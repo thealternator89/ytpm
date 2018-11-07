@@ -9,11 +9,12 @@ const SEARCH_RESULT_LIMIT_STANDARD = 30;
 const SEARCH_RESULT_LIMIT_RELATED = 10;
 
 const AUTOCOMPLETE_URL_BASE = 'http://suggestqueries.google.com/complete/search';
+const MUSIC_TOPIC_ID = '/m/04rlf';
 
 class YouTubeClient {
     private readonly defaultSearchOptions: any = {
         type: 'video',
-        topicId: '/m/04rlf', // Music topic
+        topicId: MUSIC_TOPIC_ID,
         regionCode: 'NZ'
     }
 
@@ -101,28 +102,54 @@ class YouTubeClient {
         return results;
     }
 
-    public async getDetails(query: string, isUrl = false): Promise<YouTubeVideoDetails> {
-        if (isUrl) {
-            throw new Error('Not implemented yet');
-        }
+    public async getDetails(query: string): Promise<YouTubeVideoDetails> {
 
         let response: AxiosResponse<youtube_v3.Schema$VideoListResponse>;
 
         try {
             response = await this.youtube.videos.list({
                 id: query,
+                part: 'snippet',
             });
         } catch (error) {
             throw new Error(`An error occurred retrieving video information: ${error.message}`);
         }
         if (!response) {
-            throw new Error(`Video with ${isUrl? 'URL' : 'ID'} '${query}' not found`);
+            throw new Error(`Video with ID '${query}' not found`);
         }
 
         const result = this.getYouTubeVideoDetailsFromApiResponse(response.data.items[0]);
         youTubeVideoDetailsCache.addOrReplaceInCache(result);
 
         return result;
+    }
+
+    /**
+     * Gets the video IDs which are considered by YouTube to be Music.
+     * NOTE: This does not guarantee to retain the order of the ingoing array.
+     * @param videoIds A list of video ids to check
+     */
+    public async getMusicVideoIds(videoIds: string[]): Promise<string[]> {
+        let response: AxiosResponse<youtube_v3.Schema$VideoListResponse>;
+
+        try {
+            response = await this.youtube.videos.list({
+                id: videoIds.join(','),
+                part: 'topicDetails',
+            });
+        } catch (error) {
+            throw new Error(`An error occurred retrieving video information: ${error.message}`);
+        }
+
+        const musicVideoIds: string[] = [];
+
+        for(const videoDetails of response.data.items) {
+            if(videoDetails.topicDetails.relevantTopicIds.includes(MUSIC_TOPIC_ID)){
+                musicVideoIds.push(videoDetails.id);
+            }
+        }
+
+        return musicVideoIds;
     }
 
     // Safely get either a thumbnail url or undefined.

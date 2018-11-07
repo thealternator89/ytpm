@@ -179,9 +179,13 @@ export class PlayerQueue {
         }
 
         const relatedVideos = await youTubeClient.searchRelatedVideos(queueItem.videoId)
+        const musicVideos = await youTubeClient.getMusicVideoIds(relatedVideos.map((video) => video.videoId));
         let score = 0;
 
         for(let i = relatedVideos.length - 1; i >= 0; i--) {
+            if(!musicVideos.includes(relatedVideos[i].videoId)) {
+                continue;
+            }
             score++;
             const video = relatedVideos[i];
             const autoQueueItem = this.autoPlayItems[video.videoId];
