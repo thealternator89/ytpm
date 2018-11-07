@@ -17,7 +17,7 @@ export class WebClientEndpointHandler {
         });
 
         app.get('/client/login', (request: Request, response: Response) => {
-            response.sendFile(path.join(__dirname, '..' , 'views/html', 'login.html'));
+            this.sendView(request, response, 'login.html', false);
         });
 
         app.post('/client/login', (request: Request, response: Response) => {
@@ -34,7 +34,7 @@ export class WebClientEndpointHandler {
             try {
                 token = userAuthHandler.authenticateNewUser(psk, name);
             } catch (error) {
-                response.redirect('/login');
+                response.redirect('/client/login');
                 return;
             }
 
@@ -43,26 +43,28 @@ export class WebClientEndpointHandler {
             response.redirect('/client');
         });
 
-            if(!this.validateCookie(request, response)) {
-                return;
-            } 
-            response.sendFile(path.join(__dirname, '..' , 'views/html', 'home.html'));
+        app.get('/client/logout', (request: Request, response: Response) => {
+            response.cookie('token', null).redirect('/client');
+        })
+
         app.get('/client/home', (request: Request, response: Response) => {
+            this.sendView(request, response, 'home.html');
         });
 
-            if(!this.validateCookie(request, response)) {
-                return;
-            } 
-            response.sendFile(path.join(__dirname, '..' , 'views/html', 'search.vue.html'));
         app.get('/client/search', (request: Request, response: Response) => {
+            this.sendView(request, response, 'search.vue.html');
         });
 
-            if(!this.validateCookie(request, response)) {
-                return;
-            } 
-            response.sendFile(path.join(__dirname, '..' , 'views/html', 'playing.vue.html'));
         app.get('/client/playing', (request: Request, response: Response) => {
+            this.sendView(request, response, 'playing.vue.html');
         });
+    }
+
+    private sendView(request: Request, response: Response, viewName: string, requireValidSession = true) {
+        if (requireValidSession && !this.validateCookie(request, response)) {
+            return;
+        } 
+        response.sendFile(path.join(__dirname, '..' , 'views/html', viewName));
     }
 
     private validateCookie(request, response) {
