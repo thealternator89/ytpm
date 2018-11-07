@@ -5,7 +5,7 @@ import { youTubeClient } from '../api-client/YouTubeClient';
 import { youTubeVideoDetailsCache } from '../api-client/YouTubeVideoDetailsCache';
 import { playerQueuesManager } from '../queue/PlayerQueuesManager';
 import { PlayerQueue } from '../queue/PlayerQueue';
-import { Response } from 'express';
+import { Response, Request } from "express";
 import { YouTubeVideoDetails } from '../models/YouTubeVideoDetails';
 import * as atob from 'atob';
 
@@ -174,7 +174,41 @@ class ApiEndpointHandler {
             response.type('json').send(JSON.stringify(queueItems));
         });
 
-        app.get('/api/play_history', async (request, response) => {
+        app.get('/api/autoplay_blacklist', (request: Request, response: Response) => {
+            if(!this.validateToken(request, response)) {
+                return;
+            }
+
+            const queue = this.getQueueByAuthToken(request,response);
+            if(!queue) {
+                return;
+            }
+
+            let videoId: string|undefined = request.query['videoId'];
+            let action: string|undefined = request.query['action'];
+
+            if(!videoId || !action) {
+                response.status(400).send(`'videoId' and 'action' query parameters are required`);
+                return;
+            }
+
+            action = action.toLowerCase();
+
+            if(!['add','remove'].includes(action)){
+                response.status(400).send(`Invalid value for 'action'. Valid options are: add, remove`);
+                return;
+            }
+
+            if(action === 'add') {
+                queue.preventAutoPlay(videoId);
+            } else if (action === 'remove') {
+                queue.allowAutoPlay(videoId);
+            }
+
+            response.send('Completed Successfully');
+        })
+
+        app.get('/api/play_history', async (request: Request, response: Response) => {
             if(!this.validateToken(request, response)) {
                 return;
             }

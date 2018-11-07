@@ -14,7 +14,6 @@ export class PlayerQueue {
 
     private autoPlayItems: {[videoId: string]: IAutoQueueItem} = {};
     private autoQueueBlacklist: {[videoId: string]: number} = {};
-    private nextAutoPlayVideoId: string;
     private shouldAutoPlay: boolean = true;
 
     private lastTouched: moment.Moment;
@@ -77,6 +76,14 @@ export class PlayerQueue {
         }
     }
 
+    public preventAutoPlay(videoId: string): void {
+        this.autoQueueBlacklist[videoId] = -1;
+    }
+
+    public allowAutoPlay(videoId: string): void {
+        delete this.autoQueueBlacklist[videoId];
+    }
+
     public enqueue(item: IQueueItem): void {
         this.lastTouched = moment();
         this.queue.push(item);
@@ -130,7 +137,8 @@ export class PlayerQueue {
         if(!this.shouldAutoPlay) {
             return undefined;
         } else {
-            return this.nextAutoPlayVideoId;
+            const nextAutoPlaySong = this.getNextAutoPlaySong();
+            return nextAutoPlaySong ? nextAutoPlaySong.videoId : undefined;
         }
     }
 
@@ -201,9 +209,6 @@ export class PlayerQueue {
                 }
             }
         }
-
-        const nextSong = this.getNextAutoPlaySong();
-        this.nextAutoPlayVideoId = nextSong ? nextSong.videoId : undefined;
     }
 
     private getNextAutoPlaySong(): IAutoQueueItem | undefined {
