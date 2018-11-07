@@ -2,8 +2,15 @@
     padding-top: 15px;
     height: 80px;
 }
-.material-icons {
+.menu-icons {
     vertical-align: middle;
     font-size: 50px;
     margin-right: 20px;
+}
+
+.logout-icon,
+.logout-icon:link,
+.logout-icon:visited,
+.logout-icon:hover {
+    color: white;
 }
