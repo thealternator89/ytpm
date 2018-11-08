@@ -286,6 +286,24 @@ class ApiEndpointHandler {
             response.type('json').send(JSON.stringify(results));
         });
 
+        app.get('/api/search/continuation', async (request: Request, response: Response) => {
+            if(!this.validateToken(request, response)) {
+                return;
+            }
+
+            const key = request.query['continuationKey'];
+            
+            if (!key) {
+                response.status(400).send('No search query provided');
+                return;
+            }
+
+            const results = await youTubeClient.continuationSearch(key);
+
+            response.type('json').send(JSON.stringify(results));
+        });
+
+
         app.get('/api/autocomplete', async (request: Request, response: Response) => {
             const searchQuery = request.query['q'];
 

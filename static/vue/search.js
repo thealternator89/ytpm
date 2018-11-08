@@ -3,8 +3,10 @@ var searchVue = new Vue({
 	data: {
 		suggestions: [],
 		results: [],
+		continuationKey: undefined,
 		selectedResult: undefined,
 		influenceAutoQueue: true,
+		disableInfiniteSearch: true,
 		query: '',
 	},
 	watch: {
@@ -25,6 +27,9 @@ var searchVue = new Vue({
 		},
 		selectResult: function (result) {
 			showSelector(result);
+		},
+		loadMoreSearchResults: function () {
+			continuationSearch();
 		},
 		addToQueue: function (result) {
 			var influenceAutoQueue = document.getElementById('influence-auto-queue').checked;
@@ -54,9 +59,15 @@ function search(term) {
 	xhttp.onreadystatechange = function () {
 		if (this.readyState == 4 && this.status == 200) {
 			var response = JSON.parse(this.responseText);
-			searchVue.results = response;
+			searchVue.results = response.results;
+			searchVue.continuationKey = response.continuationKey;
 			dismissLoadingSpinner();
 			enableAutoComplete = true;
+			
+			// Disable the infinite search if we run out of results.
+			if (response.results.length > 0) {
+				searchVue.disableInfiniteSearch = false;
+			}
 		}
 	}
 
@@ -64,6 +75,32 @@ function search(term) {
 	xhttp.send();
 	return false;
 }
+
+function continuationSearch() {
+	// Short circuit if somehow we end up in this state while the continuation key is empty.
+	if (typeof(searchVue.continuationKey) === 'undefined') {
+		return;
+	}
+
+	showLoadingSpinner();
+
+	var xhttp = new XMLHttpRequest();
+	xhttp.onreadystatechange = function () {
+		if (this.readyState == 4 && this.status == 200) {
+			var response = JSON.parse(this.responseText);
+			for(var i = 0; i < response.results.length; i++) {
+				searchVue.results.push(response.results[i]);
+			}
+			searchVue.continuationKey = response.continuationKey;
+			dismissLoadingSpinner();
+		}
+	}
+
+	xhttp.open('GET', '/api/search/continuation?continuationKey=' + encodeURI(searchVue.continuationKey) + '&token=' + getCookie('token'), true);
+	xhttp.send();
+	return false;
+}
+
 
 function addToQueue(videoId, influenceAutoQueue, next) {
 	var xhttp = new XMLHttpRequest();
@@ -92,13 +129,10 @@ function showAddedSnackbar(videoDetails) {
 }
 
 function showLoadingSpinner() {
-	document.getElementById('curtain').style.visibility = 'visible';
 	document.getElementById('spinner').style.visibility = 'visible';
-	document.getElementById('selector').style.visibility = 'hidden';
 }
 
 function dismissLoadingSpinner() {
-	document.getElementById('curtain').style.visibility = 'hidden';
 	document.getElementById('spinner').style.visibility = 'hidden';
 }
 
@@ -118,6 +152,7 @@ function dismissSelector() {
 }
 
 function getSuggestionsForQuery(query) {
+	searchVue.disableInfiniteSearch = true;
 	if(!enableAutoComplete) {
 		return;
 	}

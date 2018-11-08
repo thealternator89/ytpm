@@ -8,6 +8,7 @@
 		<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
 		<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js" crossorigin="anonymous"></script>
 		<script src="https://unpkg.com/vue-toasted"></script>
+		<script src="https://unpkg.com/vue-infinite-scroll"></script>
 		<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" crossorigin="anonymous">
 		<script src="/util.js"></script>
 		<link rel="stylesheet" href="/search.css">
@@ -18,9 +19,6 @@
 	<body class="bg-dark">
 		<div id="search">
 			<div id="curtain">
-				<div id="spinner">
-					<img src="/loading_spinner.gif" width="64" height="64">
-				</div>
 				<div id="selector">
 					<div>
 						<a href="javascript:void()" class="list-group-item list-group-item-action flex-column align-items-start list-group-item-dark" v-on:click="addToQueue(result)">
@@ -37,6 +35,9 @@
 					<label id="influence-auto-queue-label" for="influence-auto-queue">Influence AutoQueue</label>
 				</div>
 			</div>
+			<div id="spinner">
+				<img src="/loading_spinner.gif" width="26" height="26"> Loading...
+			</div>
 			<nav class="navbar fixed-top navbar-expand navbar-dark bg-dark">
 				<form class="form-inline my-2 my-md-0">
 					<i class="material-icons home-icon" v-on:click="home()">home</i>
@@ -49,7 +50,7 @@
 					{{suggestion}}
 				</a>
 			</div>
-			<div id="results">
+			<div id="results" v-infinite-scroll="loadMoreSearchResults" infinite-scroll-disabled="disableInfiniteSearch" infinite-scroll-distance="20">
 				<a href="javascript:void()" class="list-group-item list-group-item-action flex-column align-items-start list-group-item-dark" v-for="result in results" v-on:click="selectResult(result)">
 					<img v-bind:src="result.thumbnailUrl" width="80" height="60" style="float: left; margin-left: 5px; margin-right: 7px; clear: both;"> 
 					<div class="result-details">		
