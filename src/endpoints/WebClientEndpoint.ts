@@ -58,6 +58,10 @@ export class WebClientEndpointHandler {
         app.get('/client/playing', (request: Request, response: Response) => {
             this.sendView(request, response, 'playing.vue.html');
         });
+
+        app.get('/client/queue', (request: Request, response: Response) => {
+            this.sendView(request, response, 'queue.vue.html');
+        });
     }
 
     private sendView(request: Request, response: Response, viewName: string, requireValidSession = true) {

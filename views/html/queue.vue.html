@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Queue | PartyMode</title>
+		<meta charset="UTF-8"> 
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+		<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+		<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js" crossorigin="anonymous"></script>
+		<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" crossorigin="anonymous">
+		<script src="/util.js"></script>
+	</head>
+	<body class="bg-dark">
+		<div id="queue">
+			<nav class="navbar navbar-expand navbar-dark bg-dark">
+					<i class="material-icons" v-on:click="home()">home</i> PartyMode for YouTube
+			</nav>
+			<div id="queue">
+				<a href="javascript:void()" class="list-group-item list-group-item-action flex-column align-items-start list-group-item-dark" v-for="queueItem in queueItems" v-on:click="openYoutube(queueItem)">
+					<img v-bind:src="queueItem.thumbnailUrl" width="80" height="60" style="float: left; margin-left: 5px; margin-right: 7px; clear: both;"> 
+					<div class="result-details">		
+						<p class="mb-1">{{queueItem.title}}</p>
+						<small>{{queueItem.channelName}}</small>
+					</div>
+				</a>
+			</div>
+		</div>
+		<script src="/vue/queue.js"></script>
+	</body>
+</html>
