@@ -18,6 +18,9 @@ var details = new Vue({
 		skipTrack: function() {
 			sendCommand('NEXTTRACK');
 		},
+		openYoutube: function (video) {
+			window.open('vnd.youtube://' + video.videoId, '_blank');
+		},
 	}
 });
 
@@ -27,7 +30,7 @@ function sendCommand(command) {
 	xhttp.send();
 }
 
-setInterval(function () {
+var updateView = function () {
 	var xhttp = new XMLHttpRequest();
 	xhttp.onreadystatechange = function () {
 		if (this.readyState == 4 && this.status == 200) {
@@ -60,7 +63,9 @@ setInterval(function () {
 	xhttp.open('GET', '/api/client/poll?token=' + getCookie('token'), true);
 	xhttp.send();
 
-}, 1000);
+};
+
+setInterval(updateView, 1000);
 
 function getTimeString(seconds) {
 	var duration = moment.duration(seconds, 'seconds');
@@ -99,3 +104,5 @@ function getTimeComponentString(params) {
 
 	return componentString;
 }
+
+updateView();

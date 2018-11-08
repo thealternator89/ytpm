@@ -17,6 +17,7 @@
 		<div id="playing">
 			<nav class="navbar navbar-expand navbar-dark bg-dark">
 				<i class="material-icons" v-on:click="home()">home</i> PartyMode for YouTube
+				<i class="material-icons" v-on:click="openYoutube(status.video)">open_in_new</i>
 			</nav>
 			<div id="playingDetails">
 				<div style="text-align: center">
@@ -28,7 +29,7 @@
 				<div class="progress">
 					<div class="progress-bar" role="progressbar" v-bind:style="'width: '+status.completionPercent+'%'" v-bind:aria-valuenow="status.completionPercent" aria-valuemin="0" aria-valuemax="100"></div>
 				</div>
-				<p id="player-time">{{status.position}} {{ status.position && status.duration ? '/' : '' }} {{status.duration}}</p>
+				<p id="player-time">{{status.position}} {{status.position && status.duration ? '/' : ''}} {{status.duration}}</p>
 				<hr>
 				<div id="player-controls">
 					<i class="material-icons" id="play-button" v-on:click="playPause()">{{ status.playerState === 'PLAYING' ? 'pause' : 'play_arrow'}}</i>
