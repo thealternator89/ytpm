@@ -4,7 +4,7 @@ import { YouTubeVideoDetails, YoutubeSearchResults } from '../models/YouTubeVide
 import { youTubeVideoDetailsCache } from './YouTubeVideoDetailsCache';
 import { envUtil } from '../util/EnvUtil';
 import { AxiosResponse } from 'axios';
-import uuid = require('uuid');
+import moment = require('moment');
 
 const SEARCH_RESULT_LIMIT_STANDARD = 15;
 const SEARCH_RESULT_LIMIT_RELATED = 5;
@@ -23,7 +23,6 @@ class YouTubeClient {
 
     private readonly youtube: youtube_v3.Youtube;
     private readonly searchHistory: {[query: string]: number} = {};
-    private readonly searchContinuation: {[key: string]: SearchContinuationOptions} = {};
 
     public constructor() {
         this.youtube = google.youtube({
@@ -50,7 +49,7 @@ class YouTubeClient {
         }
     }
 
-    public async search(query: string): Promise<YoutubeSearchResults> {
+    public async search(query: string, page?: string): Promise<YoutubeSearchResults> {
         this.addToHistory(query);
         let response: AxiosResponse<youtube_v3.Schema$SearchListResponse>;
         try {
@@ -58,6 +57,7 @@ class YouTubeClient {
                 ...this.defaultSearchOptions,
                 q: query,
                 maxResults: SEARCH_RESULT_LIMIT_STANDARD,
+                pageToken: page,
                 part: 'snippet',
             })
         } catch (error) {
@@ -71,60 +71,10 @@ class YouTubeClient {
                 return resultVideoDetails;
             });
 
-        const continuationKey = this.addOrReplaceSearchContinuationDetails(query, response.data.nextPageToken);
-
         return {
-            continuationKey,
+            nextPageToken: response.data.nextPageToken,
             results
         };
-    }
-
-    public async continuationSearch(key: string): Promise<YoutubeSearchResults> {
-        const continuationOptions = this.searchContinuation[key];
-
-        if(!continuationOptions) {
-            throw new Error(`Unknown continuation key: ${key}`);
-        }
-
-        // Short circuit if there's no next page to get
-        if(!continuationOptions.nextPageToken) {
-            return {continuationKey: key, results: []};
-        }
-
-        let response: AxiosResponse<youtube_v3.Schema$SearchListResponse>;
-        try {
-            response = await this.youtube.search.list({
-                ...this.defaultSearchOptions,
-                q: continuationOptions.q,
-                maxResults: SEARCH_RESULT_LIMIT_STANDARD,
-                pageToken: continuationOptions.nextPageToken,
-                part: 'snippet',
-            })
-        } catch (error) {
-            throw new Error(`An error occurred retrieving search results: ${error.message}`);
-        }
-
-        const results = response.data.items
-        .map((result) => {
-            const resultVideoDetails = this.getYouTubeVideoDetailsFromApiResponse(result);
-            youTubeVideoDetailsCache.addOrReplaceInCache(resultVideoDetails);
-            return resultVideoDetails;
-        });
-
-        this.addOrReplaceSearchContinuationDetails(continuationOptions.q, response.data.nextPageToken, key);
-
-        return {
-            continuationKey: key,
-            results
-        };
-    }
-
-    private addOrReplaceSearchContinuationDetails(q: string, nextPageToken: string, key?: string): string {
-        if(!key) {
-            key = uuid.v4();
-        }
-        this.searchContinuation[key] = { q, nextPageToken }
-        return key;
     }
 
     private addToHistory(query: string) {
@@ -182,11 +132,12 @@ class YouTubeClient {
     }
 
     /**
-     * Gets the video IDs which are considered by YouTube to be Music.
-     * NOTE: This does not guarantee to retain the order of the ingoing array.
+     * Removes any videoIds from the list which are considered undesireable.
+     *  * Videos which aren't considered 'music' by YouTube
+     *  * Videos which are longer than 10 minutes
      * @param videoIds A list of video ids to check
      */
-    public async getMusicVideoIds(videoIds: string[]): Promise<string[]> {
+    public async filterOutUndesireableVideoIds(videoIds: string[]): Promise<string[]> {
         let response: AxiosResponse<youtube_v3.Schema$VideoListResponse>;
 
         try {
@@ -201,7 +152,7 @@ class YouTubeClient {
         const musicVideoIds: string[] = [];
 
         for(const videoDetails of response.data.items) {
-            if(videoDetails.topicDetails.relevantTopicIds.includes(MUSIC_TOPIC_ID)){
+            if(this.videoIsMusic && !this.videoIsLong){
                 musicVideoIds.push(videoDetails.id);
             }
         }
@@ -209,13 +160,20 @@ class YouTubeClient {
         return musicVideoIds;
     }
 
-    // Safely get either a thumbnail url or undefined.
-    // TODO: Probably should return something like '/notfound.jpg' instead.
+    public videoIsMusic(videoDetails: youtube_v3.Schema$Video): boolean {
+        return videoDetails.topicDetails.relevantTopicIds.includes(MUSIC_TOPIC_ID);
+    }
+
+    public videoIsLong(videoDetails: youtube_v3.Schema$Video): boolean {
+        return moment.duration(videoDetails.contentDetails.duration).minutes() > 10;
+    }
+
+    // Safely get either a thumbnail url or a stand-in image if the image isn't available.
     private getThumbnailUrl(thumbnails: any, thumbName: 'default'|'medium'|'high'): string|undefined {
         if(thumbnails && thumbnails[thumbName]) {
             return thumbnails[thumbName].url;
         } else {
-            return undefined;
+            return '/no-art.png';
         }
     }
 

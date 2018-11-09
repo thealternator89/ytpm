@@ -1,24 +1,24 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<title>Search | YTPM</title>
+		<title>History | YTPM</title>
 		<meta charset="UTF-8"> 
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
 		<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
 		<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js" crossorigin="anonymous"></script>
 		<script src="https://unpkg.com/vue-toasted"></script>
-		<script src="https://unpkg.com/vue-infinite-scroll"></script>
 		<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" crossorigin="anonymous">
 		<script src="/util.js"></script>
 		<link rel="stylesheet" href="/main.css">
 		<link rel="stylesheet" href="/search.css">
+		<link rel="stylesheet" href="/queue.css">
 		<script>
 			Vue.use(Toasted)
 		</script>
 	</head>
 	<body class="bg-dark">
-		<div id="search">
+		<div id="history">
 			<div id="curtain">
 				<div id="selector">
 					<div>
@@ -28,6 +28,9 @@
 						<a href="javascript:;" class="list-group-item list-group-item-action flex-column align-items-start list-group-item-dark" v-on:click="playNext(result)">
 							<i class="material-icons enqueue-icons">queue_play_next</i> Play Next
 						</a>
+						<a href="javascript:;" class="list-group-item list-group-item-action flex-column align-items-start list-group-item-dark" v-on:click="openYouTube(result)">
+							<i class="material-icons enqueue-icons">open_in_new</i> YouTube
+						</a>
 						<a href="javascript:;" class="list-group-item list-group-item-action flex-column align-items-start list-group-item-dark" v-on:click="cancel">
 							<i class="material-icons enqueue-icons">cancel</i> Cancel
 						</a>
@@ -36,31 +39,19 @@
 					<label id="influence-auto-queue-label" for="influence-auto-queue">Influence AutoQueue</label>
 				</div>
 			</div>
-			<div id="spinner">
-				<img src="/loading_spinner.gif" width="26" height="26"> Loading...
-			</div>
-			<nav class="topbar navbar fixed-top navbar-expand navbar-dark bg-dark">
-				<form class="form-inline my-2 my-md-0">
-					<i class="material-icons home-icon" v-on:click="home()">home</i>
-					<input id="searchField" v-model="query" class="form-control search-field" name="q" type="text" placeholder="Search" autocomplete="off">
-					<i class="material-icons search-icon" v-on:click="searchManual()">search</i>
-				</form>
+			<nav class="topbar navbar navbar-expand navbar-dark bg-dark">
+				<i class="material-icons" v-on:click="home()">home</i> Play History
 			</nav>
-			<div id="suggestions">
-				<a href="javascript:;" class="list-group-item list-group-item-action flex-column align-items-start list-group-item-dark" v-for="suggestion in suggestions" v-on:click="selectSuggestion(suggestion)">
-					{{suggestion}}
-				</a>
-			</div>
-			<div id="results" v-infinite-scroll="loadMoreSearchResults" infinite-scroll-disabled="disableInfiniteSearch" infinite-scroll-distance="20">
-				<a href="javascript:;" class="list-group-item list-group-item-action flex-column align-items-start list-group-item-dark" v-for="result in results" v-on:click="selectResult(result)">
-					<img v-bind:src="result.thumbnailUrl" width="80" height="60" style="float: left; margin-left: 5px; margin-right: 7px; clear: both;"> 
-					<div class="result-details">		
-						<p class="mb-1">{{result.title}}</p>
-						<small>{{result.channelName}}</small>
+			<div id="history">
+				<a href="javascript:;" class="list-group-item list-group-item-action flex-column align-items-start list-group-item-dark" v-for="item in historyItems" v-on:click="selectItem(item)">
+					<img v-bind:src="item.thumbnailUrl" width="80" height="60" style="float: left; margin-left: 5px; margin-right: 7px; clear: both;"> 
+					<div class="item-details">		
+						<p class="mb-1">{{item.title}}</p>
+						<small>{{item.channelName}}</small>
 					</div>
 				</a>
 			</div>
 		</div>
-		<script src="/vue/search.js"></script>
+		<script src="/vue/history.js"></script>
 	</body>
 </html>

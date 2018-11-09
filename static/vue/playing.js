@@ -1,3 +1,5 @@
+var ignorePlayingStateUpdatesFor = 0;
+
 var details = new Vue({
   el: '#playing',
 	data: {
@@ -11,15 +13,21 @@ var details = new Vue({
 			var currentState = details.status.playerState;
 			if(currentState === 'PLAYING'){
 				sendCommand('PAUSE');
+				details.status.playerState = 'PAUSED';
 			} else if (currentState === 'PAUSED'){
 				sendCommand('PLAY');
+				details.status.playerState = 'PLAYING';
 			}
+			ignorePlayingStateUpdatesFor = 3;
 		},
 		skipTrack: function() {
 			sendCommand('NEXTTRACK');
 		},
+		replayTrack: function() {
+			sendCommand('REPLAYTRACK');
+		},
 		openYoutube: function (video) {
-			window.open('vnd.youtube://' + video.videoId, '_blank');
+			window.open('vnd.youtube://' + video.videoId);
 		},
 	}
 });
@@ -48,9 +56,16 @@ var updateView = function () {
 			var durationString = response.duration ? getTimeString(response.duration) : '';
 			var completion = (response.position && response.duration ? response.position / response.duration : 0) * 100;
 
+			var newPlayerState = response.playerState;
+
+			// If ignorePlayingStateUpdatesFor is greater than 0, decrement it and don't update the player state for this iteration.
+			if(ignorePlayingStateUpdatesFor > 0) {
+				ignorePlayingStateUpdatesFor--;
+				newPlayerState = details.status.playerState;
+			}
 
 			details.status = {
-				playerState: response.playerState,
+				playerState: newPlayerState,
 				video: video,
 				position: positionString,
 				duration: durationString,

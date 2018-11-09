@@ -1,10 +1,24 @@
-.navbar {
-	height: 70px;
-	color: white;
+.topbar i {
+	margin-right: 15px;
 }
 
-.navbar i {
-	margin-right: 15px;
+.btn-block {
+	margin-bottom: 15px;
+}
+
+#videoTitle {
+	font-weight: bold;
+	font-size: large;
+}
+
+#videoDescription {
+	height: 75px;
+	overflow: scroll;
+	overflow-x: hidden;
+}
+
+#channelName {
+	font-size: small;
 }
 
 #playingDetails {
@@ -24,6 +38,11 @@
 
 #skip-button {
 	font-size: 50px;
+	vertical-align: middle;
+}
+
+#replay-button {
+	font-size: 40px;
 	vertical-align: middle;
 }
 

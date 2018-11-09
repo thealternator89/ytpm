@@ -29,14 +29,16 @@
                                 location.reload();
                             }
                             if (typeof(response.command) !== 'undefined' && typeof(player) !== 'undefined') {
-                                if (response.command === 'PLAY') {
-                                    player.playVideo();
-                                }
-                                if (response.command === 'PAUSE') {
-                                    player.pauseVideo();
-                                }
-                                if (response.command === 'NEXTTRACK') {
-                                    location.reload();
+                                switch (response.command) {
+                                    case 'PLAY': player.playVideo();
+                                        break;
+                                    case 'PAUSE': player.pauseVideo();
+                                        break;
+                                    case 'NEXTTRACK': location.reload();
+                                        break;
+                                    case 'REPLAYTRACK': player.seekTo(0);
+                                        break;
+                                    default: console.log('unknown command: ' + response.command);
                                 }
                             }
                             document.getElementById('queue_size').innerText = response.queueLength;

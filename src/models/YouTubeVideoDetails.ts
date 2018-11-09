@@ -1,5 +1,5 @@
 export interface YoutubeSearchResults {
-    continuationKey: string;
+    nextPageToken?: string;
     results: YouTubeVideoDetails[];
 }
 

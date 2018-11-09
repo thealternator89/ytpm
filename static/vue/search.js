@@ -1,9 +1,10 @@
+
 var searchVue = new Vue({
   el: '#search',
 	data: {
 		suggestions: [],
 		results: [],
-		continuationKey: undefined,
+		nextPageToken: undefined,
 		selectedResult: undefined,
 		influenceAutoQueue: true,
 		disableInfiniteSearch: true,
@@ -60,7 +61,7 @@ function search(term) {
 		if (this.readyState == 4 && this.status == 200) {
 			var response = JSON.parse(this.responseText);
 			searchVue.results = response.results;
-			searchVue.continuationKey = response.continuationKey;
+			searchVue.nextPageToken = response.nextPageToken;
 			dismissLoadingSpinner();
 			enableAutoComplete = true;
 			
@@ -77,8 +78,9 @@ function search(term) {
 }
 
 function continuationSearch() {
-	// Short circuit if somehow we end up in this state while the continuation key is empty.
-	if (typeof(searchVue.continuationKey) === 'undefined') {
+	// Short circuit if somehow we end up in this state while the nextPageToken is empty
+	//  - Either no more pages left, or it wasn't initialized yet
+	if (typeof(searchVue.nextPageToken) === 'undefined') {
 		return;
 	}
 
@@ -91,12 +93,12 @@ function continuationSearch() {
 			for(var i = 0; i < response.results.length; i++) {
 				searchVue.results.push(response.results[i]);
 			}
-			searchVue.continuationKey = response.continuationKey;
+			searchVue.nextPageToken = response.nextPageToken;
 			dismissLoadingSpinner();
 		}
 	}
 
-	xhttp.open('GET', '/api/search/continuation?continuationKey=' + encodeURI(searchVue.continuationKey) + '&token=' + getCookie('token'), true);
+	xhttp.open('GET', '/api/search?q=' + encodeURI(searchVue.query) + '&page=' + encodeURI(searchVue.nextPageToken) + '&token=' + getCookie('token'), true);
 	xhttp.send();
 	return false;
 }

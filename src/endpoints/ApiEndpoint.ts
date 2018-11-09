@@ -234,9 +234,16 @@ class ApiEndpointHandler {
                 return;
             }
 
-            const historyItems: YouTubeVideoDetails[] = [];
+            const fullHistory = request.query['fullHistory'] === 'true';
 
-            for(const videoId of queue.getAllPlayedVideoIds()) {
+            const historyItems: YouTubeVideoDetails[] = [];
+            let historyIds: string[] = [...queue.getAllPlayedVideoIds()];
+
+            if (!fullHistory) {
+                historyIds = historyIds.slice(0, 20);
+            }
+
+            for(const videoId of historyIds) {
                 historyItems.push(await youTubeVideoDetailsCache.getFromCacheOrApi(videoId));
             }
 
@@ -260,7 +267,7 @@ class ApiEndpointHandler {
             }
 
             command = command.toUpperCase();
-            if(['PAUSE','PLAY','NEXTTRACK','AUTOPLAY-DISABLE','AUTOPLAY-ENABLE'].indexOf(command) === -1) {
+            if(['PAUSE','PLAY','NEXTTRACK','REPLAYTRACK','AUTOPLAY-DISABLE','AUTOPLAY-ENABLE'].indexOf(command) === -1) {
                 response.status(400).send(`Invalid command: ${command}`);
                 return;
             }
@@ -275,34 +282,17 @@ class ApiEndpointHandler {
             }
 
             const searchQuery = request.query['q'];
+            const pageToken = request.query['page'];
             
             if (!searchQuery) {
                 response.status(400).send('No search query provided');
                 return;
             }
 
-            const results = await youTubeClient.search(searchQuery);
+            const results = await youTubeClient.search(searchQuery, pageToken);
 
             response.type('json').send(JSON.stringify(results));
         });
-
-        app.get('/api/search/continuation', async (request: Request, response: Response) => {
-            if(!this.validateToken(request, response)) {
-                return;
-            }
-
-            const key = request.query['continuationKey'];
-            
-            if (!key) {
-                response.status(400).send('No search query provided');
-                return;
-            }
-
-            const results = await youTubeClient.continuationSearch(key);
-
-            response.type('json').send(JSON.stringify(results));
-        });
-
 
         app.get('/api/autocomplete', async (request: Request, response: Response) => {
             const searchQuery = request.query['q'];

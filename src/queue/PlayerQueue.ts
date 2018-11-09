@@ -20,7 +20,7 @@ export class PlayerQueue {
 
     private playerStatus: {playerState: PlayerState, videoId?: string, position?: number, duration?: number, updated: moment.Moment}|undefined;
 
-    private command: 'PAUSE'|'PLAY'|'NEXTTRACK'|undefined = undefined;
+    private command: 'PAUSE'|'PLAY'|'NEXTTRACK'|'REPLAYTRACK'|undefined = undefined;
 
     public constructor() {
         this.lastTouched = moment();
@@ -146,7 +146,7 @@ export class PlayerQueue {
         return this.lastTouched;
     }
 
-    public setCommand(command: 'PAUSE'|'PLAY'|'NEXTTRACK'|'AUTOPLAY-DISABLE'|'AUTOPLAY-ENABLE'): void {
+    public setCommand(command: 'PAUSE'|'PLAY'|'NEXTTRACK'|'REPLAYTRACK'|'AUTOPLAY-DISABLE'|'AUTOPLAY-ENABLE'): void {
         if(command === 'AUTOPLAY-ENABLE') {
             this.setShouldAutoPlay(true);
             return;
@@ -161,7 +161,7 @@ export class PlayerQueue {
         this.command = undefined;
     }
 
-    public getCommand(persist = false): 'PAUSE'|'PLAY'|'NEXTTRACK'|undefined {
+    public getCommand(persist = false): 'PAUSE'|'PLAY'|'NEXTTRACK'|'REPLAYTRACK'|undefined {
         const tmpCommand = this.command;
         if(!persist) {
             this.command = undefined;
@@ -179,7 +179,7 @@ export class PlayerQueue {
 
     private async processPlayedSong(queueItem: IQueueItem | IAutoQueueItem): Promise<void> {
         this.autoQueueBlacklist[queueItem.videoId] = this.playHistory.length + MIN_PLAYS_BEFORE_AVAILABLE_TO_AUTOPLAY;
-        this.playHistory.push(queueItem.videoId);
+        this.playHistory.unshift(queueItem.videoId);
 
         // Short circuit if no influence on auto queue
         if (queueItem.autoQueueInfluence === Constants.AUTO_QUEUE_INFLUENCE.NO_INFLUENCE) {
@@ -187,7 +187,7 @@ export class PlayerQueue {
         }
 
         const relatedVideos = await youTubeClient.searchRelatedVideos(queueItem.videoId)
-        const musicVideos = await youTubeClient.getMusicVideoIds(relatedVideos.map((video) => video.videoId));
+        const musicVideos = await youTubeClient.filterOutUndesireableVideoIds(relatedVideos.map((video) => video.videoId));
         let score = 0;
 
         for(let i = relatedVideos.length - 1; i >= 0; i--) {

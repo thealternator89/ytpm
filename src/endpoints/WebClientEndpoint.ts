@@ -62,6 +62,10 @@ export class WebClientEndpointHandler {
         app.get('/client/queue', (request: Request, response: Response) => {
             this.sendView(request, response, 'queue.vue.html');
         });
+
+        app.get('/client/history', (request: Request, response: Response) => {
+            this.sendView(request, response, 'history.vue.html');
+        });
     }
 
     private sendView(request: Request, response: Response, viewName: string, requireValidSession = true) {

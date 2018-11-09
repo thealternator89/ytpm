@@ -1,0 +1,14 @@
+.result-details{
+	margin-left: 100px;
+}
+
+.open-in-youtube {
+	float: right;
+	margin-left: 10px;
+	color: dimgray;
+	padding: 10px;
+}
+
+.topbar i {
+	margin-right: 15px;
+}
