@@ -2,6 +2,7 @@ import { IQueueItem, IAutoQueueItem } from '../models/QueueItem';
 import * as moment from 'moment';
 import { youTubeClient } from '../api-client/YouTubeClient';
 import { Constants } from '../constants';
+import { PrivacyMode } from '../enums';
 
 const MIN_PLAYS_BEFORE_AVAILABLE_TO_AUTOPLAY = 50;
 
@@ -20,7 +21,9 @@ export class PlayerQueue {
 
     private playerStatus: {playerState: PlayerState, videoId?: string, position?: number, duration?: number, updated: moment.Moment}|undefined;
 
-    private command: 'PAUSE'|'PLAY'|'NEXTTRACK'|'REPLAYTRACK'|undefined = undefined;
+    private playerCommand: 'PAUSE'|'PLAY'|'NEXTTRACK'|'REPLAYTRACK'|undefined = undefined;
+
+    private privacyMode: PrivacyMode = PrivacyMode.FULL_NAMES;
 
     public constructor() {
         this.lastTouched = moment();
@@ -146,6 +149,10 @@ export class PlayerQueue {
         return this.lastTouched;
     }
 
+    public setPlayerCommand(command: 'PAUSE'|'PLAY'|'NEXTTRACK'|'REPLAYTRACK'): void {
+        this.playerCommand = command;
+    }
+
     public setCommand(command: 'PAUSE'|'PLAY'|'NEXTTRACK'|'REPLAYTRACK'|'AUTOPLAY-DISABLE'|'AUTOPLAY-ENABLE'): void {
         if(command === 'AUTOPLAY-ENABLE') {
             this.setShouldAutoPlay(true);
@@ -154,17 +161,17 @@ export class PlayerQueue {
             this.setShouldAutoPlay(false);
             return;
         }
-        this.command = command;
+        this.playerCommand = command;
     }
 
     public unsetCommand(): void {
-        this.command = undefined;
+        this.playerCommand = undefined;
     }
 
     public getCommand(persist = false): 'PAUSE'|'PLAY'|'NEXTTRACK'|'REPLAYTRACK'|undefined {
-        const tmpCommand = this.command;
+        const tmpCommand = this.playerCommand;
         if(!persist) {
-            this.command = undefined;
+            this.playerCommand = undefined;
         }
         return tmpCommand;
     }
@@ -175,6 +182,14 @@ export class PlayerQueue {
 
     public setShouldAutoPlay(newValue: boolean): void {
         this.shouldAutoPlay = newValue;
+    }
+
+    public setPrivacyMode(newMode: PrivacyMode): void {
+        this.privacyMode = newMode;
+    }
+
+    public getPrivacyMode(): PrivacyMode {
+        return this.privacyMode;
     }
 
     private async processPlayedSong(queueItem: IQueueItem | IAutoQueueItem): Promise<void> {

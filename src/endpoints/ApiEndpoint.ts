@@ -9,6 +9,7 @@ import { Response, Request } from "express";
 import { YouTubeVideoDetails } from '../models/YouTubeVideoDetails';
 import * as atob from 'atob';
 import { URL } from 'url';
+import { PrivacyMode } from '../enums';
 
 class ApiEndpointHandler {
 
@@ -260,20 +261,50 @@ class ApiEndpointHandler {
                 return;
             }
 
-            let command: string|undefined = request.query['command'];
-            if(!command) {
-                response.status(400).send('Command required');
+            let playerCommand: string|undefined = request.query['player'];
+            let autoPlayCommand: string|undefined = request.query['autoplay'];
+            let privacyCommand: string|undefined = request.query['privacy'];
+
+            if(!playerCommand && !autoPlayCommand && !privacyCommand) {
+                response.status(400).send('At least one command required');
                 return;
             }
 
-            command = command.toUpperCase();
-            if(['PAUSE','PLAY','NEXTTRACK','REPLAYTRACK','AUTOPLAY-DISABLE','AUTOPLAY-ENABLE'].indexOf(command) === -1) {
-                response.status(400).send(`Invalid command: ${command}`);
-                return;
+            if (playerCommand) {
+                playerCommand = playerCommand.toUpperCase();
+                switch (playerCommand) {
+                    case 'PLAY': // Fall Through
+                    case 'PAUSE': // Fall Through
+                    case 'NEXTTRACK': // Fall Through
+                    case 'REPLAYTRACK': queue.setPlayerCommand(playerCommand as any);
+                }
             }
 
-            queue.setCommand(command as any);
-            response.type('json').send(JSON.stringify({command}));
+            if (autoPlayCommand) {
+                autoPlayCommand = autoPlayCommand.toUpperCase();
+
+                switch (autoPlayCommand) {
+                    case 'ENABLE': queue.setShouldAutoPlay(true);
+                        break;
+                    case 'DISABLE': queue.setShouldAutoPlay(false);
+                        break;
+                }
+            }
+
+            if (privacyCommand) {
+                privacyCommand = privacyCommand.toUpperCase();
+
+                switch (privacyCommand) {
+                    case 'FULLNAME': queue.setPrivacyMode(PrivacyMode.FULL_NAMES);
+                        break;
+                    case 'USERAUTO': queue.setPrivacyMode(PrivacyMode.USER_OR_AUTO);
+                        break;
+                    case 'HIDDEN': queue.setPrivacyMode(PrivacyMode.HIDDEN);
+                        break;
+                }
+            }
+
+            response.type('json').send(JSON.stringify({playerCommand, autoPlayCommand, privacyCommand}));
         });
 
         app.get('/api/search', async (request: Request, response: Response) => {

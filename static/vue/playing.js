@@ -34,7 +34,7 @@ var details = new Vue({
 
 function sendCommand(command) {
 	var xhttp = new XMLHttpRequest();
-	xhttp.open('GET', '/api/set_command?command=' + command.toUpperCase() + '&token=' + getCookie('token'), true);
+	xhttp.open('GET', '/api/set_command?player=' + command.toUpperCase() + '&token=' + getCookie('token'), true);
 	xhttp.send();
 }
 

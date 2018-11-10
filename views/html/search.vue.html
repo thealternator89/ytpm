@@ -40,9 +40,9 @@
 				<img src="/loading_spinner.gif" width="26" height="26"> Loading...
 			</div>
 			<nav class="topbar navbar fixed-top navbar-expand navbar-dark bg-dark">
-				<form class="form-inline my-2 my-md-0">
+				<form class="form-inline my-2 my-md-0" v-on:submit.prevent="searchManual()">
 					<i class="material-icons home-icon" v-on:click="home()">home</i>
-					<input id="searchField" v-model="query" class="form-control search-field" name="q" type="text" placeholder="Search" autocomplete="off">
+					<input id="searchField" v-model="query" class="form-control search-field" type="text" placeholder="Search" autocomplete="off">
 					<i class="material-icons search-icon" v-on:click="searchManual()">search</i>
 				</form>
 			</nav>

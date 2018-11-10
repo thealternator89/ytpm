@@ -1,0 +1,53 @@
+html, body, #body{
+    height: 100%;
+}
+
+.topbar i {
+	margin-right: 15px;
+}
+
+.home-icon,
+.home-icon:link,
+.home-icon:visited,
+.home-icon:hover {
+    color: white;
+}
+
+.home-icon {
+    vertical-align: bottom;
+}
+
+#body {
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-align: center;
+    align-items: center;
+    padding-top: 40px;
+    padding-bottom: 40px;
+    background-color: #282828;
+    color: white;
+}
+
+.form-addmanual {
+    width: 100%;
+    max-width: 330px;
+    padding: 15px;
+    margin: auto;
+}
+.form-addmanual .form-control {
+    position: relative;
+    box-sizing: border-box;
+    height: auto;
+    padding: 10px;
+    font-size: 16px;
+    margin-bottom: 15px;
+}
+.form-addmanual .form-control:focus {
+    z-index: 2;
+}
+.form-addmanual #inputUrl {
+    margin-bottom: 10px;
+}
+.form-addmanual #inputVideoId {
+    margin-bottom: 15px;
+}

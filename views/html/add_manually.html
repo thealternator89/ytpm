@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>YTPM</title>
+		<meta charset="UTF-8"> 
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+        <link rel="stylesheet" type="text/css" href="/main.css">
+		<link rel="stylesheet" type="text/css" href="/add_manually.css">
+		<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" crossorigin="anonymous">
+        <style>
+    	</style>
+	</head>
+	<body class="text-center">
+        <nav class="topbar navbar navbar-expand navbar-dark bg-dark">
+            <a href="/client/home"><i class="material-icons home-icon">home</i></a> Add song manually
+		</nav>
+		<div id="body" class="text-center">
+			<form class="form-addmanual" method="POST" enctype="application/x-www-form-urlencoded">
+				<p>Enter a URL or Video ID to add to the queue:</p>
+				<label for="inputUrl" class="sr-only">URL</label>
+				<input type="text" name="inputUrl" id="inputUrl" class="form-control" placeholder="Video URL" autocomplete="off">
+				<label for="inputVideoId" class="sr-only">Video ID</label>
+				<input type="text" name="inputVideoId" id="inputVideoId" class="form-control" placeholder="Video ID" autocomplete="off" >
+				<button class="btn btn-lg btn-primary btn-block" type="submit">Add</button>
+			</form>
+		</div>
+	</body>
+</html>

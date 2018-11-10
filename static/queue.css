@@ -9,6 +9,30 @@
 	padding: 10px;
 }
 
+.home-icon {
+	vertical-align: bottom;
+}
+
 .topbar i {
 	margin-right: 15px;
+}
+
+#auto_queue_state {
+	float: right;
+}
+
+.auto_queue_enabled {
+	color: green;
+}
+
+.auto_queue_disabled {
+	color: red;
+}
+
+.auto_queue_enabled::after {
+	content: "ON";
+}
+
+.auto_queue_disabled::after {
+	content: "OFF";
 }

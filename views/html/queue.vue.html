@@ -14,8 +14,11 @@
 	</head>
 	<body class="bg-dark">
 		<div id="queue">
-			<nav class="topbar navbar navbar-expand navbar-dark bg-dark">
-				<i class="material-icons" v-on:click="home()">home</i> Queue
+			<nav class="topbar navbar-dark bg-dark">
+				<i class="material-icons home-icon" v-on:click="home()">home</i> Queue
+				<div id="auto_queue_state">
+					AutoQueue: <span id="auto_queue_state_text" class=""></span>
+				</div>
 			</nav>
 			<div id="queue">
 				<a href="javascript:void()" class="list-group-item list-group-item-action flex-column align-items-start list-group-item-dark" v-for="queueItem in queueItems" v-on:click="openYoutube(queueItem)">

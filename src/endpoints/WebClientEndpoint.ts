@@ -1,6 +1,9 @@
 import * as path from 'path';
 import { Response, Request } from "express";
 import { userAuthHandler } from "../auth/UserAuthHandler";
+import { URL } from 'url';
+import { IQueueItem } from '../models/QueueItem';
+import { Constants as CONSTANTS } from '../constants';
 
 export class WebClientEndpointHandler {
     public registerApiEndpoints(app: any) {
@@ -65,6 +68,41 @@ export class WebClientEndpointHandler {
 
         app.get('/client/history', (request: Request, response: Response) => {
             this.sendView(request, response, 'history.vue.html');
+        });
+
+        app.get('/client/add_manually', (request: Request, response: Response) => {
+            this.sendView(request, response, 'add_manually.html');
+        });
+
+        app.post('/client/add_manually', (request: Request, response: Response) => {
+            if (!this.validateCookie(request, response)) {
+                return;
+            }
+            const token = request.cookies['token'];
+            const queue = userAuthHandler.getQueueForToken(token);
+
+            const url = request.body['inputUrl'];
+            let videoId = request.body['inputVideoId'];
+            
+            if(!videoId && url) {
+                const videoUrl = new URL(url);
+                videoId = videoUrl.searchParams.get('v');
+            }
+
+            if(!videoId) {
+                response.redirect('/client/add_manually');
+                return;
+            }
+
+            const queueItem: IQueueItem = {
+                videoId,
+                user: token,
+                autoQueueInfluence: CONSTANTS.AUTO_QUEUE_INFLUENCE.NO_INFLUENCE
+            }
+
+            queue.enqueue(queueItem);
+            
+            response.redirect('/client');
         });
     }
 
