@@ -143,7 +143,7 @@ class YouTubeClient {
         try {
             response = await this.youtube.videos.list({
                 id: videoIds.join(','),
-                part: 'topicDetails',
+                part: 'topicDetails,contentDetails',
             });
         } catch (error) {
             throw new Error(`An error occurred retrieving video information: ${error.message}`);
@@ -152,7 +152,7 @@ class YouTubeClient {
         const musicVideoIds: string[] = [];
 
         for(const videoDetails of response.data.items) {
-            if(this.videoIsMusic && !this.videoIsLong){
+            if(this.videoIsMusic(videoDetails) && !this.videoIsLong(videoDetails)){
                 musicVideoIds.push(videoDetails.id);
             }
         }
