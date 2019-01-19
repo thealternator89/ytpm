@@ -25,9 +25,15 @@ class YouTubeClient {
     private readonly searchHistory: {[query: string]: number} = {};
 
     public constructor() {
+        const authToken = envUtil.getYouTubeApiKey();
+
+        if (!authToken) {
+            throw new Error('YouTube auth token is required');
+        }
+
         this.youtube = google.youtube({
             version: 'v3',
-            auth: envUtil.getYouTubeApiKey(),
+            auth: authToken,
         });
     }
 
@@ -161,11 +167,17 @@ class YouTubeClient {
     }
 
     public videoIsMusic(videoDetails: youtube_v3.Schema$Video): boolean {
-        return videoDetails.topicDetails.relevantTopicIds.includes(MUSIC_TOPIC_ID);
+        return videoDetails &&
+               videoDetails.topicDetails &&
+               videoDetails.topicDetails.relevantTopicIds &&
+               videoDetails.topicDetails.relevantTopicIds.includes(MUSIC_TOPIC_ID);
     }
 
     public videoIsLong(videoDetails: youtube_v3.Schema$Video): boolean {
-        return moment.duration(videoDetails.contentDetails.duration).minutes() > 10;
+        return videoDetails &&
+               videoDetails.contentDetails &&
+               videoDetails.contentDetails.duration && 
+               moment.duration(videoDetails.contentDetails.duration).minutes() > 10;
     }
 
     // Safely get either a thumbnail url or a stand-in image if the image isn't available.
