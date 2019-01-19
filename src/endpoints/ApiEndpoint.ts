@@ -9,38 +9,51 @@ import { Response, Request } from "express";
 import { YouTubeVideoDetails } from '../models/YouTubeVideoDetails';
 import * as atob from 'atob';
 import { URL } from 'url';
-import { PrivacyMode } from '../enums';
+import { PrivacyMode, PlayerState } from '../enums';
+import { MessageBus } from '../util/MessageBus';
+import moment = require('moment');
+import request = require('request');
+
+type PlayerCommand = 'PLAY'|'PAUSE'|'SKIP'|'REPLAY';
 
 class ApiEndpointHandler {
 
     public registerApiEndpoints(app: any) {
-
-        app.get('/api/player/poll', (request: Request, response: Response) => {
+        app.post('/api/player/update', (request: Request, response: Response) => {
             const queue = this.getQueueByKey(request, response);
             if(!queue){
                 return;
             }
 
-            const status: string = request.query['status'];
-            if(status){
-                const statusParts = atob(status).split(';');
-                const statusObj = {
-                    playerState: statusParts[0],
-                    videoId: statusParts[1],
-                    position: parseFloat(statusParts[2]),
-                    duration: parseFloat(statusParts[3]),
-                }
-                queue.setPlayerStatus(statusObj);
-            } else {
-                queue.setPlayerStatus({
-                    playerState: 'NOTPLAYING',
-                });
+            const eventName = request.body.event || '';
+            const eventTime = moment.unix(request.body.time);
+
+            queue.updatePlayerState(eventName.toUpperCase(), eventTime, {
+                position: request.body.position,
+                duration: request.body.duration,
+                videoId: request.body.videoId
+            });
+
+            response.status(200).send();
+        });
+        
+        app.get('/api/player/poll', (request: Request, response: Response) => {
+            const queueKey = request.query['key'];
+            if(!queueKey) {
+                response.status(400).send('Invalid request');
+                return undefined;
             }
 
-            response.type('json').send(JSON.stringify({
-                queueLength: queue.length(),
-                command: queue.getCommand()
-            }));
+            const processEventFunc = (update: {queueLength: number, command?:PlayerCommand, addedSongs?: {title: string, thumbnailUrl: string, addedBy: string}[]}) => {
+                response.json(update);
+            }
+
+            MessageBus.once(`poll:${queueKey}`, processEventFunc);
+
+            // Clean up if the client disconnects before we respond
+            request.on('close', () => {
+                MessageBus.removeListener(`poll:${queueKey}`, processEventFunc);
+            });
         });
 
         app.get('/api/client/poll', async (request: Request, response: Response) => {
@@ -54,15 +67,14 @@ class ApiEndpointHandler {
                 return;
             }
 
-            const playerStatus = queue.getPlayerStatus();
+            const playerStatus = queue.getPlayerState();
 
-            response.type('json').send(JSON.stringify({
+            response.json({
                 playerState: playerStatus.playerState,
                 video: await youTubeVideoDetailsCache.getFromCacheOrApi(playerStatus.videoId),
                 position: playerStatus.position,
                 duration: playerStatus.duration,
-                health: playerStatus.health
-            }));
+            });
         });
 
         app.get('/api/auth', (request: Request, response: Response) => {

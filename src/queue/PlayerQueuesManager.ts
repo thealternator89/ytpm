@@ -27,7 +27,7 @@ class PlayerQueuesManager {
         for (let i = 0; i < MAX_KEY_GENERATION_ATTEMPTS; i++) {
             const newKey = PlayerQueuesManager.generatePreSharedKey();
             if (!this.playerQueues[newKey]) {
-                this.playerQueues[newKey] = new PlayerQueue();
+                this.playerQueues[newKey] = new PlayerQueue(newKey);
                 return newKey;
             }
         }

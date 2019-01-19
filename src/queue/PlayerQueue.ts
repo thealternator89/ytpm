@@ -2,12 +2,12 @@ import { IQueueItem, IAutoQueueItem } from '../models/QueueItem';
 import * as moment from 'moment';
 import { youTubeClient } from '../api-client/YouTubeClient';
 import { Constants } from '../constants';
-import { PrivacyMode } from '../enums';
+import { PrivacyMode, PlayerState } from '../enums';
+import { MessageBus } from '../util/MessageBus';
+import { youTubeVideoDetailsCache } from '../api-client/YouTubeVideoDetailsCache';
+import { userAuthHandler } from '../auth/UserAuthHandler';
 
 const MIN_PLAYS_BEFORE_AVAILABLE_TO_AUTOPLAY = 50;
-
-type PlayerState = 'UNKNOWN'|'UNSTARTED'|'ENDED'|'PLAYING'|'PAUSED'|'BUFFERING'|'CUED'|'NOTPLAYING';
-type PlayerStateHealth = 'GOOD'|'OK'|'DEGRADED'|'BAD';
 
 export class PlayerQueue {
     private queue: IQueueItem[] = [];
@@ -19,63 +19,77 @@ export class PlayerQueue {
 
     private lastTouched: moment.Moment;
 
-    private playerStatus: {playerState: PlayerState, videoId?: string, position?: number, duration?: number, updated: moment.Moment}|undefined;
-
-    private playerCommand: 'PAUSE'|'PLAY'|'NEXTTRACK'|'REPLAYTRACK'|undefined = undefined;
+    private playerStatus: {status: PlayerState, updated: moment.Moment, currentItem?: {videoId: string, offset?: number, duration?: number}};
 
     private privacyMode: PrivacyMode = PrivacyMode.FULL_NAMES;
 
-    public constructor() {
-        this.lastTouched = moment();
+    public constructor(private key: string) {
+        this.touched();
     }
 
-    public setPlayerStatus(newState: {playerState: PlayerState, videoId?: string, position?: number, duration?: number}): void {
+    public getKey(): string {
+        return this.key;
+    }
+
+    // TODO: Typing for additionalData
+    public updatePlayerState(newState: string, updateTime: moment.Moment, additionalData?: {videoId: string, position: number, duration: number}): void {
+        this.touched();
+        // The current playerStatus has a newer updateTime than the one we're setting. Ignore it
+        if (this.playerStatus && moment.duration(this.playerStatus.updated.diff(updateTime)).asSeconds() > 0) {
+            return;
+        }
+
+        const newPlayerState = PlayerState[newState];
+
         this.playerStatus = {
-            ...newState,
-            updated: moment()
+            status: newPlayerState,
+            updated: updateTime,
         };
+
+        if (additionalData) {
+            this.playerStatus.currentItem = {
+                videoId: additionalData.videoId,
+                offset: additionalData.position,
+                duration: additionalData.duration
+            };
+        } else {
+            delete this.playerStatus.currentItem;
+        }
     }
 
-    public getPlayerStatus(): {playerState: PlayerState, videoId?: string, position?: number, duration?: number, health: PlayerStateHealth} {
-        const secondsSinceUpdated = moment.duration(moment().diff(this.playerStatus.updated)).asSeconds();
-
-        // SHORT-CIRCUIT: If we haven't received an update from the player in more than 30 seconds, respond with 'UNKNOWN' playerState.
-        // The player has probably died, or is otherwise dead. Don't pretend to know where it is.
-        if (secondsSinceUpdated >= 30) {
-            return {
-                playerState: 'UNKNOWN',
-                health: 'BAD',
-            }
-        }
-
-        let health;
-        if (secondsSinceUpdated < 1){
-            health = 'GOOD';
-        } else if (secondsSinceUpdated < 5) {
-            health = 'OK';
-        } else if (secondsSinceUpdated < 10) {
-            health = 'DEGRADED';
-        } else {
-            health = 'BAD';
-        }
-
-        // If we have the position, and the song is playing, add the seconds since updated so we get a time closer to the real time on-player
-        let position = this.playerStatus.position;
-        if(position && this.playerStatus.playerState === 'PLAYING') {
-            position += secondsSinceUpdated;
-
-            // Make sure we don't go over the duration of the video.
-            if(position > this.playerStatus.duration) {
-                position = this.playerStatus.duration;
-            }
+    public getPlayerState(): {playerState: PlayerState, videoId?: string, position?: number, duration?: number} {
+        const currentItem = this.playerStatus.currentItem;
+        
+        let videoId;
+        let position = this.getPositionFromPlayerState();
+        let duration;
+        
+        if(currentItem){
+            videoId = currentItem.videoId;
+            duration = currentItem.duration;
         }
 
         return {
-            playerState: this.playerStatus.playerState,
-            videoId: this.playerStatus.videoId,
+            playerState: this.playerStatus.status,
+            videoId,
             position,
-            duration: this.playerStatus.duration,
-            health,
+            duration,
+        }
+    }
+
+    private getPositionFromPlayerState(): number|undefined {
+        const playerStatus = this.playerStatus;
+
+        if(playerStatus.status === PlayerState.PAUSED) {
+            return playerStatus.currentItem.offset;
+        } else if (playerStatus.status === PlayerState.PLAYING) {
+            const secsSinceUpdate = moment.duration(moment().diff(playerStatus.updated)).asSeconds();
+            const position = secsSinceUpdate + playerStatus.currentItem.offset;
+            if (position !== NaN) {
+                return position;
+            }
+        } else {
+            return undefined;
         }
     }
 
@@ -88,13 +102,21 @@ export class PlayerQueue {
     }
 
     public enqueue(item: IQueueItem): void {
-        this.lastTouched = moment();
+        this.touched();
         this.queue.push(item);
+        this.notifyAddedSong(item);
     }
 
     public addToFront(item: IQueueItem): void {
-        this.lastTouched = moment();
+        this.touched();
         this.queue.unshift(item);
+        this.notifyAddedSong(item);
+    }
+
+    public async notifyAddedSong(item: IQueueItem): Promise<void> {
+        let video = await youTubeVideoDetailsCache.getFromCacheOrApi(item.videoId);
+        let user = userAuthHandler.getNameForToken(item.user);
+        this.updatePlayer({addedSong: {title: video.title, thumbnailUrl: video.thumbnailUrl, addedBy: user}});
     }
 
     public getSongToPlay(): IQueueItem|IAutoQueueItem|undefined {
@@ -112,10 +134,11 @@ export class PlayerQueue {
         if(token && this.queue[position].user !== token) {
             throw new Error('Item in queue not owned by the user');
         }
-        this.lastTouched = moment();
+        this.touched();
         return this.queue.splice(position, 1)[0];
     }
 
+    //DEPRECATED - once polling is working this should be removed
     public length(): number {
         return this.queue.length;
     }
@@ -150,30 +173,7 @@ export class PlayerQueue {
     }
 
     public setPlayerCommand(command: 'PAUSE'|'PLAY'|'NEXTTRACK'|'REPLAYTRACK'): void {
-        this.playerCommand = command;
-    }
-
-    public setCommand(command: 'PAUSE'|'PLAY'|'NEXTTRACK'|'REPLAYTRACK'|'AUTOPLAY-DISABLE'|'AUTOPLAY-ENABLE'): void {
-        if(command === 'AUTOPLAY-ENABLE') {
-            this.setShouldAutoPlay(true);
-            return;
-        } else if (command === 'AUTOPLAY-DISABLE') {
-            this.setShouldAutoPlay(false);
-            return;
-        }
-        this.playerCommand = command;
-    }
-
-    public unsetCommand(): void {
-        this.playerCommand = undefined;
-    }
-
-    public getCommand(persist = false): 'PAUSE'|'PLAY'|'NEXTTRACK'|'REPLAYTRACK'|undefined {
-        const tmpCommand = this.playerCommand;
-        if(!persist) {
-            this.playerCommand = undefined;
-        }
-        return tmpCommand;
+        this.updatePlayer({command: command});
     }
 
     public getShouldAutoPlay(): boolean {
@@ -190,6 +190,13 @@ export class PlayerQueue {
 
     public getPrivacyMode(): PrivacyMode {
         return this.privacyMode;
+    }
+
+    private updatePlayer(args: {command?: string, addedSong?: {title: string, thumbnailUrl: string, addedBy: string}}): void {
+        MessageBus.emit(`poll:${this.key}`, {
+            queueLength: this.queue.length,
+            ...args,
+        })
     }
 
     private async processPlayedSong(queueItem: IQueueItem | IAutoQueueItem): Promise<void> {
@@ -239,5 +246,11 @@ export class PlayerQueue {
                 (this.autoQueueBlacklist[item.videoId] !== -1 &&                    //      - Song is not permanently blacklisted, AND
                 this.autoQueueBlacklist[item.videoId] < this.playHistory.length)    //      - Song was blacklisted, but play count is high enough to play again
         });
+    }
+
+    // Update that this queue has been touched at this point in time.
+    // Allows us to clean up queues that haven't been touched in a while.
+    private touched():void {
+        this.lastTouched = moment();
     }
 }

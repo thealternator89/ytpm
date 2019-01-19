@@ -22,6 +22,7 @@ app.set('view-engine', '.hbs');
 app.set('views', path.join(__dirname, 'views/hbs'));
 
 app.use(express.static(path.join(__dirname, '..', 'static')));
+app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
 

@@ -1,4 +1,4 @@
-<div id="song_info" style="visibility: hidden;">
+<div id="song_info" class="animated">
     <img id="song_thumb" src="{{thumbnailSrc}}">
     <div id="song_title">{{videoTitle}}</div>
     <div id="song_added_by">{{addedByStr}}</div>
@@ -26,21 +26,41 @@ function onYouTubeIframeAPIReady() {
     });
 }
 
-function onPlayerStateChange(event) { 
+function onPlayerStateChange(event) {
     switch (event.data) {
-        case YT.PlayerState.ENDED:
-            document.getElementById('player').style.visibility = 'hidden';
+        case YT.PlayerState.ENDED: {
+            sendBeacon('ended');
+            document.getElementById('loading_curtain').style.visibility = 'visible';
             location.reload();
             break;
-        case YT.PlayerState.PAUSED:
+        }
+        case YT.PlayerState.PAUSED: {
+            var data = {
+                videoId: player.getVideoData().video_id,
+                position: player.getCurrentTime(),
+                duration: player.getDuration(),
+            };
+
+            sendBeacon('paused', data);
             document.getElementById('pausedOsd').style.visibility = 'visible';
             break;
-        case YT.PlayerState.PLAYING:
+        }
+        case YT.PlayerState.PLAYING: {
+            var data = {
+                videoId: player.getVideoData().video_id,
+                position: player.getCurrentTime(),
+                duration: player.getDuration(),
+            };
+
+            sendBeacon('playing', data);
+            document.getElementById('pausedOsd').style.visibility = 'hidden';
             setTimeout(function() {
                 document.getElementById('loading_curtain').style.visibility = 'hidden';
             }, 100);
+            break;
+        }
         default: {
-            document.getElementById('pausedOsd').style.visibility = 'hidden';
+            sendBeacon(youTubePlayerStateToBeaconEvent(event.data));
         }
     }
 }
@@ -53,10 +73,18 @@ setTimeout(() => {
 }, 10000);
 
 setTimeout(() => {
-    document.getElementById('song_info').style.visibility = 'visible';
-}, 1000);
+    document.getElementById('song_info').classList.add('slideOutUp');
+}, 8000);
 
-setTimeout(() => {
-    document.getElementById('song_info').style.visibility = 'hidden';
-}, 10000);
+function youTubePlayerStateToBeaconEvent(state) {
+    switch(state){
+        case YT.PlayerState.BUFFERING: return 'buffering';
+        case YT.PlayerState.CUED: return 'cued';
+        case YT.PlayerState.ENDED: return 'ended';
+        case YT.PlayerState.PAUSED: return 'paused';
+        case YT.PlayerState.PLAYING: return 'playing';
+        case YT.PlayerState.UNSTARTED: return 'unstarted';
+        default: return 'unknown';
+    }
+}
 </script>

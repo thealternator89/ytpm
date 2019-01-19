@@ -3,31 +3,58 @@
     <head>
         <title>PartyMode for YouTube</title>
         <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" crossorigin="anonymous">
+        <link rel="stylesheet" type="text/css" href="animate.css">
         <link rel="stylesheet" type="text/css" href="player.css">
+        <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+        <script>
+            var queueKey = new URL(window.location.href).searchParams.get('key');
+            function sendBeacon(eventName, additionalData) {
+                var timestamp = Math.round((new Date()).getTime() / 1000);
+                var url = '/api/player/update?key=' + queueKey;
+                var dataBlob = new Blob([JSON.stringify({event: eventName, time: timestamp, ...additionalData})],
+                    {type : 'application/json; charset=UTF-8'});
+                navigator.sendBeacon(url, dataBlob);
+            }
+        </script>
     </head>
      <body>
          <!-- Include an invisible curtain to prevent things interacting with the page-->
         <div id="invisible_curtain"></div>
         <div id="auth_info_panel">
             <div id="auth_header">Add to the queue:</div>
-            <div id="host">{{hostUrl}}</div>
+            <div id="host"></div>
             <div id="pass_phrase">{{authString}}</div>
             <div id="current_queue">Currently queued: <span id="queue_size">{{queueSize}}</span></div>
         </div>
         {{{body}}}
         <script>
-            var queueKey = new URL(window.location.href).searchParams.get('key');
+            document.getElementById('host').innerText = new URL(window.location.href).host;
+
             if(queueKey) {
-                setInterval(() => {
-                    var xhttp = new XMLHttpRequest();
-                    xhttp.onreadystatechange = function () {
-                        if (this.readyState == 4 && this.status == 200) {
-                            var response = JSON.parse(this.responseText);
-                            // If 'YT' exists, we're playing something. It will tell us to reload when it's finished so leave it to that.
-                            // If it doesn't exist, and something is in the queue to play, reload to play it.
-                            if (typeof(YT) === 'undefined' && response.queueLength !== 0) {
+                // Set up long polling
+
+                // Set up updating logic
+
+                // Set up unload logic
+                window.onbeforeunload = function() {
+                    sendBeacon('unloaded');
+                    return null;
+                }
+
+                // Notify the server that the player has loaded
+                sendBeacon('load');
+
+                (function poll() {
+                    console.log('Initiating Poll');
+                    $.ajax({
+                        url: '/api/player/poll?key=' + queueKey,
+                        success: function(response) {
+                            console.log('Poll received from server');
+                            // If the queueLength is now > 0 and we're not currently playing a song, reload to get a song.
+                            if (typeof(YT) === 'undefined' && response.queueLength > 0) {
                                 location.reload();
                             }
+
                             if (typeof(response.command) !== 'undefined' && typeof(player) !== 'undefined') {
                                 switch (response.command) {
                                     case 'PLAY': player.playVideo();
@@ -41,39 +68,16 @@
                                     default: console.log('unknown command: ' + response.command);
                                 }
                             }
+
                             document.getElementById('queue_size').innerText = response.queueLength;
-                        }
-                    }
-
-                    var statusString = '';
-                    if (typeof(player) !== 'undefined') {
-                        var playerState;
-                        switch (player.getPlayerState()) {
-                            case YT.PlayerState.UNSTARTED: playerState = 'UNSTARTED';
-                                break;
-                            case YT.PlayerState.ENDED: playerState = 'ENDED';
-                                break;
-                            case YT.PlayerState.PLAYING: playerState = 'PLAYING';
-                                break;
-                            case YT.PlayerState.PAUSED: playerState = 'PAUSED';
-                                break;
-                            case YT.PlayerState.BUFFERING: playerState = 'BUFFERING';
-                                break;
-                            case YT.PlayerState.CUED: playerState = 'CUED';
-                                break;
-                            default: playerState = 'UNKNOWN';
-                        }
-                        var videoId = player.getVideoData().video_id;
-                        var videoPosition = player.getCurrentTime();
-                        var videoDuration = player.getDuration();
-                        statusString = [playerState, videoId, videoPosition, videoDuration].join(';');
-                    }
-
-                    var encodedStatusString = btoa(statusString);
-
-                    xhttp.open('GET', '/api/player/poll' + (encodedStatusString !== '' ? '?status=' + encodedStatusString + '&' : '?') + 'key=' + queueKey, true);
-                    xhttp.send();
-                }, 1000);
+                        },
+                        error: function(xhr, textStatus, error) {
+                            console.log('Error occurred: ' + textStatus + ' - ' + error);
+                        },
+                        dataType: "json",
+                        complete: poll 
+                    });
+                })();
             }
         </script>
      </body>

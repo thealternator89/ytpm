@@ -4,8 +4,6 @@ import { youTubeVideoDetailsCache } from '../api-client/YouTubeVideoDetailsCache
 import { IQueueItem } from '../models/QueueItem';
 import { PrivacyMode } from '../enums';
 
-const DEFAULT_ACCESS_URL = 'ytpm.thealternator.nz';
-
 export class PlayerEndpointHandler {
     public registerApiEndpoints(app: any) {
         app.get('/player', async (request, response) => {
@@ -17,14 +15,13 @@ export class PlayerEndpointHandler {
 
             const queue = playerQueuesManager.getPlayerQueue(request.query['key']);
 
+            const queueItem = queue.getSongToPlay();
             const baseObject = {
                 layout: 'player.hbs',
-                hostUrl: DEFAULT_ACCESS_URL,
                 authString: request.query['key'],
                 queueSize: queue.length(),
             };
 
-            const queueItem = queue.getSongToPlay();
             if(!queueItem){
                 response.render('player-notplaying.hbs', baseObject);
             } else {
