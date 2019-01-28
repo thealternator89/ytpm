@@ -11,7 +11,10 @@
             function sendBeacon(eventName, additionalData) {
                 var timestamp = Math.round((new Date()).getTime() / 1000);
                 var url = '/api/player/update?key=' + queueKey;
-                var dataBlob = new Blob([JSON.stringify({event: eventName, time: timestamp, ...additionalData})],
+                var dataObj = {event: eventName, time: timestamp};
+                Object.assign(dataObj, additionalData);
+
+                var dataBlob = new Blob([JSON.stringify(dataObj)],
                     {type : 'application/json; charset=UTF-8'});
                 navigator.sendBeacon(url, dataBlob);
             }
