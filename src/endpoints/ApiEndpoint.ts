@@ -344,6 +344,30 @@ class ApiEndpointHandler {
             response.type('json').send(JSON.stringify(results));
         })
 
+        app.get('/api/autoqueue_state', async(request: Request, response: Response) => {
+            if(!this.validateToken(request, response)) {
+                return;
+            }
+
+            const queue = this.getQueueByAuthToken(request,response);
+            if(!queue) {
+                return;
+            }
+
+            const autoQueueWithYtDetails: any[] = [];
+            for(const queueItem of queue.getAutoPlayState()) {
+                const videoDetails = await youTubeVideoDetailsCache.getFromCacheOrApi(queueItem.videoId);
+                autoQueueWithYtDetails.push({
+                    video: videoDetails,
+                    score: queueItem.score,
+                    numberOfSongsUntilAvailableToPlay: queueItem.numberOfSongsUntilAvailableToPlay
+                });
+            }
+
+
+            response.json(autoQueueWithYtDetails);
+        });
+
         app.get(`/api/internal/queue_states`, async (request: Request, response: Response) => {
             const queueKeys = playerQueuesManager.getAllQueueKeys();
 

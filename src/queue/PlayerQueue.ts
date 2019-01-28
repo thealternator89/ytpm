@@ -1,4 +1,4 @@
-import { IQueueItem, IAutoQueueItem } from '../models/QueueItem';
+import { IQueueItem, IAutoQueueItem, IAutoQueueStatItem } from '../models/QueueItem';
 import * as moment from 'moment';
 import { youTubeClient } from '../api-client/YouTubeClient';
 import { Constants } from '../constants';
@@ -31,7 +31,6 @@ export class PlayerQueue {
         return this.key;
     }
 
-    // TODO: Typing for additionalData
     public updatePlayerState(newState: string, updateTime: moment.Moment, additionalData?: {videoId: string, position: number, duration: number}): void {
         this.touched();
         // The current playerStatus has a newer updateTime than the one we're setting. Ignore it
@@ -191,6 +190,49 @@ export class PlayerQueue {
     public getPrivacyMode(): PrivacyMode {
         return this.privacyMode;
     }
+
+    public getAutoPlayState(): IAutoQueueStatItem[] {
+        const autoQueue = [];
+
+        for (const videoId in this.autoPlayItems) {
+            if(!this.autoPlayItems.hasOwnProperty(videoId)) {
+                continue;
+            }
+
+            const item = this.autoPlayItems[videoId];
+            let blacklist = this.autoQueueBlacklist[videoId] || 0;
+
+            if(blacklist !== -1) {
+                blacklist -= this.playHistory.length;
+                blacklist = blacklist < 0 ? 0 : blacklist;
+            }
+
+            autoQueue.push({
+                videoId: item.videoId,
+                score: item.score,
+                numberOfSongsUntilAvailableToPlay: blacklist
+            });
+        }
+
+        autoQueue.sort((o1, o2) => {
+            // Items with '-1' blacklist are at the bottom of the list. These are permanently blacklisted.
+            if(o1.numberOfSongsUntilAvailableToPlay === -1 && o2.numberOfSongsUntilAvailableToPlay !== -1) {
+                return -1;
+            } else if (o2.numberOfSongsUntilAvailableToPlay === -1 && o1.numberOfSongsUntilAvailableToPlay !== -1) {
+                return 1;
+            }
+
+            // PRIMARY: Items are sorted by when they are available to play next. Lowest first
+            if(o1.numberOfSongsUntilAvailableToPlay !== o2.numberOfSongsUntilAvailableToPlay) {
+                return o1.numberOfSongsUntilAvailableToPlay - o2.numberOfSongsUntilAvailableToPlay;
+            }
+
+            // SECONDARY: Sort by score. Highest first
+            return o2.score - o1.score;
+        });
+
+        return autoQueue;
+    } 
 
     private updatePlayer(args: {command?: string, addedSong?: {title: string, thumbnailUrl: string, addedBy: string}}): void {
         MessageBus.emit(`poll:${this.key}`, {
