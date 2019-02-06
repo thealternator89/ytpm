@@ -84,7 +84,7 @@ export class PlayerQueue {
         } else if (playerStatus.status === PlayerState.PLAYING) {
             const secsSinceUpdate = moment.duration(moment().diff(playerStatus.updated)).asSeconds();
             const position = secsSinceUpdate + playerStatus.currentItem.offset;
-            if (position !== NaN) {
+            if (!Number.isNaN(position)) {
                 return position;
             }
         } else {
