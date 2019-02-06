@@ -2,6 +2,7 @@ import { PlayerQueue } from "./PlayerQueue";
 import * as randomstring from 'randomstring';
 import moment = require("moment");
 
+const QUEUE_KEY_LENGTH_CHARS = 5;
 const MAX_KEY_GENERATION_ATTEMPTS = 10;
 
 class PlayerQueuesManager {
@@ -13,8 +14,7 @@ class PlayerQueuesManager {
     }
 
     public queueExists(key: string): boolean {
-        // toUpperCase as generatePreSharedKey generates an upper case string.
-        return !!this.playerQueues[key.toUpperCase()];
+        return !!this.getPlayerQueue(key);
     }
 
     public getAllQueueKeys(): string[] {
@@ -25,7 +25,7 @@ class PlayerQueuesManager {
         // Iterate to generate a new key, allowing us to avoid collision.
         // If we collide 10 times, we should just throw an error. This will theoretically only occur after more than 30K queues exist.
         for (let i = 0; i < MAX_KEY_GENERATION_ATTEMPTS; i++) {
-            const newKey = PlayerQueuesManager.generatePreSharedKey();
+            const newKey = generatePreSharedKey();
             if (!this.playerQueues[newKey]) {
                 this.playerQueues[newKey] = new PlayerQueue(newKey);
                 return newKey;
@@ -42,22 +42,22 @@ class PlayerQueuesManager {
             const timeSinceTouched = moment.duration(moment().diff(this.playerQueues[queueKey].getTimeLastTouched()));
             if(timeSinceTouched.asHours() > 12){
                 delete this.playerQueues[queueKey];
-            }  
+            }
         }
     }
 
     public numQueues(): number {
         return Object.keys(this.playerQueues).length;
     }
+}
 
-    private static generatePreSharedKey(): string {
-        return randomstring.generate({
-            length: 5,
-            readable: true,
-            charset: 'alphanumeric',
-            capitalization: 'uppercase'
-        });
-    }
+function generatePreSharedKey(): string {
+    return randomstring.generate({
+        length: QUEUE_KEY_LENGTH_CHARS,
+        readable: true,
+        charset: 'alphanumeric',
+        capitalization: 'uppercase'
+    });
 }
 
 export const playerQueuesManager = new PlayerQueuesManager();
