@@ -1,10 +1,10 @@
-import { google, youtube_v3,  } from 'googleapis';
-import * as rp from 'request-promise';
-import { YouTubeVideoDetails, YoutubeSearchResults } from '../models/YouTubeVideoDetails';
-import { youTubeVideoDetailsCache } from './YouTubeVideoDetailsCache';
-import { envUtil } from '../util/EnvUtil';
 import { AxiosResponse } from 'axios';
+import { google, youtube_v3  } from 'googleapis';
 import moment = require('moment');
+import * as rp from 'request-promise';
+import { IYoutubeSearchResults, IYouTubeVideoDetails } from '../models/YouTubeVideoDetails';
+import { envUtil } from '../util/EnvUtil';
+import { youTubeVideoDetailsCache } from './YouTubeVideoDetailsCache';
 
 const SEARCH_RESULT_LIMIT_STANDARD = 15;
 const SEARCH_RESULT_LIMIT_RELATED = 5;
@@ -12,14 +12,12 @@ const SEARCH_RESULT_LIMIT_RELATED = 5;
 const AUTOCOMPLETE_URL_BASE = 'http://suggestqueries.google.com/complete/search';
 const MUSIC_TOPIC_ID = '/m/04rlf';
 
-type SearchContinuationOptions = {q: string, nextPageToken: string}
-
 class YouTubeClient {
     private readonly defaultSearchOptions: any = {
-        type: 'video',
+        regionCode: 'NZ', // TODO: Maybe allow this to be configured at the queue level
         topicId: MUSIC_TOPIC_ID,
-        regionCode: 'NZ'
-    }
+        type: 'video',
+    };
 
     private readonly youtube: youtube_v3.Youtube;
     private readonly searchHistory: {[query: string]: number} = {};
@@ -32,40 +30,40 @@ class YouTubeClient {
         }
 
         this.youtube = google.youtube({
-            version: 'v3',
             auth: authToken,
+            version: 'v3',
         });
     }
 
     public async getSearchAutoComplete(query?: string): Promise<string[]> {
-        if(!query) {
+        if (!query) {
             return Object.keys(this.searchHistory).sort((o1, o2) => this.searchHistory[o2] - this.searchHistory[o1]);
         } else {
             const response = await rp({
-                uri: AUTOCOMPLETE_URL_BASE,
+                json: true,
                 qs: {
-                    ds: 'yt',
                     client: 'firefox',
+                    ds: 'yt',
                     q: query,
                 },
-                json: true
+                uri: AUTOCOMPLETE_URL_BASE,
             }).promise();
             // response is an array. First element is the query, Second is an array of suggestions.
-            return response[1]; 
+            return response[1];
         }
     }
 
-    public async search(query: string, page?: string): Promise<YoutubeSearchResults> {
+    public async search(query: string, page?: string): Promise<IYoutubeSearchResults> {
         this.addToHistory(query);
         let response: AxiosResponse<youtube_v3.Schema$SearchListResponse>;
         try {
             response = await this.youtube.search.list({
                 ...this.defaultSearchOptions,
-                q: query,
                 maxResults: SEARCH_RESULT_LIMIT_STANDARD,
                 pageToken: page,
                 part: 'snippet',
-            })
+                q: query,
+            });
         } catch (error) {
             throw new Error(`An error occurred retrieving search results: ${error.message}`);
         }
@@ -79,32 +77,23 @@ class YouTubeClient {
 
         return {
             nextPageToken: response.data.nextPageToken,
-            results
+            results: results,
         };
     }
 
-    private addToHistory(query: string) {
-        if (this.searchHistory[query]) {
-            this.searchHistory[query]++;
-        }
-        else {
-            this.searchHistory[query] = 1;
-        }
-    }
-
-    public async searchRelatedVideos(videoId: string): Promise<YouTubeVideoDetails[]> {
+    public async searchRelatedVideos(videoId: string): Promise<IYouTubeVideoDetails[]> {
         let response: AxiosResponse<youtube_v3.Schema$SearchListResponse>;
         try {
             response = await this.youtube.search.list({
                 ...this.defaultSearchOptions,
-                relatedToVideoId: videoId,
                 maxResults: SEARCH_RESULT_LIMIT_RELATED,
                 part: 'snippet',
+                relatedToVideoId: videoId,
             });
         } catch (error) {
             throw new Error(`An error occurred retrieving search results: ${error.message}`);
         }
-        
+
         const results = response.data.items
             .map((result) => {
                 const resultVideodetails = this.getYouTubeVideoDetailsFromApiResponse(result);
@@ -115,7 +104,7 @@ class YouTubeClient {
         return results;
     }
 
-    public async getDetails(query: string): Promise<YouTubeVideoDetails> {
+    public async getDetails(query: string): Promise<IYouTubeVideoDetails> {
 
         let response: AxiosResponse<youtube_v3.Schema$VideoListResponse>;
 
@@ -157,8 +146,8 @@ class YouTubeClient {
 
         const musicVideoIds: string[] = [];
 
-        for(const videoDetails of response.data.items) {
-            if(this.videoIsMusic(videoDetails) && !this.videoIsLong(videoDetails)){
+        for (const videoDetails of response.data.items) {
+            if (this.videoIsMusic(videoDetails) && !this.videoIsLong(videoDetails)) {
                 musicVideoIds.push(videoDetails.id);
             }
         }
@@ -176,31 +165,40 @@ class YouTubeClient {
     public videoIsLong(videoDetails: youtube_v3.Schema$Video): boolean {
         return videoDetails &&
                videoDetails.contentDetails &&
-               videoDetails.contentDetails.duration && 
+               videoDetails.contentDetails.duration &&
                moment.duration(videoDetails.contentDetails.duration).minutes() > 10;
+    }
+
+    private addToHistory(query: string) {
+        if (this.searchHistory[query]) {
+            this.searchHistory[query]++;
+        } else {
+            this.searchHistory[query] = 1;
+        }
     }
 
     // Safely get either a thumbnail url or a stand-in image if the image isn't available.
     private getThumbnailUrl(thumbnails: any, thumbName: 'default'|'medium'|'high'): string|undefined {
-        if(thumbnails && thumbnails[thumbName]) {
+        if (thumbnails && thumbnails[thumbName]) {
             return thumbnails[thumbName].url;
         } else {
             return '/no-art.png';
         }
     }
 
-    private getYouTubeVideoDetailsFromApiResponse(responseObj: youtube_v3.Schema$Video|youtube_v3.Schema$SearchResult): YouTubeVideoDetails {
+    private getYouTubeVideoDetailsFromApiResponse(
+        responseObj: youtube_v3.Schema$Video|youtube_v3.Schema$SearchResult): IYouTubeVideoDetails {
         // If the id is a string, use it. Otherwise use the videoId property of id.
-        let id: string = (typeof(responseObj.id) == 'string') ? responseObj.id : responseObj.id.videoId;
+        const id: string = (typeof(responseObj.id) === 'string') ? responseObj.id : responseObj.id.videoId;
 
         return {
-            videoId: id,
-            title: responseObj.snippet.title,
+            channelName: responseObj.snippet.channelTitle,
             description: responseObj.snippet.description,
             thumbnailUrl: this.getThumbnailUrl(responseObj.snippet.thumbnails, 'default'),
             thumbnailUrlBig: this.getThumbnailUrl(responseObj.snippet.thumbnails, 'medium'),
-            channelName: responseObj.snippet.channelTitle,
-        }
+            title: responseObj.snippet.title,
+            videoId: id,
+        };
     }
 }
 

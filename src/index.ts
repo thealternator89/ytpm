@@ -1,8 +1,8 @@
-import * as path from 'path';
-import * as express from 'express';
-import * as exphbs from 'express-handlebars';
 import * as bodyParser from 'body-parser';
 import * as cookieParser from 'cookie-parser';
+import * as express from 'express';
+import * as exphbs from 'express-handlebars';
+import * as path from 'path';
 
 import {apiEndpointHandler} from './endpoints/ApiEndpoint';
 import {playerEndpointHandler} from './endpoints/PlayerEndpoint';
@@ -15,7 +15,7 @@ const app = express();
 
 app.engine('.hbs', exphbs({
     extname: '.hbs',
-    layoutsDir: path.join(__dirname, 'views/hbs/layouts')
+    layoutsDir: path.join(__dirname, 'views/hbs/layouts'),
 }));
 
 app.set('view-engine', '.hbs');
@@ -28,8 +28,8 @@ app.use(cookieParser());
 
 app.use((err, request, response, next) => {
     // log the error, for now just console.log
-    console.log(err)
-    response.status(500).send('Something broke!')
+    console.log(err);
+    response.status(500).send('Something broke!');
 });
 
 playerEndpointHandler.registerApiEndpoints(app);
@@ -38,9 +38,8 @@ webClientEndpointHandler.registerApiEndpoints(app);
 
 app.listen(SERVER_PORT, (err) => {
     if (err) {
-      return console.log('something bad happened', err)
+      return console.log('something bad happened', err);
     }
-  
-    console.log(`server is listening on ${SERVER_PORT}`)
-});
 
+    console.log(`server is listening on ${SERVER_PORT}`);
+});

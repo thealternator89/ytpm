@@ -1,6 +1,7 @@
-import { PlayerQueue } from "./PlayerQueue";
+import { PlayerQueue } from './PlayerQueue';
+
+import * as moment from 'moment';
 import * as randomstring from 'randomstring';
-import moment = require("moment");
 
 const QUEUE_KEY_LENGTH_CHARS = 5;
 const MAX_KEY_GENERATION_ATTEMPTS = 10;
@@ -23,7 +24,7 @@ class PlayerQueuesManager {
 
     public createNewPlayerQueue(): string {
         // Iterate to generate a new key, allowing us to avoid collision.
-        // If we collide 10 times, we should just throw an error. This will theoretically only occur after more than 30K queues exist.
+        // If we collide 10 times, we should just throw an error - This can only occur with more than 30K queues
         for (let i = 0; i < MAX_KEY_GENERATION_ATTEMPTS; i++) {
             const newKey = generatePreSharedKey();
             if (!this.playerQueues[newKey]) {
@@ -36,11 +37,11 @@ class PlayerQueuesManager {
 
     public cleanUpOldPlayerQueues(): void {
         for (const queueKey in this.playerQueues) {
-            if(!this.playerQueues.hasOwnProperty(queueKey)){
+            if (!this.playerQueues.hasOwnProperty(queueKey)) {
                 continue;
             }
             const timeSinceTouched = moment.duration(moment().diff(this.playerQueues[queueKey].getTimeLastTouched()));
-            if(timeSinceTouched.asHours() > 12){
+            if (timeSinceTouched.asHours() > 12) {
                 delete this.playerQueues[queueKey];
             }
         }
@@ -53,10 +54,10 @@ class PlayerQueuesManager {
 
 function generatePreSharedKey(): string {
     return randomstring.generate({
+        capitalization: 'uppercase',
+        charset: 'alphanumeric',
         length: QUEUE_KEY_LENGTH_CHARS,
         readable: true,
-        charset: 'alphanumeric',
-        capitalization: 'uppercase'
     });
 }
 

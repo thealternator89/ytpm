@@ -1,9 +1,9 @@
+import { Request, Response } from 'express';
 import * as path from 'path';
-import { Response, Request } from "express";
-import { userAuthHandler } from "../auth/UserAuthHandler";
 import { URL } from 'url';
-import { IQueueItem } from '../models/QueueItem';
+import { userAuthHandler } from '../auth/UserAuthHandler';
 import { Constants as CONSTANTS } from '../constants';
+import { IQueueItem } from '../models/QueueItem';
 
 export class WebClientEndpointHandler {
     public registerApiEndpoints(app: any) {
@@ -12,7 +12,7 @@ export class WebClientEndpointHandler {
         });
 
         app.get('/client', (request: Request, response: Response) => {
-            if(!this.validateCookie(request, response)) {
+            if (!this.validateCookie(request, response)) {
                 return;
             }
 
@@ -24,10 +24,10 @@ export class WebClientEndpointHandler {
         });
 
         app.post('/client/login', (request: Request, response: Response) => {
-            const psk = request.body['inputPreSharedKey'];
-            const name = request.body['inputName'];
-            
-            if(!name || !psk) {
+            const psk = request.body.inputPreSharedKey;
+            const name = request.body.inputName;
+
+            if (!name || !psk) {
                 response.redirect('/client/login');
                 return;
             }
@@ -48,7 +48,7 @@ export class WebClientEndpointHandler {
 
         app.get('/client/logout', (request: Request, response: Response) => {
             response.cookie('token', null).redirect('/client');
-        })
+        });
 
         app.get('/client/home', (request: Request, response: Response) => {
             this.sendView(request, response, 'home.html');
@@ -78,30 +78,30 @@ export class WebClientEndpointHandler {
             if (!this.validateCookie(request, response)) {
                 return;
             }
-            const token = request.cookies['token'];
+            const token = request.cookies.token;
             const queue = userAuthHandler.getQueueForToken(token);
 
-            const url = request.body['inputUrl'];
-            let videoId = request.body['inputVideoId'];
-            
-            if(!videoId && url) {
+            const url = request.body.inputUrl;
+            let videoId = request.body.inputVideoId;
+
+            if (!videoId && url) {
                 const videoUrl = new URL(url);
                 videoId = videoUrl.searchParams.get('v');
             }
 
-            if(!videoId) {
+            if (!videoId) {
                 response.redirect('/client/add_manually');
                 return;
             }
 
             const queueItem: IQueueItem = {
-                videoId,
+                autoQueueInfluence: CONSTANTS.AUTO_QUEUE_INFLUENCE.NO_INFLUENCE,
                 user: token,
-                autoQueueInfluence: CONSTANTS.AUTO_QUEUE_INFLUENCE.NO_INFLUENCE
-            }
+                videoId: videoId,
+            };
 
             queue.enqueue(queueItem);
-            
+
             response.redirect('/client');
         });
     }
@@ -109,12 +109,12 @@ export class WebClientEndpointHandler {
     private sendView(request: Request, response: Response, viewName: string, requireValidSession = true) {
         if (requireValidSession && !this.validateCookie(request, response)) {
             return;
-        } 
+        }
         response.sendFile(path.join(__dirname, '..' , 'views/html', viewName));
     }
 
     private validateCookie(request, response) {
-        if (request.cookies['token'] && userAuthHandler.validateToken(request.cookies['token'])) {
+        if (request.cookies.token && userAuthHandler.validateToken(request.cookies.token)) {
             return true;
         } else {
             response.redirect('/client/login');

@@ -1,18 +1,18 @@
-import { YouTubeVideoDetails } from "../models/YouTubeVideoDetails";
-import { youTubeClient } from "./YouTubeClient";
+import { IYouTubeVideoDetails } from '../models/YouTubeVideoDetails';
+import { youTubeClient } from './YouTubeClient';
 
 class YouTubeVideoDetailsCache {
-    private readonly detailsCache: {[videoId: string]: YouTubeVideoDetails} = {};
+    private readonly detailsCache: {[videoId: string]: IYouTubeVideoDetails} = {};
 
-    public addOrReplaceInCache(item: YouTubeVideoDetails) {
+    public addOrReplaceInCache(item: IYouTubeVideoDetails) {
         this.detailsCache[item.videoId] = item;
     }
 
-    public async getFromCacheOrApi(videoId: string): Promise<YouTubeVideoDetails|undefined> {
-        if (!videoId){
+    public async getFromCacheOrApi(videoId: string): Promise<IYouTubeVideoDetails|undefined> {
+        if (!videoId) {
             return undefined;
         }
-        if (!this.detailsCache[videoId]){
+        if (!this.detailsCache[videoId]) {
             const videoDetails = await youTubeClient.getDetails(videoId);
             this.detailsCache[videoDetails.videoId] = videoDetails;
         }

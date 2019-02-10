@@ -1,9 +1,9 @@
-export interface YoutubeSearchResults {
+export interface IYoutubeSearchResults {
     nextPageToken?: string;
-    results: YouTubeVideoDetails[];
+    results: IYouTubeVideoDetails[];
 }
 
-export interface YouTubeVideoDetails {
+export interface IYouTubeVideoDetails {
     videoId: string;
     title: string;
     description: string;
