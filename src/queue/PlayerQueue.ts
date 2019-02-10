@@ -155,7 +155,11 @@ export class PlayerQueue {
     }
 
     public getAllPlayedVideoIds(): string[] {
-        return [...this.playHistory];
+        if(this.playerStatus.currentItem && this.playHistory[0] === this.playerStatus.currentItem.videoId) {
+            return this.playHistory.slice(1);
+        } else {
+            return this.playHistory.slice(0);
+        }
     }
 
     public getNextAutoPlayItem(): string|undefined {
