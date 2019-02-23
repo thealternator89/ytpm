@@ -14,10 +14,25 @@
                 var dataObj = {event: eventName, time: timestamp};
                 Object.assign(dataObj, additionalData);
 
-                var dataBlob = new Blob([JSON.stringify(dataObj)],
-                    {type : 'application/json; charset=UTF-8'});
+                var urlEncodedData = getUrlEncodedData(dataObj);
+
+                var dataBlob = new Blob([urlEncodedData],
+                    {type : 'application/x-www-form-urlencoded'});
                 navigator.sendBeacon(url, dataBlob);
             }
+
+            function getUrlEncodedData(data) {
+                var urlEncodedDataPairs = [];
+
+                for (var name in data) {
+                    if(!data.hasOwnProperty(name)) {
+                        continue;
+                    }
+                    urlEncodedDataPairs.push(encodeURIComponent(name) + '=' + encodeURIComponent(data[name]));
+                }
+
+                return urlEncodedDataPairs.join('&').replace(/%20/g, '+');
+            } 
         </script>
     </head>
      <body>
