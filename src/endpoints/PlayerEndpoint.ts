@@ -7,13 +7,15 @@ import { playerQueuesManager } from '../queue/PlayerQueuesManager';
 export class PlayerEndpointHandler {
     public registerApiEndpoints(app: any) {
         app.get('/player', async (request, response) => {
-            if (!request.query.key || !playerQueuesManager.queueExists(request.query.key)) {
-                const newKey = playerQueuesManager.createNewPlayerQueue();
+            if (!request.query.key || !playerQueuesManager.queueExistsForKey(request.query.key)) {
+                const newQueue = playerQueuesManager.createNewPlayerQueue();
+                const newKey = newQueue.getKey();
+                response.cookie('ytpm_player_token', newQueue.getPlayerToken());
                 response.redirect(`/player?key=${newKey}`);
                 return;
             }
 
-            const queue = playerQueuesManager.getPlayerQueue(request.query.key);
+            const queue = playerQueuesManager.getPlayerQueueForKey(request.query.key);
 
             const queueItem = queue.getSongToPlay();
             const baseObject = {

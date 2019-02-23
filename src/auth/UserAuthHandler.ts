@@ -9,7 +9,7 @@ class UserAuthHandler {
     private authedUsers: {[token: string]: IUserDetails} = {};
 
     public authenticateNewUser(queue: string, name: string): string {
-        if (!playerQueuesManager.queueExists(queue)) {
+        if (!playerQueuesManager.queueExistsForKey(queue)) {
             throw new Error('Invalid key');
         }
         const token = reformatToken(uuid.v4());
@@ -33,7 +33,7 @@ class UserAuthHandler {
 
     public getQueueForToken(token: string): PlayerQueue|undefined {
         const user = this.getUser(token);
-        return user ? playerQueuesManager.getPlayerQueue(user.queue) : undefined;
+        return user ? playerQueuesManager.getPlayerQueueForKey(user.queue) : undefined;
     }
 
     private getUser(token?: string): IUserDetails|undefined {

@@ -5,9 +5,11 @@ import * as exphbs from 'express-handlebars';
 import * as path from 'path';
 
 import {apiEndpointHandler} from './endpoints/ApiEndpoint';
+import {playerApiEndpointHandler} from './endpoints/PlayerApiEndpoint';
 import {playerEndpointHandler} from './endpoints/PlayerEndpoint';
 import {webClientEndpointHandler} from './endpoints/WebClientEndpoint';
 import { envUtil } from './util/EnvUtil';
+import { logger } from './util/LogUtil';
 
 const SERVER_PORT = envUtil.getServerPort(8080);
 
@@ -27,19 +29,25 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
 
 app.use((err, request, response, next) => {
-    // log the error, for now just console.log
-    console.log(err);
+    logger.error(err);
     response.status(500).send('Something broke!');
 });
 
+app.use((request: express.Request, response: express.Response, next: express.NextFunction) => {
+    logger.info(`${request.ip} - ${request.method} ${request.path}`);
+    next();
+});
+
 playerEndpointHandler.registerApiEndpoints(app);
+playerApiEndpointHandler.registerApiEndpoints(app);
 apiEndpointHandler.registerApiEndpoints(app);
 webClientEndpointHandler.registerApiEndpoints(app);
 
 app.listen(SERVER_PORT, (err) => {
     if (err) {
-      return console.log('something bad happened', err);
+      logger.error('something bad happened', err);
+      return;
     }
 
-    console.log(`server is listening on ${SERVER_PORT}`);
+    logger.info(`server is listening on ${SERVER_PORT}`);
 });

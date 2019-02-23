@@ -31,12 +31,16 @@ export class PlayerQueue {
 
     private privacyMode: PrivacyMode = PrivacyMode.FULL_NAMES;
 
-    public constructor(private key: string) {
+    public constructor(private key: string, private token: string) {
         this.touched();
     }
 
     public getKey(): string {
         return this.key;
+    }
+
+    public getPlayerToken(): string {
+        return this.token;
     }
 
     public updatePlayerState(
@@ -138,7 +142,6 @@ export class PlayerQueue {
         return this.queue.splice(position, 1)[0];
     }
 
-    // DEPRECATED - once polling is working this should be removed
     public length(): number {
         return this.queue.length;
     }
