@@ -11,7 +11,7 @@ type PlayerCommand = 'PLAY'|'PAUSE'|'SKIP'|'REPLAY';
 class PlayerApiEndpointHandler implements Endpoint {
     public registerApiEndpoints(app: any) {
         app.post('/api/player/update', (request: Request, response: Response) => {
-            const queue = this.getQueueByQueryParam(request, response);
+            const queue = this.getQueueByQueueKeyParam(request, response);
             if (!queue) {
                 return;
             }
@@ -28,7 +28,7 @@ class PlayerApiEndpointHandler implements Endpoint {
             response.status(200).send();
         });
         app.get('/api/player/poll', (request: Request, response: Response) => {
-            const queue = this.getQueueByQueryParam(request, response);
+            const queue = this.getQueueByQueueKeyParam(request, response);
             if (!queue) {
                 return;
             }
@@ -89,6 +89,23 @@ class PlayerApiEndpointHandler implements Endpoint {
         }
 
         const queue = playerQueuesManager.getPlayerQueueForToken(token);
+        if (!queue) {
+            response.status(400).send('Invalid request');
+            return undefined;
+        }
+
+        return queue;
+    }
+
+    // DEPRECATED - Remove once the Dyanamic Player Client feature is complete
+    private getQueueByQueueKeyParam(request: Request, response: Response): PlayerQueue|undefined {
+        const playerKey = request.query.key;
+        if (!playerKey){
+            response.status(400).send('Invalid request');
+            return undefined;
+        }
+
+        const queue = playerQueuesManager.getPlayerQueueForKey(playerKey);
         if (!queue) {
             response.status(400).send('Invalid request');
             return undefined;
