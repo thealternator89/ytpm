@@ -9,8 +9,9 @@ import { IQueueItem } from '../models/QueueItem';
 import { IYouTubeVideoDetails } from '../models/YouTubeVideoDetails';
 import { PlayerQueue } from '../queue/PlayerQueue';
 import { playerQueuesManager } from '../queue/PlayerQueuesManager';
+import { Endpoint } from './Endpoint';
 
-class ApiEndpointHandler {
+class ApiEndpointHandler implements Endpoint {
 
     public registerApiEndpoints(app: any) {
         app.get('/api/client/poll', async (request: Request, response: Response) => {

@@ -4,10 +4,11 @@ import { MessageBus } from '../util/MessageBus';
 
 import { PlayerQueue } from '../queue/PlayerQueue';
 import { playerQueuesManager } from '../queue/PlayerQueuesManager';
+import { Endpoint } from './Endpoint';
 
 type PlayerCommand = 'PLAY'|'PAUSE'|'SKIP'|'REPLAY';
 
-class PlayerApiEndpointHandler {
+class PlayerApiEndpointHandler implements Endpoint {
     public registerApiEndpoints(app: any) {
         app.post('/api/player/update', (request: Request, response: Response) => {
             const queue = this.getQueueByQueryParam(request, response);

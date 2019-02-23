@@ -4,8 +4,9 @@ import { URL } from 'url';
 import { userAuthHandler } from '../auth/UserAuthHandler';
 import { Constants as CONSTANTS } from '../constants';
 import { IQueueItem } from '../models/QueueItem';
+import { Endpoint } from './Endpoint';
 
-export class WebClientEndpointHandler {
+export class WebClientEndpointHandler implements Endpoint {
     public registerApiEndpoints(app: any) {
         app.get('/', (request: Request, response: Response) => {
             response.redirect('/client');
