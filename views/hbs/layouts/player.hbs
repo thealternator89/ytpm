@@ -67,7 +67,6 @@
                     $.ajax({
                         url: '/api/player/poll?key=' + queueKey,
                         success: function(response) {
-                            console.log('Poll received from server');
                             // If the queueLength is now > 0 and we're not currently playing a song, reload to get a song.
                             if (typeof(YT) === 'undefined' && response.queueLength > 0) {
                                 location.reload();
@@ -89,9 +88,7 @@
 
                             document.getElementById('queue_size').innerText = response.queueLength;
                         },
-                        error: function(xhr, textStatus, error) {
-                            console.log('Error occurred: ' + textStatus + ' - ' + error);
-                        },
+                        error: function(xhr, textStatus, error) {},
                         dataType: "json",
                         complete: poll 
                     });

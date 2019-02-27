@@ -5,13 +5,17 @@ import { MessageBus } from '../util/MessageBus';
 import { PlayerQueue } from '../queue/PlayerQueue';
 import { playerQueuesManager } from '../queue/PlayerQueuesManager';
 import { Endpoint } from './Endpoint';
+import { PrivacyMode } from '../enums';
+import { youTubeVideoDetailsCache } from '../api-client/YouTubeVideoDetailsCache';
+import { IQueueItem } from '../models/QueueItem';
+import { userAuthHandler } from '../auth/UserAuthHandler';
 
 type PlayerCommand = 'PLAY'|'PAUSE'|'SKIP'|'REPLAY';
 
 class PlayerApiEndpointHandler implements Endpoint {
     public registerApiEndpoints(app: any) {
         app.post('/api/player/update', (request: Request, response: Response) => {
-            const queue = this.getQueueByQueueKeyParam(request, response);
+            const queue = this.getQueue(request, response);
             if (!queue) {
                 return;
             }
@@ -28,7 +32,7 @@ class PlayerApiEndpointHandler implements Endpoint {
             response.status(200).send();
         });
         app.get('/api/player/poll', (request: Request, response: Response) => {
-            const queue = this.getQueueByQueueKeyParam(request, response);
+            const queue = this.getQueue(request, response);
             if (!queue) {
                 return;
             }
@@ -50,7 +54,8 @@ class PlayerApiEndpointHandler implements Endpoint {
         });
 
         app.get('/api/player/register', (request: Request, response: Response) => {
-            let queue: PlayerQueue = this.getQueueByTokenCookie(request, response);
+            const playerToken = request.cookies.ytpm_player_token;
+            let queue: PlayerQueue = playerQueuesManager.getPlayerQueueForToken(playerToken);
 
             if (!queue) {
                 queue = playerQueuesManager.createNewPlayerQueue();
@@ -65,29 +70,55 @@ class PlayerApiEndpointHandler implements Endpoint {
         });
 
         app.get('/api/player/next_song', async (request: Request, response: Response) => {
-            response.send('Not implemented');
+            const queue: PlayerQueue = this.getQueue(request, response);
 
+            if (!queue) {
+                return;
+            }
 
+            const queueItem = queue.getSongToPlay();
 
+            // Successfully authed, but there's nothing to play - just return a 200.
+            if(!queueItem) {
+                response.send();
+            }
+
+            const videoDetails = await youTubeVideoDetailsCache.getFromCacheOrApi(queueItem.videoId);
+            const userAuthToken = (queueItem as IQueueItem).user;
+            let addedBy: string;
+
+            if (queue.getPrivacyMode() === PrivacyMode.HIDDEN) {
+                addedBy = '';
+            } else if (!userAuthToken) {
+                addedBy = 'Added automatically';
+            } else if (queue.getPrivacyMode() === PrivacyMode.FULL_NAMES) {
+                addedBy = `Added by ${userAuthHandler.getNameForToken(userAuthToken)}`;
+            } else {
+                addedBy = 'Added by a user';
+            }
+
+            response.json({
+                video: videoDetails,
+                addedBy: addedBy,
+                queueLength: queue.length(),
+            });
         });
     }
 
-    private getQueueByTokenCookie(request: Request, response: Response): PlayerQueue|undefined {
-        const playerToken = request.cookies.ytpm_player_token;
-        return this.getQueueForToken(response, playerToken);
-    }
-
-    private getQueueByQueryParam(request: Request, response: Response): PlayerQueue|undefined {
-        const playerToken = request.query.token;
-        return this.getQueueForToken(response, playerToken);
-    }
-
-    private getQueueForToken(response: Response, token?: string): PlayerQueue|undefined {
-        if (!token) {
+    private getQueue(request, response): PlayerQueue|undefined {
+        if(request.query.token) {
+            return this.getQueueForToken(response, request.query.token);
+        } else if (request.cookies.ytpm_player_token) {
+            return this.getQueueForToken(response, request.cookies.ytpm_player_token);
+        } else if (request.query.key) {
+            return this.getQueueByQueueKey(response, request.query.key);
+        } else {
             response.status(400).send('Invalid request');
             return undefined;
         }
+    }
 
+    private getQueueForToken(response: Response, token: string): PlayerQueue|undefined {
         const queue = playerQueuesManager.getPlayerQueueForToken(token);
         if (!queue) {
             response.status(400).send('Invalid request');
@@ -97,14 +128,7 @@ class PlayerApiEndpointHandler implements Endpoint {
         return queue;
     }
 
-    // DEPRECATED - Remove once the Dyanamic Player Client feature is complete
-    private getQueueByQueueKeyParam(request: Request, response: Response): PlayerQueue|undefined {
-        const playerKey = request.query.key;
-        if (!playerKey){
-            response.status(400).send('Invalid request');
-            return undefined;
-        }
-
+    private getQueueByQueueKey(response: Response, playerKey: string): PlayerQueue|undefined {
         const queue = playerQueuesManager.getPlayerQueueForKey(playerKey);
         if (!queue) {
             response.status(400).send('Invalid request');

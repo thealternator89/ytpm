@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>YTPM</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" crossorigin="anonymous">
+    <link rel=stylesheet type=text/css href=/animate.css>
+    <link rel=stylesheet type=text/css href=/player-v2.css>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+    <script>
+        var playerToken;
+
+        function sendBeacon(eventName, additionalData) {
+            var timestamp = Math.round((new Date()).getTime() / 1000);
+            var url = '/api/player/update?token=' + playerToken;
+            var dataObj = {event: eventName, time: timestamp};
+            Object.assign(dataObj, additionalData);
+
+            var urlEncodedData = getUrlEncodedData(dataObj);
+
+            var dataBlob = new Blob([urlEncodedData],
+                {type : 'application/x-www-form-urlencoded'});
+            navigator.sendBeacon(url, dataBlob);
+        }
+
+        function getUrlEncodedData(data) {
+            var urlEncodedDataPairs = [];
+
+            for (var name in data) {
+                if(!data.hasOwnProperty(name)) {
+                    continue;
+                }
+                urlEncodedDataPairs.push(encodeURIComponent(name) + '=' + encodeURIComponent(data[name]));
+            }
+
+            return urlEncodedDataPairs.join('&').replace(/%20/g, '+');
+        } 
+
+        window.onbeforeunload = function() {
+            sendBeacon('unloaded');
+            return null;
+        }
+    </script>
+</head>
+<body>
+    <div id="invisible_curtain"></div>
+    <div id="auth_info_panel" style="visibility: hidden;">
+        <div id="auth_header">Add to the queue:</div>
+        <div id="host"></div>
+        <div id="pass_phrase">ABC23</div>
+        <div id="current_queue">Currently queued: <span id="queue_size">0</span></div>
+    </div>
+    <div id="song_info" class="animated" style="top: -120px;">
+        <img id="song_thumb" src="" width="120" height="90">
+        <div id="song_title">&lt;Video Title&gt;</div>
+        <div id="song_added_by">&lt;Added By&gt;</div>
+    </div>
+    
+    <div id="pausedOsd"><i id="pausedIcon" class="material-icons">pause</i></div>
+    
+    <div id="loading_curtain" style="visibility:hidden;"></div>
+    <div id="NoMusicError" style="visibility:hidden;">No music to play.<br>Add music to the queue to see it here.</div>
+</body>
+<script>
+    // Setup YouTube iframe API:
+    // ------
+    var tag = document.createElement('script');
+    tag.src = "https://www.youtube.com/iframe_api";
+    var firstScriptTag = document.getElementsByTagName('script')[0];
+    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+    // ------
+    
+    $('#host').text(new URL(window.location.href).host);
+
+    var player;
+
+    var me = this;
+    $.ajax({
+        url: '/api/player/register',
+        success: function(response) {
+            playerToken = response.token;
+            var queueKey = response.queue_key;
+
+            document.title = 'YTPM - ' + queueKey;
+            $('#pass_phrase').text(queueKey);
+            $('#queue_size').text(response.queue_length);
+            $('#auth_info_panel').css('visibility', 'visible');
+        }
+    });
+
+    function onYouTubeIframeAPIReady() { 
+        $('#NoMusicError').css('visibility', 'visible');
+        $('#loading_curtain').css('visibility', 'hidden');
+    }
+
+    // perform xhr to /api/player/poll
+
+    (function poll() {
+        if (!playerToken) {
+            setTimeout(poll, 100);
+        }
+
+        $.ajax({
+            url: '/api/player/poll?token=' + playerToken,
+            success: function(response) {
+                // If the queueLength is now > 0 and we're not currently playing a song, reload to get a song.
+                if ((typeof(player) === 'undefined' || player === null) && response.queueLength > 0) {
+                    getItemToPlay();
+                }
+
+                if (typeof(response.command) !== 'undefined' && (typeof(player) !== 'undefined' && player !== null)) {
+                    switch (response.command) {
+                        case 'PLAY': player.playVideo();
+                            break;
+                        case 'PAUSE': player.pauseVideo();
+                            break;
+                        case 'NEXTTRACK': getItemToPlay();
+                            break;
+                        case 'REPLAYTRACK': player.seekTo(0);
+                            break;
+                        default: console.log('unknown command: ' + response.command);
+                    }
+                }
+
+                document.getElementById('queue_size').innerText = response.queueLength;
+            },
+            error: function(xhr, textStatus, error) {},
+            dataType: "json",
+            complete: poll 
+        });
+    })();
+
+    /*
+        {
+            video: {
+                videoId: string;
+                title: string;
+                description: string;
+                thumbnailUrl?: string;
+                thumbnailUrlBig?: string;
+                channelName?: string;
+            },
+            addedByText: string
+        }
+    */
+
+    function getItemToPlay() {
+        $('#loading_curtain').css('visibility', 'visible');
+        $('#player').remove();
+        player = null;
+        $.ajax({
+        url: '/api/player/next_song?token=' + playerToken,
+        success: function(response) {
+            if (typeof response === 'undefined' || !response) {
+                $('#NoMusicError').css('visibility', 'visible');
+                $('#loading_curtain').css('visibility', 'hidden');
+            } else {
+                $('#NoMusicError').css('visibility', 'hidden');
+                $('#queue_size').text(response.queueLength);
+                playSong(response);
+            }
+        }
+    });
+    }
+
+    function playSong(song) {
+        $('<div id="player"></div>').appendTo(document.body);
+        player = new YT.Player('player', {
+            videoId: song.video.videoId,
+            playerVars: { 'autoplay': 1, 'controls': 0 },
+            events: {
+                onStateChange: onPlayerStateChange
+            }
+        });
+        showSongInfoPanel(song.video.title, song.video.thumbnailUrl, song.addedBy);
+    }
+
+    function showSongInfoPanel(title, thumbnail, addedBy) {
+        $('#song_title').text(title);
+        $('#song_thumb').attr('src', thumbnail);
+        $('#song_added_by').text(addedBy);
+
+        var songInfoPanelElem = $('#song_info');
+
+        songInfoPanelElem.removeClass('fadeOutUp');
+        songInfoPanelElem.css('top', '0px');
+        songInfoPanelElem.addClass('fadeInDown');
+
+        setTimeout(hideSongInfoPanel, 7000);
+
+        function hideSongInfoPanel() {
+            var songInfoPanelElem = $('#song_info');
+            songInfoPanelElem.removeClass('fadeInDown');
+            songInfoPanelElem.addClass('fadeOutUp');
+        }
+    }
+
+    function onPlayerStateChange(event) {
+        switch (event.data) {
+            case YT.PlayerState.ENDED: {
+                sendBeacon('ended');
+                getItemToPlay();
+                break;
+            }
+            case YT.PlayerState.PAUSED: {
+                var data = {
+                    videoId: player.getVideoData().video_id,
+                    position: player.getCurrentTime(),
+                    duration: player.getDuration(),
+                };
+
+                sendBeacon('paused', data);
+                $('#pausedOsd').css('visibility', 'visible');
+                break;
+            }
+            case YT.PlayerState.PLAYING: {
+                var data = {
+                    videoId: player.getVideoData().video_id,
+                    position: player.getCurrentTime(),
+                    duration: player.getDuration(),
+                };
+
+                sendBeacon('playing', data);
+               $('#pausedOsd').css('visibility', 'hidden');
+                setTimeout(function() {
+                    $('#loading_curtain').css('visibility', 'hidden');
+                }, 100);
+                break;
+            }
+            default: {
+                sendBeacon(youTubePlayerStateToBeaconEvent(event.data));
+            }
+        }
+    }
+
+    
+</script>
+</html>

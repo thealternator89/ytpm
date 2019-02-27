@@ -111,7 +111,7 @@ export class WebClientEndpointHandler implements Endpoint {
         if (requireValidSession && !this.validateCookie(request, response)) {
             return;
         }
-        response.sendFile(path.join(__dirname, '..' , 'views/html', viewName));
+        response.sendFile(path.join(__dirname, '..' , 'views/html/client', viewName));
     }
 
     private validateCookie(request, response) {

@@ -1,3 +1,7 @@
+import { Request, Response } from 'express';
+
+import * as path from 'path';
+
 import { youTubeVideoDetailsCache } from '../api-client/YouTubeVideoDetailsCache';
 import { userAuthHandler } from '../auth/UserAuthHandler';
 import { PrivacyMode } from '../enums';
@@ -50,6 +54,10 @@ export class PlayerEndpointHandler implements Endpoint{
                     videoTitle: videoDetails.title,
                 });
             }
+        });
+
+        app.get('/player/v2', (request: Request, response: Response) => {
+            response.sendFile(path.join(__dirname, '..' , 'views/html/player', 'player.html'));
         });
     }
 }
