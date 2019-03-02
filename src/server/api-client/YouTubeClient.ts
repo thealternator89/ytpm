@@ -5,6 +5,9 @@ import * as rp from 'request-promise';
 import { IYoutubeSearchResults, IYouTubeVideoDetails } from '../models/YouTubeVideoDetails';
 import { envUtil } from '../util/EnvUtil';
 import { youTubeVideoDetailsCache } from './YouTubeVideoDetailsCache';
+import { AllHtmlEntities } from 'html-entities';
+
+const htmlEntities = new AllHtmlEntities();
 
 const SEARCH_RESULT_LIMIT_STANDARD = 15;
 const SEARCH_RESULT_LIMIT_RELATED = 5;
@@ -191,14 +194,30 @@ class YouTubeClient {
         // If the id is a string, use it. Otherwise use the videoId property of id.
         const id: string = (typeof(responseObj.id) === 'string') ? responseObj.id : responseObj.id.videoId;
 
-        return {
+        return this.decodeHtmlEntities({
             channelName: responseObj.snippet.channelTitle,
             description: responseObj.snippet.description,
             thumbnailUrl: this.getThumbnailUrl(responseObj.snippet.thumbnails, 'default'),
             thumbnailUrlBig: this.getThumbnailUrl(responseObj.snippet.thumbnails, 'medium'),
             title: responseObj.snippet.title,
             videoId: id,
-        };
+        });
+    }
+
+    /**
+     * Decodes any HTML entities (e.g. '&amp;') into the actual character ('&')
+     * Returns a new IYouTubeVideoDetails object with the HTML entities decoded.
+     * Note: only the channelName, description and title properties are decoded.
+     * @param video The video details object to decode
+     * @returns A new video details object with html entities decoded
+     */
+    private decodeHtmlEntities(video: IYouTubeVideoDetails): IYouTubeVideoDetails {
+        return {
+            ...video,
+            channelName: htmlEntities.decode(video.channelName),
+            description: htmlEntities.decode(video.description),
+            title: htmlEntities.decode(video.title),
+        }
     }
 }
 
