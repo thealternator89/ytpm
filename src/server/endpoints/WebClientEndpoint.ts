@@ -48,7 +48,7 @@ export class WebClientEndpointHandler implements IEndpoint {
         });
 
         app.get('/client/logout', (request: Request, response: Response) => {
-            response.cookie('token', null).redirect('/client');
+            response.clearCookie('token').redirect('/client');
         });
 
         app.get('/client/home', (request: Request, response: Response) => {
