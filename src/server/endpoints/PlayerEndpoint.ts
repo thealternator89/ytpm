@@ -11,7 +11,7 @@ import { Endpoint } from './Endpoint';
 
 export class PlayerEndpointHandler implements Endpoint{
     public registerApiEndpoints(app: any) {
-        app.get('/player', async (request, response) => {
+        app.get('/player/legacy', async (request, response) => {
             if (!request.query.key || !playerQueuesManager.queueExistsForKey(request.query.key)) {
                 const newQueue = playerQueuesManager.createNewPlayerQueue();
                 const newKey = newQueue.getKey();
@@ -56,7 +56,7 @@ export class PlayerEndpointHandler implements Endpoint{
             }
         });
 
-        app.get('/player/v2', (request: Request, response: Response) => {
+        app.get('/player', (request: Request, response: Response) => {
             response.sendFile(path.join(__dirname, '..' , 'views/html/player', 'player.html'));
         });
     }
