@@ -4,7 +4,9 @@
   "description": "Party Mode for YouTube",
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "npm run buildserver && npm run buildplayer",
+    "buildserver": "tsc",
+    "buildplayer": "webpack --mode=production",
     "postinstall": "node build-tasks/copy-views.js",
     "buildstart": "npm run build && npm run postinstall && npm run start",
     "lint": "tslint --project .",
@@ -22,28 +24,37 @@
   "author": "Mark Benson",
   "license": "UNLICENSED",
   "dependencies": {
+    "ajv": "^6.9.2",
     "atob": "^2.1.2",
     "cookie-parser": "^1.4.3",
     "copyfiles": "^2.1.0",
     "express": "^4.16.4",
     "express-handlebars": "^3.0.0",
     "googleapis": "^34.0.0",
-    "handlebars": "^4.0.12",
+    "handlebars": "^4.1.0",
     "ip": "^1.1.5",
+    "jquery": "^3.3.1",
     "moment": "^2.22.2",
     "randomstring": "^1.1.5",
     "request": "^2.88.0",
     "request-promise": "^4.2.2",
-    "typescript": "^3.1.6",
-    "uuid": "^3.3.2"
+    "uuid": "^3.3.2",
+    "winston": "^3.2.1",
+    "youtube-player": "^5.5.2"
   },
   "devDependencies": {
     "@types/express": "^4.16.0",
     "@types/express-handlebars": "0.0.30",
     "@types/ip": "0.0.31",
+    "@types/jquery": "^3.3.29",
     "@types/randomstring": "^1.1.6",
     "@types/request-promise": "^4.1.42",
     "@types/uuid": "^3.4.4",
-    "tslint": "^5.12.1"
+    "terser-webpack-plugin": "^1.2.3",
+    "ts-loader": "^5.3.3",
+    "tslint": "^5.12.1",
+    "typescript": "^3.3.3333",
+    "webpack": "^4.29.5",
+    "webpack-cli": "^3.2.3"
   }
 }

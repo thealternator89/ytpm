@@ -2,34 +2,47 @@ import { PlayerQueue } from './PlayerQueue';
 
 import * as moment from 'moment';
 import * as randomstring from 'randomstring';
+import uuid = require('uuid');
 
 const QUEUE_KEY_LENGTH_CHARS = 5;
 const MAX_KEY_GENERATION_ATTEMPTS = 10;
 
 class PlayerQueuesManager {
     private playerQueues: {[key: string]: PlayerQueue} = {};
+    private playerQueueMap: {[token: string]: PlayerQueue} = {};
 
-    public getPlayerQueue(key: string): PlayerQueue {
+    public getPlayerQueueForKey(key: string): PlayerQueue {
         // toUpperCase as generatePreSharedKey generates an upper case string.
         return this.playerQueues[key.toUpperCase()];
     }
 
-    public queueExists(key: string): boolean {
-        return !!this.getPlayerQueue(key);
+    public queueExistsForKey(key: string): boolean {
+        return !!this.getPlayerQueueForKey(key);
+    }
+
+    public getPlayerQueueForToken(token: string): PlayerQueue {
+        return this.playerQueueMap[token];
+    }
+
+    public queueExistsForToken(token: string): boolean {
+        return !!this.getPlayerQueueForToken(token);
     }
 
     public getAllQueueKeys(): string[] {
         return Object.keys(this.playerQueues);
     }
 
-    public createNewPlayerQueue(): string {
+    public createNewPlayerQueue(): PlayerQueue {
         // Iterate to generate a new key, allowing us to avoid collision.
         // If we collide 10 times, we should just throw an error - This can only occur with more than 30K queues
         for (let i = 0; i < MAX_KEY_GENERATION_ATTEMPTS; i++) {
             const newKey = generatePreSharedKey();
             if (!this.playerQueues[newKey]) {
-                this.playerQueues[newKey] = new PlayerQueue(newKey);
-                return newKey;
+                const playerToken = uuid.v4();
+                const queue = new PlayerQueue(newKey, playerToken);
+                this.playerQueues[newKey] = queue;
+                this.playerQueueMap[playerToken] = queue;
+                return queue;
             }
         }
         throw new Error(`Failed to generate a key after ${MAX_KEY_GENERATION_ATTEMPTS} attempts`);

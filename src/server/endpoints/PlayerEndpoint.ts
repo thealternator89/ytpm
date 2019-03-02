@@ -1,19 +1,26 @@
+import { Request, Response } from 'express';
+
+import * as path from 'path';
+
 import { youTubeVideoDetailsCache } from '../api-client/YouTubeVideoDetailsCache';
 import { userAuthHandler } from '../auth/UserAuthHandler';
 import { PrivacyMode } from '../enums';
 import { IQueueItem } from '../models/QueueItem';
 import { playerQueuesManager } from '../queue/PlayerQueuesManager';
+import { Endpoint } from './Endpoint';
 
-export class PlayerEndpointHandler {
+export class PlayerEndpointHandler implements Endpoint{
     public registerApiEndpoints(app: any) {
-        app.get('/player', async (request, response) => {
-            if (!request.query.key || !playerQueuesManager.queueExists(request.query.key)) {
-                const newKey = playerQueuesManager.createNewPlayerQueue();
+        app.get('/player/legacy', async (request, response) => {
+            if (!request.query.key || !playerQueuesManager.queueExistsForKey(request.query.key)) {
+                const newQueue = playerQueuesManager.createNewPlayerQueue();
+                const newKey = newQueue.getKey();
+                response.cookie('ytpm_player_token', newQueue.getPlayerToken());
                 response.redirect(`/player?key=${newKey}`);
                 return;
             }
 
-            const queue = playerQueuesManager.getPlayerQueue(request.query.key);
+            const queue = playerQueuesManager.getPlayerQueueForKey(request.query.key);
 
             const queueItem = queue.getSongToPlay();
             const baseObject = {
@@ -47,6 +54,10 @@ export class PlayerEndpointHandler {
                     videoTitle: videoDetails.title,
                 });
             }
+        });
+
+        app.get('/player', (request: Request, response: Response) => {
+            response.sendFile(path.join(__dirname, '..' , 'views/html/player', 'player.html'));
         });
     }
 }

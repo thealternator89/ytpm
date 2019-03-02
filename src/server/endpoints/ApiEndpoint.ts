@@ -1,5 +1,4 @@
 import { Request, Response } from 'express';
-import moment = require('moment');
 import { URL } from 'url';
 import { youTubeClient } from '../api-client/YouTubeClient';
 import { youTubeVideoDetailsCache } from '../api-client/YouTubeVideoDetailsCache';
@@ -10,52 +9,11 @@ import { IQueueItem } from '../models/QueueItem';
 import { IYouTubeVideoDetails } from '../models/YouTubeVideoDetails';
 import { PlayerQueue } from '../queue/PlayerQueue';
 import { playerQueuesManager } from '../queue/PlayerQueuesManager';
-import { MessageBus } from '../util/MessageBus';
+import { Endpoint } from './Endpoint';
 
-type PlayerCommand = 'PLAY'|'PAUSE'|'SKIP'|'REPLAY';
-
-class ApiEndpointHandler {
+class ApiEndpointHandler implements Endpoint {
 
     public registerApiEndpoints(app: any) {
-        app.post('/api/player/update', (request: Request, response: Response) => {
-            const queue = this.getQueueByKey(request, response);
-            if (!queue) {
-                return;
-            }
-
-            const eventName = request.body.event || '';
-            const eventTime = moment.unix(request.body.time);
-
-            queue.updatePlayerState(eventName.toUpperCase(), eventTime, {
-                duration: request.body.duration,
-                position: request.body.position,
-                videoId: request.body.videoId,
-            });
-
-            response.status(200).send();
-        });
-
-        app.get('/api/player/poll', (request: Request, response: Response) => {
-            const queueKey = request.query.key;
-            if (!queueKey) {
-                response.status(400).send('Invalid request');
-                return undefined;
-            }
-
-            const processEventFunc = (update: {queueLength: number, command?: PlayerCommand, addedSongs?:
-                    Array<{title: string, thumbnailUrl: string, addedBy: string}>},
-                ) => {
-                response.json(update);
-            };
-
-            MessageBus.once(`poll:${queueKey}`, processEventFunc);
-
-            // Clean up if the client disconnects before we respond
-            request.on('close', () => {
-                MessageBus.removeListener(`poll:${queueKey}`, processEventFunc);
-            });
-        });
-
         app.get('/api/client/poll', async (request: Request, response: Response) => {
             if (!this.validateToken(request, response)) {
                 return;
@@ -385,7 +343,7 @@ class ApiEndpointHandler {
             const queueKeys = playerQueuesManager.getAllQueueKeys();
 
             const queues = queueKeys.map((key) => {
-                const queue = playerQueuesManager.getPlayerQueue(key);
+                const queue = playerQueuesManager.getPlayerQueueForKey(key);
                 return {
                     key: key,
                     lastTouched: queue.getTimeLastTouched(),
@@ -412,21 +370,6 @@ class ApiEndpointHandler {
             return false;
         }
         return true;
-    }
-
-    private getQueueByKey(request: Request, response: Response): PlayerQueue|undefined {
-        const queueKey = request.query.key;
-        if (!queueKey) {
-            response.status(400).send('Invalid request');
-            return undefined;
-        }
-        const queue = playerQueuesManager.getPlayerQueue(queueKey);
-        if (!queue) {
-            response.status(400).send('Invalid request');
-            return undefined;
-        }
-
-        return queue;
     }
 
     private getQueueByAuthToken(request: Request, response: Response): PlayerQueue|undefined {
