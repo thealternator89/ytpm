@@ -1,11 +1,11 @@
 import { AxiosResponse } from 'axios';
 import { google, youtube_v3  } from 'googleapis';
+import { AllHtmlEntities } from 'html-entities';
 import moment = require('moment');
 import * as rp from 'request-promise';
 import { IYoutubeSearchResults, IYouTubeVideoDetails } from '../models/YouTubeVideoDetails';
 import { envUtil } from '../util/EnvUtil';
 import { youTubeVideoDetailsCache } from './YouTubeVideoDetailsCache';
-import { AllHtmlEntities } from 'html-entities';
 
 const htmlEntities = new AllHtmlEntities();
 
@@ -217,7 +217,7 @@ class YouTubeClient {
             channelName: htmlEntities.decode(video.channelName),
             description: htmlEntities.decode(video.description),
             title: htmlEntities.decode(video.title),
-        }
+        };
     }
 }
 
