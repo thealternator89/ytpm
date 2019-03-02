@@ -17,7 +17,7 @@ function sendBeacon(eventName: string, additionalData?: any) {
     var dataBlob = new Blob([urlEncodedData],
         {type : 'application/x-www-form-urlencoded'});
     navigator.sendBeacon(url, dataBlob);
-}  
+}
 
 function getUrlEncodedData(data) {
     var urlEncodedDataPairs = [];
@@ -52,6 +52,7 @@ $.ajax({
         $('#auth_info_panel').css('visibility', 'visible');
         $('#NoMusicError').css('visibility', 'visible');
         $('#loading_curtain').css('visibility', 'hidden');
+        getItemToPlay();
     }
 });
 
@@ -81,10 +82,15 @@ $.ajax({
             }
 
             document.getElementById('queue_size').innerText = response.queueLength;
+
+            if(typeof response.addedSong !== 'undefined') {
+                let song = response.addedSong;
+                showSongAddedPanel(song.title, song.addedBy);
+            }
         },
         error: function(xhr, textStatus, error) {},
         dataType: "json",
-        complete: poll 
+        complete: poll
     });
 })();
 
@@ -135,23 +141,32 @@ function playSong(song: {video: {videoId: string, title: string, description:str
 }
 
 function showSongInfoPanel(title: string, thumbnail: string, addedBy: string) {
-    $('#song_title').text(title);
-    $('#song_thumb').attr('src', thumbnail);
-    $('#song_added_by').text(addedBy);
+    $('#played_title').text(title);
+    $('#played_thumb').attr('src', thumbnail);
+    $('#played_added_by').text(addedBy);
 
-    var songInfoPanelElem = $('#song_info');
+    var songInfoPanelElem = $('#played_song');
 
-    songInfoPanelElem.removeClass('fadeOutUp');
-    songInfoPanelElem.css('top', '0px');
-    songInfoPanelElem.addClass('fadeInDown');
+    animateCSS('#played_song', 'fadeInDown', () => {
+        songInfoPanelElem.css('top', '0px');
+    });
+    setTimeout(() =>{
+        animateCSS('#played_song', 'fadeOutUp', () => {
+            songInfoPanelElem.css('top', '-120px');
+        });
+    }, 7000);
+}
 
-    setTimeout(hideSongInfoPanel, 7000);
+function showSongAddedPanel(title: string, addedBy: string) {
+    $('#added_title').text(title);
+    $('#added_user').text(addedBy);
 
-    function hideSongInfoPanel() {
-        var songInfoPanelElem = $('#song_info');
-        songInfoPanelElem.removeClass('fadeInDown');
-        songInfoPanelElem.addClass('fadeOutUp');
-    }
+    var songInfoPanelElem = $('#added_song');
+
+    songInfoPanelElem.css('visibility', 'visible');
+    setTimeout(() =>{
+        songInfoPanelElem.css('visibility', 'hidden');
+    }, 3000);
 }
 
 async function onPlayerStateChange(event: {data: any}) {
@@ -207,4 +222,18 @@ function youTubePlayerStateToBeaconEvent(state: number) {
         case PlayerState.UNSTARTED: return 'unstarted';
         default: return 'unknown';
     }
+}
+
+function animateCSS(element: string, animationName: 'fadeInDown'|'fadeOutUp', callback?: () => void) {
+    const node = document.querySelector(element)
+    node.classList.add('animated', animationName)
+
+    function handleAnimationEnd() {
+        node.classList.remove('animated', animationName)
+        node.removeEventListener('animationend', handleAnimationEnd)
+
+        if (typeof callback === 'function') callback()
+    }
+
+    node.addEventListener('animationend', handleAnimationEnd)
 }

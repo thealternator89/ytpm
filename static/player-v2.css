@@ -61,7 +61,7 @@ body {
     text-align: right;
 }
 
-#song_info {
+#played_song {
     background-color: #282828;
     color: white;
     z-index: 1;
@@ -72,15 +72,25 @@ body {
     width: 100%;
 }
 
-#song_thumb {
+#played_thumb {
     float: left;
     margin-right: 15px;
 }
 
-#song_title {
+#played_title {
     font-size: 25px;
     margin-top: 15px;
     margin-bottom: 10px;
+}
+
+#added_song {
+    position: absolute;
+    bottom: 25px;
+    left: 15px;
+    padding: 5px;
+    background-color: #333;
+    color: white;
+    z-index: 1;
 }
 
 #NoMusicError {

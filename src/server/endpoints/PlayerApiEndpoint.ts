@@ -79,8 +79,9 @@ class PlayerApiEndpointHandler implements Endpoint {
             const queueItem = queue.getSongToPlay();
 
             // Successfully authed, but there's nothing to play - just return a 200.
-            if(!queueItem) {
+            if (!queueItem) {
                 response.send();
+                return;
             }
 
             const videoDetails = await youTubeVideoDetailsCache.getFromCacheOrApi(queueItem.videoId);
