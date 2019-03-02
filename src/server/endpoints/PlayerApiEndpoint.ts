@@ -2,17 +2,17 @@ import { Request, Response } from 'express';
 import * as moment from 'moment';
 import { MessageBus } from '../util/MessageBus';
 
+import { youTubeVideoDetailsCache } from '../api-client/YouTubeVideoDetailsCache';
+import { userAuthHandler } from '../auth/UserAuthHandler';
+import { PrivacyMode } from '../enums';
+import { IQueueItem } from '../models/QueueItem';
 import { PlayerQueue } from '../queue/PlayerQueue';
 import { playerQueuesManager } from '../queue/PlayerQueuesManager';
-import { Endpoint } from './Endpoint';
-import { PrivacyMode } from '../enums';
-import { youTubeVideoDetailsCache } from '../api-client/YouTubeVideoDetailsCache';
-import { IQueueItem } from '../models/QueueItem';
-import { userAuthHandler } from '../auth/UserAuthHandler';
+import { IEndpoint } from './Endpoint';
 
 type PlayerCommand = 'PLAY'|'PAUSE'|'SKIP'|'REPLAY';
 
-class PlayerApiEndpointHandler implements Endpoint {
+class PlayerApiEndpointHandler implements IEndpoint {
     public registerApiEndpoints(app: any) {
         app.post('/api/player/update', (request: Request, response: Response) => {
             const queue = this.getQueue(request, response);
@@ -64,8 +64,8 @@ class PlayerApiEndpointHandler implements Endpoint {
 
             response.json({
                 queue_key: queue.getKey(),
-                token: queue.getPlayerToken(),
                 queue_length: queue.length(),
+                token: queue.getPlayerToken(),
             });
         });
 
@@ -99,15 +99,15 @@ class PlayerApiEndpointHandler implements Endpoint {
             }
 
             response.json({
-                video: videoDetails,
                 addedBy: addedBy,
                 queueLength: queue.length(),
+                video: videoDetails,
             });
         });
     }
 
     private getQueue(request, response): PlayerQueue|undefined {
-        if(request.query.token) {
+        if (request.query.token) {
             return this.getQueueForToken(response, request.query.token);
         } else if (request.cookies.ytpm_player_token) {
             return this.getQueueForToken(response, request.cookies.ytpm_player_token);

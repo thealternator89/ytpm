@@ -15,7 +15,12 @@ const SERVER_PORT = envUtil.getServerPort(8080);
 
 const app = express();
 
-const endpointHandlers = [playerEndpointHandler, playerApiEndpointHandler, apiEndpointHandler, webClientEndpointHandler];
+const endpointHandlers = [
+    playerEndpointHandler,
+    playerApiEndpointHandler,
+    apiEndpointHandler,
+    webClientEndpointHandler,
+];
 
 app.engine('.hbs', exphbs({
     extname: '.hbs',
@@ -40,7 +45,7 @@ app.use((request: express.Request, response: express.Response, next: express.Nex
     next();
 });
 
-for(const endpoint of endpointHandlers) {
+for (const endpoint of endpointHandlers) {
     endpoint.registerApiEndpoints(app);
 }
 

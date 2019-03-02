@@ -1,3 +1,3 @@
-export interface Endpoint {
+export interface IEndpoint {
     registerApiEndpoints(app: any);
 }

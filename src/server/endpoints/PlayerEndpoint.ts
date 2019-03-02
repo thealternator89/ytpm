@@ -7,9 +7,9 @@ import { userAuthHandler } from '../auth/UserAuthHandler';
 import { PrivacyMode } from '../enums';
 import { IQueueItem } from '../models/QueueItem';
 import { playerQueuesManager } from '../queue/PlayerQueuesManager';
-import { Endpoint } from './Endpoint';
+import { IEndpoint } from './Endpoint';
 
-export class PlayerEndpointHandler implements Endpoint{
+export class PlayerEndpointHandler implements IEndpoint {
     public registerApiEndpoints(app: any) {
         app.get('/player/legacy', async (request, response) => {
             if (!request.query.key || !playerQueuesManager.queueExistsForKey(request.query.key)) {
