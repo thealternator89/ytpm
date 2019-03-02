@@ -5,10 +5,10 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "npm run buildserver && npm run buildplayer",
+    "postbuild": "node build-tasks/copy-views.js",
     "buildserver": "tsc",
     "buildplayer": "webpack --mode=production",
-    "postinstall": "node build-tasks/copy-views.js",
-    "buildstart": "npm run build && npm run postinstall && npm run start",
+    "buildstart": "npm run build && npm run start",
     "lint": "tslint --project .",
     "start": "node .",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -56,5 +56,6 @@
     "typescript": "^3.3.3333",
     "webpack": "^4.29.5",
     "webpack-cli": "^3.2.3"
-  }
+  },
+  "heroku-run-build-script": true
 }
