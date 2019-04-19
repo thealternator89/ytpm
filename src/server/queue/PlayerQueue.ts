@@ -276,6 +276,11 @@ export class PlayerQueue {
         this.autoQueueBlacklist[queueItem.videoId] = this.playHistory.length + MIN_PLAYS_BEFORE_AVAILABLE_TO_AUTOPLAY;
         this.playHistory.unshift(queueItem.videoId);
 
+        // If this song is on the autoplay queue, reset its score.
+        if (this.autoPlayItems[queueItem.videoId]) {
+            this.autoPlayItems[queueItem.videoId].score = 0;
+        }
+
         // Short circuit if no influence on auto queue
         if (queueItem.autoQueueInfluence === Constants.AUTO_QUEUE_INFLUENCE.NO_INFLUENCE) {
             return;
