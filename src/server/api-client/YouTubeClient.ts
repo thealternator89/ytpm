@@ -169,7 +169,7 @@ class YouTubeClient {
         return videoDetails &&
                videoDetails.contentDetails &&
                videoDetails.contentDetails.duration &&
-               moment.duration(videoDetails.contentDetails.duration).minutes() > 10;
+               moment.duration(videoDetails.contentDetails.duration).asMinutes() > 10;
     }
 
     private addToHistory(query: string) {
