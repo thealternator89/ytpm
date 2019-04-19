@@ -3,3 +3,4 @@ dist
 .vscode
 static/player.js
 .DS_Store
+.idea/

@@ -1,34 +1,15 @@
 import * as bodyParser from 'body-parser';
 import * as cookieParser from 'cookie-parser';
 import * as express from 'express';
-import * as exphbs from 'express-handlebars';
 import * as path from 'path';
 
-import {apiEndpointHandler} from './endpoints/ApiEndpoint';
-import {playerApiEndpointHandler} from './endpoints/PlayerApiEndpoint';
-import {playerEndpointHandler} from './endpoints/PlayerEndpoint';
-import {webClientEndpointHandler} from './endpoints/WebClientEndpoint';
 import { envUtil } from './util/EnvUtil';
 import { logger } from './util/LogUtil';
+import { rootRouter } from './endpoints/Root';
 
 const SERVER_PORT = envUtil.getServerPort(8080);
 
 const app = express();
-
-const endpointHandlers = [
-    playerEndpointHandler,
-    playerApiEndpointHandler,
-    apiEndpointHandler,
-    webClientEndpointHandler,
-];
-
-app.engine('.hbs', exphbs({
-    extname: '.hbs',
-    layoutsDir: path.join(__dirname, 'views/hbs/layouts'),
-}));
-
-app.set('view-engine', '.hbs');
-app.set('views', path.join(__dirname, 'views/hbs'));
 
 app.use(express.static(path.join(__dirname, '..', 'static')));
 app.use(bodyParser.json());
@@ -45,9 +26,7 @@ app.use((request: express.Request, response: express.Response, next: express.Nex
     next();
 });
 
-for (const endpoint of endpointHandlers) {
-    endpoint.registerApiEndpoints(app);
-}
+app.use(rootRouter);
 
 app.listen(SERVER_PORT, (err) => {
     if (err) {
