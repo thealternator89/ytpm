@@ -54,7 +54,6 @@ $.ajax({
 
         document.title = 'YTPM - ' + queueKey;
         $('#pass_phrase').text(queueKey);
-        $('#queue_size').text(response.queue_length);
         $('#auth_info_panel').css('visibility', 'visible');
         $('#NoMusicError').css('visibility', 'visible');
         $('#loading_curtain').css('visibility', 'hidden');
@@ -98,30 +97,18 @@ $.ajax({
                 }
             }
 
-            document.getElementById('queue_size').innerText = response.queueLength;
-
             if (typeof response.addedSong !== 'undefined') {
                 const song = response.addedSong;
-                showSongAddedPanel(song.title, song.addedBy);
+                showToast(`${song.addedBy} added: ${song.title}`, 'queue');
+            }
+
+            if (typeof response.toast !== 'undefined') {
+                showToast(response.toast);
             }
         },
         url: '/api/player/poll?token=' + playerToken,
     });
 })();
-
-/*
-    {
-        video: {
-            videoId: string;
-            title: string;
-            description: string;
-            thumbnailUrl?: string;
-            thumbnailUrlBig?: string;
-            channelName?: string;
-        },
-        addedByText: string
-    }
-*/
 
 function getItemToPlay() {
     $('#loading_curtain').css('visibility', 'visible');
@@ -135,7 +122,6 @@ function getItemToPlay() {
                 $('#loading_curtain').css('visibility', 'hidden');
             } else {
                 $('#NoMusicError').css('visibility', 'hidden');
-                $('#queue_size').text(response.queueLength);
                 playSong(response);
             }
         },
@@ -175,15 +161,15 @@ function showSongInfoPanel(title: string, thumbnail: string, addedBy: string) {
     }, 7000);
 }
 
-function showSongAddedPanel(title: string, addedBy: string) {
-    $('#added_title').text(title);
-    $('#added_user').text(addedBy);
+function showToast(text: string, iconName: 'info'|'queue' = 'info') {
+    $('#toast_icon').text(iconName);
+    $('#toast_text').text(text);
 
-    const songInfoPanelElem = $('#added_song');
+    const toastElem = $('#toast');
 
-    songInfoPanelElem.css('visibility', 'visible');
+    toastElem.css('visibility', 'visible');
     setTimeout(() => {
-        songInfoPanelElem.css('visibility', 'hidden');
+        toastElem.css('visibility', 'hidden');
     }, 3000);
 }
 

@@ -31,13 +31,25 @@ router.post('/login', (request: Request, response: Response) => {
         return;
     }
 
+    const queue = userAuthHandler.getQueueForToken(token);
+    queue.sendToast(`${name} joined`);
+
     response.cookie('token', token);
 
     response.redirect('/client');
 });
 
 router.get('/logout', (request: Request, response: Response) => {
-    // TODO tell the userAuthHandler to refute the token
+    const token = request.cookies.token;
+
+    const queue = userAuthHandler.getQueueForToken(token);
+    const name = userAuthHandler.getNameForToken(token);
+    queue.sendToast(`${name} left`);
+
+    if (token) {
+        userAuthHandler.revokeToken(token);
+    }
+
     response.clearCookie('token').redirect('/client');
 });
 

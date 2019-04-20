@@ -242,6 +242,10 @@ export class PlayerQueue {
         return autoQueue;
     }
 
+    public sendToast(message: string): void {
+        this.updatePlayer({toast: message});
+    }
+
     private getPositionFromPlayerState(): number|undefined {
         const playerStatus = this.playerStatus;
 
@@ -265,6 +269,7 @@ export class PlayerQueue {
             thumbnailUrl: string,
             addedBy: string,
         },
+        toast?: string
     }): void {
         MessageBus.emit(`poll:${this.key}`, {
             queueLength: this.queue.length,

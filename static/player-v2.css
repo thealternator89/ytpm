@@ -57,10 +57,6 @@ body {
     text-align: center;
 }
 
-#current_queue {
-    text-align: right;
-}
-
 #played_song {
     background-color: #282828;
     color: white;
@@ -83,7 +79,7 @@ body {
     margin-bottom: 10px;
 }
 
-#added_song {
+#toast {
     position: absolute;
     bottom: 25px;
     left: 15px;

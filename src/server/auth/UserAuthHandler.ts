@@ -20,6 +20,11 @@ class UserAuthHandler {
         return token;
     }
 
+    public revokeToken(token: string): void {
+        const toRemoveToken = reformatToken(token);
+        delete this.authedUsers[toRemoveToken];
+    }
+
     public validateToken(token: string): boolean {
         if (token && this.getUser(token)) {
             return true;
