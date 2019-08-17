@@ -86,7 +86,7 @@ var updateHistoryList = function() {
 		}
 	}
 
-	xhttp.open('GET', '/api/play_history?fullHistory=true&token=' + getCookie('token'), true);
+	xhttp.open('GET', '/api/client/a/play_history?fullHistory=true&token=' + getCookie('token'), true);
 	xhttp.send();
 };
 
