@@ -34,7 +34,7 @@ var details = new Vue({
 
 function sendCommand(command) {
 	var xhttp = new XMLHttpRequest();
-	xhttp.open('GET', '/api/set_command?player=' + command.toUpperCase() + '&token=' + getCookie('token'), true);
+	xhttp.open('GET', '/api/client/a/set_command?player=' + command.toUpperCase() + '&token=' + getCookie('token'), true);
 	xhttp.send();
 }
 
@@ -75,7 +75,7 @@ var updateView = function () {
 		}
 	}
 
-	xhttp.open('GET', '/api/client/poll?token=' + getCookie('token'), true);
+	xhttp.open('GET', '/api/client/a/poll?token=' + getCookie('token'), true);
 	xhttp.send();
 
 };

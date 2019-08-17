@@ -49,7 +49,7 @@ function addToQueue(videoId, influenceAutoQueue, next) {
 	var playNextQs = next ? '&next=true' : '';
 	var influenceAutoQueueQs = influenceAutoQueue ? '&influenceautoqueue=false' : '';
 
-	xhttp.open('GET', '/api/enqueue?videoId=' + encodeURI(videoId) + playNextQs + influenceAutoQueueQs + '&token=' + getCookie('token'), true);
+	xhttp.open('GET', '/api/client/a/enqueue?videoId=' + encodeURI(videoId) + playNextQs + influenceAutoQueueQs + '&token=' + getCookie('token'), true);
 	xhttp.send();
 }
 

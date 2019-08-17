@@ -3,15 +3,6 @@ import { Request, Response } from 'express';
 import { userAuthHandler } from '../auth/UserAuthHandler';
 import { PlayerQueue } from '../queue/PlayerQueue';
 
-export function validateToken(request: Request, response: Response) {
-    const token = getAuthToken(request);
-    if (!userAuthHandler.validateToken(token)) {
-        response.status(401).send('Unauthorized');
-        return false;
-    }
-    return true;
-}
-
 export function getQueueByAuthToken(request: Request, response: Response): PlayerQueue|undefined {
     const token = getAuthToken(request);
     const queue = userAuthHandler.getQueueForToken(token);

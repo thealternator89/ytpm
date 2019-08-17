@@ -23,7 +23,7 @@ var updateQueueList = function() {
 		}
 	}
 
-	xhttp.open('GET', '/api/queue_state?token=' + getCookie('token'), true);
+	xhttp.open('GET', '/api/client/a/queue_state?token=' + getCookie('token'), true);
 	xhttp.send();
 };
 

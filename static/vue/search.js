@@ -72,7 +72,7 @@ function search(term) {
 		}
 	}
 
-	xhttp.open('GET', '/api/search?q=' + encodeURI(term) + '&token=' + getCookie('token'), true);
+	xhttp.open('GET', '/api/client/search?q=' + encodeURI(term) + '&token=' + getCookie('token'), true);
 	xhttp.send();
 	return false;
 }
@@ -98,7 +98,7 @@ function continuationSearch() {
 		}
 	}
 
-	xhttp.open('GET', '/api/search?q=' + encodeURI(searchVue.query) + '&page=' + encodeURI(searchVue.nextPageToken) + '&token=' + getCookie('token'), true);
+	xhttp.open('GET', '/api/client/search?q=' + encodeURI(searchVue.query) + '&page=' + encodeURI(searchVue.nextPageToken) + '&token=' + getCookie('token'), true);
 	xhttp.send();
 	return false;
 }
@@ -116,7 +116,7 @@ function addToQueue(videoId, influenceAutoQueue, next) {
 	var playNextQs = next ? '&next=true' : '';
 	var influenceAutoQueueQs = influenceAutoQueue ? '&influenceautoqueue=false' : '';
 
-	xhttp.open('GET', '/api/enqueue?videoId=' + encodeURI(videoId) + playNextQs + influenceAutoQueueQs + '&token=' + getCookie('token'), true);
+	xhttp.open('GET', '/api/client/a/enqueue?videoId=' + encodeURI(videoId) + playNextQs + influenceAutoQueueQs + '&token=' + getCookie('token'), true);
 	xhttp.send();
 }
 
@@ -170,9 +170,9 @@ function getSuggestionsForQuery(query) {
 	}
 
 	if (typeof(query) !== 'undefined' && query !== '') {
-		xhttp.open('GET', '/api/autocomplete?q=' + encodeURI(query), true);
+		xhttp.open('GET', '/api/client/autocomplete?q=' + encodeURI(query), true);
 	} else {
-		xhttp.open('GET', '/api/autocomplete', true);
+		xhttp.open('GET', '/api/client/autocomplete', true);
 	}
 	xhttp.send();
 }
