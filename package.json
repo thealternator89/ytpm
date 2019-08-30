@@ -28,6 +28,7 @@
     "atob": "^2.1.2",
     "cookie-parser": "^1.4.3",
     "copyfiles": "^2.1.0",
+    "cors": "^2.8.5",
     "express": "^4.16.4",
     "googleapis": "^34.0.0",
     "html-entities": "^1.2.1",
