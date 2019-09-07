@@ -1,4 +1,4 @@
-import { AxiosResponse } from 'axios';
+import { GaxiosResponse } from 'gaxios';
 import { google, youtube_v3  } from 'googleapis';
 import { AllHtmlEntities } from 'html-entities';
 import moment = require('moment');
@@ -58,7 +58,7 @@ class YouTubeClient {
 
     public async search(query: string, page?: string): Promise<IYoutubeSearchResults> {
         this.addToHistory(query);
-        let response: AxiosResponse<youtube_v3.Schema$SearchListResponse>;
+        let response: GaxiosResponse<youtube_v3.Schema$SearchListResponse>;
         try {
             response = await this.youtube.search.list({
                 ...this.defaultSearchOptions,
@@ -85,7 +85,7 @@ class YouTubeClient {
     }
 
     public async searchRelatedVideos(videoId: string): Promise<IYouTubeVideoDetails[]> {
-        let response: AxiosResponse<youtube_v3.Schema$SearchListResponse>;
+        let response: GaxiosResponse<youtube_v3.Schema$SearchListResponse>;
         try {
             response = await this.youtube.search.list({
                 ...this.defaultSearchOptions,
@@ -109,7 +109,7 @@ class YouTubeClient {
 
     public async getDetails(query: string): Promise<IYouTubeVideoDetails> {
 
-        let response: AxiosResponse<youtube_v3.Schema$VideoListResponse>;
+        let response: GaxiosResponse<youtube_v3.Schema$VideoListResponse>;
 
         try {
             response = await this.youtube.videos.list({
@@ -136,7 +136,7 @@ class YouTubeClient {
      * @param videoIds A list of video ids to check
      */
     public async filterOutUndesireableVideoIds(videoIds: string[]): Promise<string[]> {
-        let response: AxiosResponse<youtube_v3.Schema$VideoListResponse>;
+        let response: GaxiosResponse<youtube_v3.Schema$VideoListResponse>;
 
         try {
             response = await this.youtube.videos.list({
