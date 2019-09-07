@@ -27,7 +27,7 @@
     "ajv": "^6.9.2",
     "atob": "^2.1.2",
     "cookie-parser": "^1.4.3",
-    "copyfiles": "^2.1.0",
+    "copyfiles": "^2.1.1",
     "cors": "^2.8.5",
     "express": "^4.16.4",
     "gaxios": "^2.0.1",
