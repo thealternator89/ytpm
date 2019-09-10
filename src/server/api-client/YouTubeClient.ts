@@ -147,15 +147,9 @@ class YouTubeClient {
             throw new Error(`An error occurred retrieving video information: ${error.message}`);
         }
 
-        const musicVideoIds: string[] = [];
-
-        for (const videoDetails of response.data.items) {
-            if (this.videoIsMusic(videoDetails) && !this.videoIsLong(videoDetails)) {
-                musicVideoIds.push(videoDetails.id);
-            }
-        }
-
-        return musicVideoIds;
+        return response.data.items
+            .filter((item) => this.videoIsMusic(item) && !this.videoIsLong(item))
+            .map((item) => item.id);
     }
 
     public videoIsMusic(videoDetails: youtube_v3.Schema$Video): boolean {
@@ -181,7 +175,7 @@ class YouTubeClient {
     }
 
     // Safely get either a thumbnail url or a stand-in image if the image isn't available.
-    private getThumbnailUrl(thumbnails: any, thumbName: 'default'|'medium'|'high'): string|undefined {
+    private getThumbnailUrl(thumbnails: any, thumbName: 'default'|'medium'|'high'): string {
         if (thumbnails && thumbnails[thumbName]) {
             return thumbnails[thumbName].url;
         } else {
