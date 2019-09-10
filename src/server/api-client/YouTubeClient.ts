@@ -1,7 +1,6 @@
 import { GaxiosResponse } from 'gaxios';
 import { google, youtube_v3  } from 'googleapis';
 import { AllHtmlEntities } from 'html-entities';
-import moment = require('moment');
 import * as rp from 'request-promise';
 import { IYoutubeSearchResults, IYouTubeVideoDetails } from '../models/YouTubeVideoDetails';
 import { envUtil } from '../util/EnvUtil';
@@ -160,10 +159,11 @@ class YouTubeClient {
     }
 
     public videoIsLong(videoDetails: youtube_v3.Schema$Video): boolean {
+        // Duration exists on the videoDetails, and it is greater than 10 mins (10*60*1000 ms)
         return videoDetails &&
                videoDetails.contentDetails &&
                videoDetails.contentDetails.duration &&
-               moment.duration(videoDetails.contentDetails.duration).asMinutes() > 10;
+               parseInt(videoDetails.contentDetails.duration) > (10 * 60 * 1000);
     }
 
     private addToHistory(query: string) {
