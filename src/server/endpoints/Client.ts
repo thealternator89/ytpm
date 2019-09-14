@@ -32,7 +32,8 @@ router.post('/login', (request: Request, response: Response) => {
     }
 
     const queue = userAuthHandler.getQueueForToken(token);
-    queue.sendToast(`${name} joined`);
+
+    queue.notifyUserEvent(name, 'JOIN');
 
     response.cookie('token', token);
 
@@ -44,7 +45,8 @@ router.get('/logout', (request: Request, response: Response) => {
 
     const queue = userAuthHandler.getQueueForToken(token);
     const name = userAuthHandler.getNameForToken(token);
-    queue.sendToast(`${name} left`);
+
+    queue.notifyUserEvent(name, 'LEAVE');
 
     if (token) {
         userAuthHandler.revokeToken(token);

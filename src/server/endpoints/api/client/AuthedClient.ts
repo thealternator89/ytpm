@@ -6,6 +6,8 @@ import { Constants as CONSTANTS } from '../../../constants'
 import { PrivacyMode } from '../../../enums';
 import { IYouTubeVideoDetails } from '../../../models/YouTubeVideoDetails';
 import { IQueueItem } from '../../../models/QueueItem';
+import { MessageBus } from '../../../util/MessageBus';
+import { IQueueState } from '../../../models/QueueState';
 
 const router = Router();
 
@@ -32,6 +34,36 @@ router.get('/poll', async (request: Request, response: Response) => {
         playerState: playerStatus.playerState,
         position: playerStatus.position,
         video: await youTubeVideoDetailsCache.getFromCacheOrApi(playerStatus.videoId),
+    });
+});
+
+router.get('/poll/v2', async (request: Request, response: Response) => {
+    const queue = getQueueByAuthToken(request, response);
+    if (!queue) {
+        response.status(500).send('Queue not found');
+        return;
+    }
+
+    const since = request.query.since || 0;
+
+    const state = queue.getQueueState();
+
+    if (state.lastUpdated > since) {
+        response.json(state);
+        return;
+    }
+
+    const queueKey = queue.getKey();
+
+    const processEventFunc = (update: IQueueState) => {
+        response.json(update);
+    };
+
+    MessageBus.once(`client:${queueKey}`, processEventFunc);
+
+    // Clean up if the client disconnects before we respond
+    request.on('close', () => {
+        MessageBus.removeListener(`client:${queueKey}`, processEventFunc);
     });
 });
 

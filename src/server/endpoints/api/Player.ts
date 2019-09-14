@@ -7,10 +7,9 @@ import { youTubeVideoDetailsCache } from '../../api-client/YouTubeVideoDetailsCa
 import { IQueueItem } from '../../models/QueueItem';
 import { PrivacyMode } from '../../enums';
 import { userAuthHandler } from '../../auth/UserAuthHandler';
+import { IPlayerPollResponse } from '../../models/PlayerPollResponse';
 
 const router = Router();
-
-type PlayerCommand = 'PLAY'|'PAUSE'|'SKIP'|'REPLAY';
 
 router.post(`/update`, async (request: Request, response: Response) => {
     const queue = getQueue(request, response);
@@ -38,17 +37,15 @@ router.get('/poll', (request: Request, response: Response) => {
 
     const queueKey = queue.getKey();
 
-    const processEventFunc = (update: {queueLength: number, command?: PlayerCommand, addedSongs?:
-            Array<{title: string, thumbnailUrl: string, addedBy: string}>},
-        ) => {
+    const processEventFunc = (update: IPlayerPollResponse) => {
         response.json(update);
     };
 
-    MessageBus.once(`poll:${queueKey}`, processEventFunc);
+    MessageBus.once(`player:${queueKey}`, processEventFunc);
 
     // Clean up if the client disconnects before we respond
     request.on('close', () => {
-        MessageBus.removeListener(`poll:${queueKey}`, processEventFunc);
+        MessageBus.removeListener(`player:${queueKey}`, processEventFunc);
     });
 });
 
@@ -78,6 +75,7 @@ router.get('/next_song', async (request: Request, response: Response) => {
     const queueItem = queue.getSongToPlay();
 
     // Successfully authed, but there's nothing to play - just return a 200.
+    // TODO: change this to a 203
     if (!queueItem) {
         response.send();
         return;

@@ -191,8 +191,10 @@ class YouTubeClient {
         return this.decodeHtmlEntities({
             channelName: responseObj.snippet.channelTitle,
             description: responseObj.snippet.description,
-            thumbnailUrl: this.getThumbnailUrl(responseObj.snippet.thumbnails, 'default'),
-            thumbnailUrlBig: this.getThumbnailUrl(responseObj.snippet.thumbnails, 'medium'),
+            thumbnail: {
+                normal: this.getThumbnailUrl(responseObj.snippet.thumbnails, 'default'),
+                big: this.getThumbnailUrl(responseObj.snippet.thumbnails, 'medium'),
+            },
             title: responseObj.snippet.title,
             videoId: id,
         });

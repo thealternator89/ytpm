@@ -7,7 +7,9 @@ export interface IYouTubeVideoDetails {
     videoId: string;
     title: string;
     description: string;
-    thumbnailUrl?: string;
-    thumbnailUrlBig?: string;
+    thumbnail: {
+        normal?: string,
+        big?: string,
+    },
     channelName?: string;
 }

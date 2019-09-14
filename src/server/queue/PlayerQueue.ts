@@ -6,6 +6,8 @@ import { Constants } from '../constants';
 import { PlayerState, PrivacyMode } from '../enums';
 import { IAutoQueueItem, IAutoQueueStatItem, IQueueItem } from '../models/QueueItem';
 import { MessageBus } from '../util/MessageBus';
+import { IQueueState, IPartialQueueState } from '../models/QueueState';
+import { EventType } from '../models/PlayerPollResponse';
 
 const MIN_PLAYS_BEFORE_AVAILABLE_TO_AUTOPLAY = 50;
 
@@ -29,10 +31,17 @@ export class PlayerQueue {
         },
     };
 
+    private queueState: IQueueState;
+
     private privacyMode: PrivacyMode = PrivacyMode.FULL_NAMES;
 
     public constructor(private key: string, private token: string) {
         this.touched();
+        // set an initial queueState
+        this.queueState = {
+            playerCode: key,
+            lastUpdated: moment().unix(),
+        };
     }
 
     public getKey(): string {
@@ -43,14 +52,32 @@ export class PlayerQueue {
         return this.token;
     }
 
-    public updatePlayerState(
+    private updateState(property: 'PLAYING_NOW' | 'UP_NEXT', value: any) {
+        switch(property) {
+            case 'PLAYING_NOW': this.queueState.playingNow = value;
+                break;
+            case 'UP_NEXT': this.queueState.upNext = value;
+                break;
+            default: 
+                throw new Error(`Unrecognised state change: ${property}`);
+        }
+
+        this.queueState.lastUpdated = moment().unix();
+        MessageBus.emit(`client:${this.key}`, this.queueState);
+    }
+
+    public getQueueState(): IQueueState {
+        return this.queueState;
+    }
+
+    public async updatePlayerState(
         newState: string,
         updateTime: moment.Moment,
         additionalData?: {
             videoId: string,
             position: number,
             duration: number,
-        }): void {
+        }): Promise<void> {
         this.touched();
         // The current playerStatus has a newer updateTime than the one we're setting. Ignore it
         if (this.playerStatus && moment.duration(this.playerStatus.updated.diff(updateTime)).asSeconds() > 0) {
@@ -70,6 +97,8 @@ export class PlayerQueue {
                 offset: additionalData.position,
                 videoId: additionalData.videoId,
             };
+            const videoDetails = await youTubeVideoDetailsCache.getFromCacheOrApi(additionalData.videoId)
+            this.updateState('PLAYING_NOW', videoDetails);
         } else {
             delete this.playerStatus.currentItem;
         }
@@ -106,20 +135,26 @@ export class PlayerQueue {
     public enqueue(item: IQueueItem): void {
         this.touched();
         this.queue.push(item);
-        this.notifyAddedSong(item);
+        this.notifyAddedSong(item, 'END');
+        this.updateUpNext();
     }
 
     public addToFront(item: IQueueItem): void {
         this.touched();
         this.queue.unshift(item);
-        this.notifyAddedSong(item);
+        this.notifyAddedSong(item, 'FRONT');
+        this.updateUpNext();
     }
 
     // TODO: remove dependence on youTubeVideoDetailsCache
-    public async notifyAddedSong(item: IQueueItem): Promise<void> {
+    public async notifyAddedSong(item: IQueueItem, position: 'FRONT'|'END'): Promise<void> {
         const video = await youTubeVideoDetailsCache.getFromCacheOrApi(item.videoId);
         const user = userAuthHandler.getNameForToken(item.user);
-        this.updatePlayer({addedSong: {title: video.title, thumbnailUrl: video.thumbnailUrl, addedBy: user}});
+        this.sendMessageToPlayer('SONG_ENQUEUE', {
+            video: video,
+            addedBy: user,
+            position: position
+        });
     }
 
     public getSongToPlay(): IQueueItem|IAutoQueueItem|undefined {
@@ -167,12 +202,8 @@ export class PlayerQueue {
     }
 
     public getNextAutoPlayItem(): string|undefined {
-        if (!this.shouldAutoPlay) {
-            return undefined;
-        } else {
-            const nextAutoPlaySong = this.getNextAutoPlaySong();
-            return nextAutoPlaySong ? nextAutoPlaySong.videoId : undefined;
-        }
+        const nextAutoPlaySong = this.getNextAutoPlaySong();
+        return nextAutoPlaySong ? nextAutoPlaySong.videoId : undefined;
     }
 
     public getTimeLastTouched(): moment.Moment {
@@ -180,7 +211,9 @@ export class PlayerQueue {
     }
 
     public setPlayerCommand(command: 'PAUSE'|'PLAY'|'NEXTTRACK'|'REPLAYTRACK'): void {
-        this.updatePlayer({command: command});
+        this.sendMessageToPlayer('PLAYER_COMMAND', {
+            command: command
+        });
     }
 
     public getShouldAutoPlay(): boolean {
@@ -243,7 +276,25 @@ export class PlayerQueue {
     }
 
     public sendToast(message: string): void {
-        this.updatePlayer({toast: message});
+        this.sendMessageToPlayer('TOAST', {
+            message: message
+        });
+    }
+
+    public notifyUserEvent(name: string, event: 'JOIN' | 'LEAVE') {
+        let eventName;
+        switch(event){
+            case 'JOIN': eventName = 'USER_JOIN';
+                break;
+            case 'LEAVE': eventName = 'USER_LEAVE';
+                break;
+            default:
+                throw new Error('Invalid user event');
+        }
+
+        this.sendMessageToPlayer(eventName, {
+            name: name
+        });
     }
 
     private getPositionFromPlayerState(): number|undefined {
@@ -262,18 +313,10 @@ export class PlayerQueue {
         }
     }
 
-    private updatePlayer(args: {
-        command?: string,
-        addedSong?: {
-            title: string,
-            thumbnailUrl: string,
-            addedBy: string,
-        },
-        toast?: string
-    }): void {
-        MessageBus.emit(`poll:${this.key}`, {
-            queueLength: this.queue.length,
-            ...args,
+    private sendMessageToPlayer(type: EventType, options: any) {
+        MessageBus.emit(`player:${this.key}`, {
+            ...options,
+            event: type // ensure the type doesn't get overridden by the options.
         });
     }
 
@@ -315,6 +358,24 @@ export class PlayerQueue {
                     videoId: video.videoId,
                 };
             }
+        }
+        await this.updateUpNext();
+    }
+
+    private async updateUpNext(): Promise<void> {
+        if (this.queue.length > 0) {
+            const videoDetails = {
+                ...await youTubeVideoDetailsCache.getFromCacheOrApi(this.queue[0].videoId),
+                auto: false,
+            };
+            this.updateState('UP_NEXT', videoDetails);
+        } else {
+            const nextAutoPlaySong = this.getNextAutoPlaySong();
+            const videoDetails = nextAutoPlaySong ? {
+                ...await youTubeVideoDetailsCache.getFromCacheOrApi(nextAutoPlaySong.videoId),
+                auto: true,
+            } : undefined;
+            this.updateState('UP_NEXT', videoDetails);
         }
     }
 

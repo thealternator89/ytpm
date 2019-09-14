@@ -8,7 +8,10 @@ import {PlayerState} from './enums';
 // NOTE: This is temporary until we split out general things into another src subdirectory
 // tslint:disable-next-line:interface-over-type-literal
 type VideoDetails = {videoId: string, title: string, description: string,
-    thumbnailUrl: string, thumbnailUrlBig: string, channelName: string};
+    thumbnail: {
+        normal?: string,
+        big?: string,
+    }, channelName: string};
 
 let playerToken;
 
@@ -70,45 +73,59 @@ $.ajax({
         complete: poll,
         dataType: 'json',
         success: (response) => {
-            // If the queueLength is now > 0 and we're not currently playing a song, reload to get a song.
-            if ((typeof(player) === 'undefined' || player === null) && response.queueLength > 0) {
+            console.log(response);
+            const event = response.event;
+
+            // If a song was enqueued and we're not currently playing a song, get a new song to play.
+            if ((typeof(player) === 'undefined' || player === null) && event === 'SONG_ENQUEUE') {
                 getItemToPlay();
             }
 
-            if (typeof(response.command) !== 'undefined' && (typeof(player) !== 'undefined' && player !== null)) {
-                switch (response.command) {
-                    case 'PLAY': {
-                        player.playVideo();
-                        break;
-                    }
-                    case 'PAUSE': {
-                        player.pauseVideo();
-                        break;
-                    }
-                    case 'NEXTTRACK': {
-                        getItemToPlay();
-                        break;
-                    }
-                    case 'REPLAYTRACK': {
-                        player.seekTo(0);
-                        break;
-                    }
-                    default: console.log('unknown command: ' + response.command);
-                }
+            switch(event) {
+                case 'SONG_ENQUEUE': showToast(`${response.addedBy} added: ${response.video.title}`, 'queue');
+                    break;
+                case 'PLAYER_COMMAND': handlePlayerCommand(response.command);
+                    break;
+                case 'TOAST': showToast(response.message);
+                    break;
+                case 'USER_JOIN': showToast(`${response.name} joined`, 'person_add');
+                    break;
+                case 'USER_LEAVE': showToast(`${response.name} left`, 'person_outline');
+                    break;
+                default:
+                    console.log(`Unrecognised event ${event} - ignoring`);
             }
-
-            if (typeof response.addedSong !== 'undefined') {
-                const song = response.addedSong;
-                showToast(`${song.addedBy} added: ${song.title}`, 'queue');
-            }
-
-            if (typeof response.toast !== 'undefined') {
-                showToast(response.toast);
-            }
+        },
+        error: (req, errorType) => {
+            console.log(`${errorType} occurred`);
         },
         url: '/api/player/poll?token=' + playerToken,
     });
 })();
+
+const handlePlayerCommand = (command: string) => {
+    if (player) {
+        switch (command) {
+            case 'PLAY': {
+                player.playVideo();
+                break;
+            }
+            case 'PAUSE': {
+                player.pauseVideo();
+                break;
+            }
+            case 'NEXTTRACK': {
+                getItemToPlay();
+                break;
+            }
+            case 'REPLAYTRACK': {
+                player.seekTo(0);
+                break;
+            }
+            default: console.log('unknown command: ' + command);
+        }
+    }
+}
 
 function getItemToPlay() {
     $('#loading_curtain').css('visibility', 'visible');
@@ -141,7 +158,7 @@ function playSong(song: {video: VideoDetails, addedBy: string}) {
     });
     player.on('stateChange', onPlayerStateChange);
     player.playVideo();
-    showSongInfoPanel(song.video.title, song.video.thumbnailUrl, song.addedBy);
+    showSongInfoPanel(song.video.title, song.video.thumbnail.normal, song.addedBy);
 }
 
 function showSongInfoPanel(title: string, thumbnail: string, addedBy: string) {
@@ -161,7 +178,7 @@ function showSongInfoPanel(title: string, thumbnail: string, addedBy: string) {
     }, 7000);
 }
 
-function showToast(text: string, iconName: 'info'|'queue' = 'info') {
+function showToast(text: string, iconName: string = 'info') {
     $('#toast_icon').text(iconName);
     $('#toast_text').text(text);
 
