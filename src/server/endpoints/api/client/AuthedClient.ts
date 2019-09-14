@@ -8,6 +8,7 @@ import { IYouTubeVideoDetails } from '../../../models/YouTubeVideoDetails';
 import { IQueueItem } from '../../../models/QueueItem';
 import { MessageBus } from '../../../util/MessageBus';
 import { IQueueState } from '../../../models/QueueState';
+import { HttpStatusCodes } from '../../../util/HttpStatusCodes';
 
 const router = Router();
 
@@ -191,69 +192,61 @@ router.get('/play_history', async (request: Request, response: Response) => {
     response.type('json').send(JSON.stringify(historyItems));
 });
 
-// TODO: This should be split up and simplified.
-// Player commands just get thrown onto the MessageBus, pretty much avoiding the PlayerQueue
-// AutoPlay and Privacy commands are basically just PlayerQueue setting modifications
-// So maybe change to /api/send_command and /api/settings, and make it a GET to retrieve, or POST to set?
-router.get('/set_command', (request: Request, response: Response) => {
+router.post('/send_command', (request: Request, response: Response) => {
+    const queue = getQueueByAuthToken(request, response);
+    if (!queue) {
+        return;
+    }
+    
+    let command = request.body.command;
+
+    if (!command) {
+        response.status(HttpStatusCodes.ClientError.BadRequest).send('command required');
+        return;
+    }
+
+    const upperCommand = command.toUpperCase();
+    
+    switch (upperCommand) {
+        case 'PLAY': // Fall Through
+        case 'PAUSE': // Fall Through
+        case 'NEXTTRACK': // Fall Through
+        case 'REPLAYTRACK': queue.setPlayerCommand(upperCommand);
+            break;
+        default: response.status(HttpStatusCodes.ClientError.BadRequest).send(`Unrecognised command: ${command}`);
+            return;
+    }
+
+    // Send a "Success: No Content" response.
+    response.status(HttpStatusCodes.Success.NoContent).send();
+});
+
+router.get('/settings', (request: Request, response: Response) => {
     const queue = getQueueByAuthToken(request, response);
     if (!queue) {
         return;
     }
 
-    let playerCommand: string|undefined = request.query.player;
-    let autoPlayCommand: string|undefined = request.query.autoplay;
-    let privacyCommand: string|undefined = request.query.privacy;
+    response.json(queue.getSettings());
+});
 
-    if (!playerCommand && !autoPlayCommand && !privacyCommand) {
-        response.status(400).send('At least one command required');
+router.patch('/settings', (request: Request, response: Response) => {
+    const queue = getQueueByAuthToken(request, response);
+    if (!queue) {
         return;
     }
 
-    if (playerCommand) {
-        playerCommand = playerCommand.toUpperCase();
-        switch (playerCommand) {
-            case 'PLAY': // Fall Through
-            case 'PAUSE': // Fall Through
-            case 'NEXTTRACK': // Fall Through
-            case 'REPLAYTRACK': queue.setPlayerCommand(playerCommand as any);
-        }
-    }
+    const autoPlay = request.body.autoplay;
+    const privacyMode = request.body.privacyMode ? request.body.privacyMode.toUpperCase() : undefined;
 
-    if (autoPlayCommand) {
-        autoPlayCommand = autoPlayCommand.toUpperCase();
+    let newPrivacyMode = PrivacyMode[privacyMode as keyof typeof PrivacyMode];
 
-        switch (autoPlayCommand) {
-            case 'ENABLE':
-                queue.setShouldAutoPlay(true);
-                break;
-            case 'DISABLE':
-                queue.setShouldAutoPlay(false);
-                break;
-        }
-    }
-
-    if (privacyCommand) {
-        privacyCommand = privacyCommand.toUpperCase();
-
-        switch (privacyCommand) {
-            case 'FULLNAME':
-                queue.setPrivacyMode(PrivacyMode.FULL_NAMES);
-                break;
-            case 'USERAUTO':
-                queue.setPrivacyMode(PrivacyMode.USER_OR_AUTO);
-                break;
-            case 'HIDDEN':
-                queue.setPrivacyMode(PrivacyMode.HIDDEN);
-                break;
-        }
-    }
-
-    response.type('json').send({
-        autoPlayCommand: autoPlayCommand,
-        playerCommand: playerCommand,
-        privacyCommand: privacyCommand,
+    queue.setSettings({
+        autoplay: autoPlay,
+        privacyMode: newPrivacyMode,
     });
+
+    response.status(HttpStatusCodes.Success.NoContent).send();
 });
 
 router.get('/autoqueue_state', async (request: Request, response: Response) => {

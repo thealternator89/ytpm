@@ -96,8 +96,8 @@ $.ajax({
                     console.log(`Unrecognised event ${event} - ignoring`);
             }
         },
-        error: (req, errorType) => {
-            console.log(`${errorType} occurred`);
+        error: (req, status, error) => {
+            console.log(`${error} occurred`);
         },
         url: '/api/player/poll?token=' + playerToken,
     });

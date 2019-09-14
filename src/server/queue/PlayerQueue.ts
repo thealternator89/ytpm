@@ -148,11 +148,15 @@ export class PlayerQueue {
 
     // TODO: remove dependence on youTubeVideoDetailsCache
     public async notifyAddedSong(item: IQueueItem, position: 'FRONT'|'END'): Promise<void> {
+        if (this.privacyMode === PrivacyMode.HIDDEN) {
+            return;
+        }
+
         const video = await youTubeVideoDetailsCache.getFromCacheOrApi(item.videoId);
         const user = userAuthHandler.getNameForToken(item.user);
         this.sendMessageToPlayer('SONG_ENQUEUE', {
             video: video,
-            addedBy: user,
+            addedBy: this.privacyMode === PrivacyMode.FULL_NAMES ? user : 'Someone',
             position: position
         });
     }
@@ -216,16 +220,24 @@ export class PlayerQueue {
         });
     }
 
+    public getSettings(): { autoplay: boolean, privacyMode: string } {
+        return {
+            autoplay: this.shouldAutoPlay,
+            privacyMode: PrivacyMode[this.privacyMode]
+        }
+    }
+
+    public setSettings(settings: {autoplay?: boolean, privacyMode?: PrivacyMode}) {
+        if (typeof settings.autoplay === 'boolean') {
+            this.shouldAutoPlay = settings.autoplay;
+        }
+        if (settings.privacyMode) {
+            this.privacyMode = settings.privacyMode;
+        }
+    }
+
     public getShouldAutoPlay(): boolean {
         return this.shouldAutoPlay;
-    }
-
-    public setShouldAutoPlay(newValue: boolean): void {
-        this.shouldAutoPlay = newValue;
-    }
-
-    public setPrivacyMode(newMode: PrivacyMode): void {
-        this.privacyMode = newMode;
     }
 
     public getPrivacyMode(): PrivacyMode {
