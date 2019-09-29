@@ -63,45 +63,80 @@ $.ajax({
 
         getItemToPlay();
     },
+    complete: () => { startPoll() },
     url: '/api/player/register',
 });
 
+let requestStart = 0;
+let subsequentFailures = 0;
+let notifiedServerDown = false;
+let allowPoll = true;
+
 // perform xhr to /api/player/poll
+const startPoll = (function poll() {
+    if (!allowPoll) {
+        return;
+    }
+    setTimeout(()=> {
+        requestStart = new Date().getTime();
+        $.ajax({
+            complete: poll,
+            dataType: 'json',
+            success: (response) => {
+                if (notifiedServerDown) {
+                    showToast('Connection re-established');
+                    notifiedServerDown = false;
+                }
 
-(function poll() {
-    $.ajax({
-        complete: poll,
-        dataType: 'json',
-        success: (response) => {
-            console.log(response);
-            const event = response.event;
+                console.log(response);
+                const event = response.event;
 
-            // If a song was enqueued and we're not currently playing a song, get a new song to play.
-            if ((typeof(player) === 'undefined' || player === null) && event === 'SONG_ENQUEUE') {
-                getItemToPlay();
-            }
+                // If a song was enqueued and we're not currently playing a song, get a new song to play.
+                if ((typeof(player) === 'undefined' || player === null) && event === 'SONG_ENQUEUE') {
+                    getItemToPlay();
+                }
 
-            switch(event) {
-                case 'SONG_ENQUEUE': showToast(`${response.addedBy} added: ${response.video.title}`, 'queue');
-                    break;
-                case 'PLAYER_COMMAND': handlePlayerCommand(response.command);
-                    break;
-                case 'TOAST': showToast(response.message);
-                    break;
-                case 'USER_JOIN': showToast(`${response.name} joined`, 'person_add');
-                    break;
-                case 'USER_LEAVE': showToast(`${response.name} left`, 'person_outline');
-                    break;
-                default:
-                    console.log(`Unrecognised event ${event} - ignoring`);
-            }
-        },
-        error: (req, status, error) => {
-            console.log(`${error} occurred`);
-        },
-        url: '/api/player/poll?token=' + playerToken,
-    });
-})();
+                switch(event) {
+                    case 'SONG_ENQUEUE': showToast(`${response.addedBy} added: ${response.video.title}`, 'queue');
+                        break;
+                    case 'PLAYER_COMMAND': handlePlayerCommand(response.command);
+                        break;
+                    case 'TOAST': showToast(response.message);
+                        break;
+                    case 'USER_JOIN': showToast(`${response.name} joined`, 'person_add');
+                        break;
+                    case 'USER_LEAVE': showToast(`${response.name} left`, 'person_outline');
+                        break;
+                    default:
+                        console.error(`Unrecognised event ${event} - ignoring`);
+                }
+                subsequentFailures = 0;
+            },
+            error: (req, status, error) => {
+                const timeSinceRequestStarted = new Date().getTime() - requestStart;
+
+                if (error === 'Bad Request') {
+                    showToast('Authentication failure - Player will reload in 10 seconds.', 'error', -1);
+                    allowPoll = false;
+                    setTimeout(() => {
+                        location.reload();
+                    }, 10000);
+                }
+
+                // The request lasted less than 5 seconds, assume it hard failed rather than a timeout
+                if (timeSinceRequestStarted < 15) {
+                    subsequentFailures++;
+                    console.error(`${error || 'Unknown Error'} occurred - Time: ${timeSinceRequestStarted}`);
+                    if (subsequentFailures > 5 && !notifiedServerDown) {
+                        showToast('Connection to server lost', 'error', -1);
+                        notifiedServerDown = true;
+                    }
+                }
+            },
+            url: '/api/player/poll?token=' + playerToken,
+        });
+    }, subsequentFailures <= 1 ? 0 : 1000);
+});
 
 const handlePlayerCommand = (command: string) => {
     if (player) {
@@ -178,16 +213,46 @@ function showSongInfoPanel(title: string, thumbnail: string, addedBy: string) {
     }, 7000);
 }
 
-function showToast(text: string, iconName: string = 'info') {
+function buildToast(text: string, icon: string) {
+    const toastElem = document.createElement('div');
+    toastElem.className = 'toast';
+   
+    // hide it until we're ready to show it
+    toastElem.style.visibility = 'hidden';
+
+    const toastIcon = document.createElement('i');
+    toastIcon.classList.add('toast-icon');  // TODO: Set the style of the toast-icon class to "vertical-align: bottom"
+    toastIcon.classList.add('material-icons');
+    toastIcon.setAttribute('aria-hidden', 'true');
+    toastIcon.textContent = icon;
+
+    const toastText = document.createElement('span');
+    toastText.className = 'toast-text';
+    toastText.textContent = text;
+
+    toastElem.appendChild(toastIcon);
+    toastElem.appendChild(toastText);
+}
+
+/**
+ * Show a toast on screen.
+ * @param text The text to display
+ * @param iconName The icon to display
+ * @param timeout The time to display the toast. If this is '-1', the toast will not disappear until a new toast is displayed
+ */
+function showToast(text: string, iconName: string = 'info', timeout: number = 3000) {
     $('#toast_icon').text(iconName);
     $('#toast_text').text(text);
 
     const toastElem = $('#toast');
 
     toastElem.css('visibility', 'visible');
-    setTimeout(() => {
-        toastElem.css('visibility', 'hidden');
-    }, 3000);
+
+    if(timeout !== -1) {
+        setTimeout(() => {
+            toastElem.css('visibility', 'hidden');
+        }, timeout);
+    }
 }
 
 async function onPlayerStateChange(event: {data: any}) {
@@ -260,4 +325,39 @@ function animateCSS(element: string, animationName: 'fadeInDown'|'fadeOutUp', ca
     }
 
     node.addEventListener('animationend', handleAnimationEnd);
+}
+
+document.getElementById('invisible_curtain').ondblclick = () => {
+    const isFullscreen = window.innerHeight === screen.height;
+    if (isFullscreen) {
+        exitFullscreen();
+    } else {
+        enterFullscreen();
+    }
+};
+
+function enterFullscreen() {
+    const elem = document.documentElement as any;
+    if (elem.requestFullscreen) {
+        elem.requestFullscreen();
+    } else if (elem.mozRequestFullScreen) { /* Firefox */
+        elem.mozRequestFullScreen();
+    } else if (elem.webkitRequestFullscreen) { /* Chrome, Safari and Opera */
+        elem.webkitRequestFullscreen();
+    } else if (elem.msRequestFullscreen) { /* IE/Edge */
+        elem.msRequestFullscreen();
+    }
+}
+
+function exitFullscreen() {
+    const doc = document as any;
+    if (doc.exitFullscreen) {
+        doc.exitFullscreen();
+      } else if (doc.mozCancelFullScreen) { /* Firefox */
+        doc.mozCancelFullScreen();
+      } else if (doc.webkitExitFullscreen) { /* Chrome, Safari and Opera */
+        doc.webkitExitFullscreen();
+      } else if (doc.msExitFullscreen) { /* IE/Edge */
+        doc.msExitFullscreen();
+      }
 }
