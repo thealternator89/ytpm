@@ -61,7 +61,7 @@ This allows a user to see what items are currently in the play queue.
 * Response: An array of objects representing the queue. Currently:
     * `videoId` - The ID of the video
     * `title` - The video title
-    * `thumbnailUrl` - Url to a thumbnail image
+    * `thumbnail` - Object of thumbnail URLs, contains `normal` and `big` properties with URLs to the appropriate image.
     * `channelName` - The name of the channel which uploaded the video
     * `user` - The name of the user who added the item to the queue
 * Errors:
@@ -77,7 +77,7 @@ This allows a user to see which items have previously been played.
 * Response: An array of objects representing the history:
     * `videoId` - The ID of the video
     * `title` - The video title
-    * `thumbnailUrl` - Url to a thumbnail image
+    * `thumbnail` - Object of thumbnail URLs, contains `normal` and `big` properties with URLs to the appropriate image.
     * `channelName` - The name of the channel which uploaded the video
 * Errors:
     * `401: Unauthorized` - Token not provided or invalid
@@ -94,7 +94,7 @@ This allows a user to see what is coming up next; either from the queue, or auto
 * Response: An object representing the song which will play next:
     * `videoId` - The ID of the video
     * `title` - The video title
-    * `thumbnailUrl` - Url to a thumbnail image
+    * `thumbnail` - Object of thumbnail URLs, contains `normal` and `big` properties with URLs to the appropriate image.
     * `channelName` - The name of the channel which uploaded the video
 * Errors:
     * `401: Unauthorized` - Token not provided or invalid
@@ -111,7 +111,7 @@ This allows a user to search for videos to add to the queue.
     * `videoId` - The ID of the video
     * `title` - The title of the video
     * `channelName` - The name of the channel hosting the video
-    * `thumbnailUrl` - The URL to a thumbnail of the video
+    * `thumbnail` - Object of thumbnail URLs, contains `normal` and `big` properties with URLs to the appropriate image.
 * Errors:
     * `401: Unauthorized` - Token not provided or invalid
 

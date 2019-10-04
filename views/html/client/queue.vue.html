@@ -22,7 +22,7 @@
 			</nav>
 			<div id="queue">
 				<a href="javascript:void()" class="list-group-item list-group-item-action flex-column align-items-start list-group-item-dark" v-for="queueItem in queueItems" v-on:click="openYoutube(queueItem)">
-					<img v-bind:src="queueItem.thumbnailUrl" width="80" height="60" style="float: left; margin-left: 5px; margin-right: 7px; clear: both;"> 
+					<img v-bind:src="queueItem.thumbnail.normal" width="80" height="60" style="float: left; margin-left: 5px; margin-right: 7px; clear: both;"> 
 					<div class="open-in-youtube">
 							<i class="material-icons">open_in_new</i>
 						</div>

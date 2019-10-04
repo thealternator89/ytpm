@@ -48,7 +48,10 @@ var updateView = function () {
 				videoId: '',
 				title: '',
 				description: '',
-				thumbnailUrl: '',
+				thumbnail: {
+					normal: '',
+					big: '',
+				},
 				channelName: '',
 			};
 

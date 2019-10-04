@@ -44,7 +44,7 @@
 			</nav>
 			<div id="history">
 				<a href="javascript:;" class="list-group-item list-group-item-action flex-column align-items-start list-group-item-dark" v-for="item in historyItems" v-on:click="selectItem(item)">
-					<img v-bind:src="item.thumbnailUrl" width="80" height="60" style="float: left; margin-left: 5px; margin-right: 7px; clear: both;"> 
+					<img v-bind:src="item.thumbnail.normal" width="80" height="60" style="float: left; margin-left: 5px; margin-right: 7px; clear: both;"> 
 					<div class="item-details">		
 						<p class="mb-1">{{item.title}}</p>
 						<small>{{item.channelName}}</small>

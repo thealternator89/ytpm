@@ -53,7 +53,7 @@
 			</div>
 			<div id="results" v-infinite-scroll="loadMoreSearchResults" infinite-scroll-disabled="disableInfiniteSearch" infinite-scroll-distance="20">
 				<a href="javascript:;" class="list-group-item list-group-item-action flex-column align-items-start list-group-item-dark" v-for="result in results" v-on:click="selectResult(result)">
-					<img v-bind:src="result.thumbnailUrl" width="80" height="60" style="float: left; margin-left: 5px; margin-right: 7px; clear: both;"> 
+					<img v-bind:src="result.thumbnail.normal" width="80" height="60" style="float: left; margin-left: 5px; margin-right: 7px; clear: both;"> 
 					<div class="result-details">		
 						<p class="mb-1">{{result.title}}</p>
 						<small>{{result.channelName}}</small>
