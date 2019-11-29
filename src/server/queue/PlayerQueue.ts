@@ -6,7 +6,7 @@ import { Constants } from '../constants';
 import { PlayerState, PrivacyMode } from '../enums';
 import { IAutoQueueItem, IAutoQueueStatItem, IQueueItem } from '../models/QueueItem';
 import { MessageBus } from '../util/MessageBus';
-import { IQueueState, IPartialQueueState } from '../models/QueueState';
+import { IQueueState, QueueStateProperty } from '../models/QueueState';
 import { EventType } from '../models/PlayerPollResponse';
 
 const MIN_PLAYS_BEFORE_AVAILABLE_TO_AUTOPLAY = 50;
@@ -39,8 +39,10 @@ export class PlayerQueue {
         this.touched();
         // set an initial queueState
         this.queueState = {
+            playerStatus: 'STOPPED',
+            queueLength: 0,
             playerCode: key,
-            lastUpdated: moment().unix(),
+            lastUpdated: new Date().getTime(),
         };
     }
 
@@ -52,17 +54,30 @@ export class PlayerQueue {
         return this.token;
     }
 
-    private updateState(property: 'PLAYING_NOW' | 'UP_NEXT', value: any) {
+    private updateState(property: QueueStateProperty, value: any) {
         switch(property) {
-            case 'PLAYING_NOW': this.queueState.playingNow = value;
+            case QueueStateProperty.PLAYING_NOW: 
+                this.queueState.playingNow = value;
                 break;
-            case 'UP_NEXT': this.queueState.upNext = value;
+            case QueueStateProperty.UP_NEXT: 
+                this.queueState.upNext = value;
+                break;
+            case QueueStateProperty.PLAYER_STATUS: 
+                this.queueState.playerStatus = value;
                 break;
             default: 
                 throw new Error(`Unrecognised state change: ${property}`);
         }
 
-        this.queueState.lastUpdated = moment().unix();
+        this.queueState.queueLength = this.queue.length;
+
+        let updated = new Date().getTime();
+        if (updated === this.queueState.lastUpdated) {
+            // Increment the time the last update occurred to force the client to update if multiple updates occur within a short time
+            updated++;
+        }
+        this.queueState.lastUpdated = updated;
+
         MessageBus.emit(`client:${this.key}`, this.queueState);
     }
 
@@ -98,10 +113,12 @@ export class PlayerQueue {
                 videoId: additionalData.videoId,
             };
             const videoDetails = await youTubeVideoDetailsCache.getFromCacheOrApi(additionalData.videoId)
-            this.updateState('PLAYING_NOW', videoDetails);
+            this.updateState(QueueStateProperty.PLAYING_NOW, videoDetails);
         } else {
             delete this.playerStatus.currentItem;
         }
+
+        this.updateState(QueueStateProperty.PLAYER_STATUS, newPlayerState);
     }
 
     public getPlayerState(): {playerState: PlayerState, videoId?: string, position?: number, duration?: number} {
@@ -380,14 +397,14 @@ export class PlayerQueue {
                 ...await youTubeVideoDetailsCache.getFromCacheOrApi(this.queue[0].videoId),
                 auto: false,
             };
-            this.updateState('UP_NEXT', videoDetails);
+            this.updateState(QueueStateProperty.UP_NEXT, videoDetails);
         } else {
             const nextAutoPlaySong = this.getNextAutoPlaySong();
             const videoDetails = nextAutoPlaySong ? {
                 ...await youTubeVideoDetailsCache.getFromCacheOrApi(nextAutoPlaySong.videoId),
                 auto: true,
             } : undefined;
-            this.updateState('UP_NEXT', videoDetails);
+            this.updateState(QueueStateProperty.UP_NEXT, videoDetails);
         }
     }
 
