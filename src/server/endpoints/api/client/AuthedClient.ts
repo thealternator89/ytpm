@@ -15,7 +15,7 @@ const router = Router();
 router.use((request: Request, response: Response, next: NextFunction) => {
     const token = getAuthToken(request);
     if (!userAuthHandler.validateToken(token)) {
-        response.status(401).send('Unauthorized');
+        response.status(HttpStatusCodes.ClientError.Unauthorized).send('Unauthorized');
         return;
     }
     next();
@@ -24,7 +24,7 @@ router.use((request: Request, response: Response, next: NextFunction) => {
 router.get('/poll', async (request: Request, response: Response) => {
     const queue = getQueueByAuthToken(request, response);
     if (!queue) {
-        response.status(500).send('Queue not found');
+        response.status(HttpStatusCodes.ServerError.InternalServerError).send('Queue not found');
         return;
     }
 
@@ -41,7 +41,7 @@ router.get('/poll', async (request: Request, response: Response) => {
 router.get('/poll/v2', async (request: Request, response: Response) => {
     const queue = getQueueByAuthToken(request, response);
     if (!queue) {
-        response.status(500).send('Queue not found');
+        response.status(HttpStatusCodes.ServerError.InternalServerError).send('Queue not found');
         return;
     }
 
@@ -86,13 +86,13 @@ router.get('/enqueue', async (request: Request, response: Response) => {
             const videoUrl = new URL(url);
             videoId = videoUrl.searchParams.get('v');
         } catch (error) {
-            response.status(400).send(`Invalid video URL: ${url}: ${error.message}`);
+            response.status(HttpStatusCodes.ClientError.BadRequest).send(`Invalid video URL: ${url}: ${error.message}`);
             return;
         }
     }
 
     if (!videoId) {
-        response.status(400).send('Invalid request');
+        response.status(HttpStatusCodes.ClientError.BadRequest).send('Invalid request');
         return;
     }
 
@@ -150,14 +150,14 @@ router.get('/autoplay_blacklist', (request: Request, response: Response) => {
     let action: string|undefined = request.query.action;
 
     if (!videoId || !action) {
-        response.status(400).send(`'videoId' and 'action' query parameters are required`);
+        response.status(HttpStatusCodes.ClientError.BadRequest).send(`'videoId' and 'action' query parameters are required`);
         return;
     }
 
     action = action.toLowerCase();
 
     if (!['add', 'remove'].includes(action)) {
-        response.status(400).send(`Invalid value for 'action'. Valid options are: add, remove`);
+        response.status(HttpStatusCodes.ClientError.BadRequest).send(`Invalid value for 'action'. Valid options are: add, remove`);
         return;
     }
 

@@ -4,5 +4,9 @@ export const HttpStatusCodes = {
     },
     ClientError: {
         BadRequest: 400,
+        Unauthorized: 401,
+    },
+    ServerError: {
+        InternalServerError: 500,
     }
 }

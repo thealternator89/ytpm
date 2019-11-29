@@ -1,6 +1,7 @@
 import { Request, Response, Router } from "express";
 import { userAuthHandler } from "../../../auth/UserAuthHandler";
 import { youTubeClient } from "../../../api-client/YouTubeClient";
+import { HttpStatusCodes } from "../../../util/HttpStatusCodes";
 
 const router = Router();
 
@@ -9,7 +10,7 @@ router.get('/auth', (request: Request, response: Response) => {
     const providedUserName = request.query.name;
 
     if (!providedAuthString || !providedUserName) {
-        response.status(400).send('Invalid request');
+        response.status(HttpStatusCodes.ClientError.BadRequest).send('Invalid request');
         return;
     }
 
@@ -17,7 +18,7 @@ router.get('/auth', (request: Request, response: Response) => {
         const token = userAuthHandler.authenticateNewUser(providedAuthString, providedUserName);
         response.send(token);
     } catch (error) {
-        response.status(403).send(`Invalid auth string`);
+        response.status(HttpStatusCodes.ClientError.Unauthorized).send(`Invalid auth string`);
         return;
     }
 });
@@ -27,7 +28,7 @@ router.get('/search', async (request: Request, response: Response) => {
     const pageToken = request.query.page;
 
     if (!searchQuery) {
-        response.status(400).send('No search query provided');
+        response.status(HttpStatusCodes.ClientError.BadRequest).send('No search query provided');
         return;
     }
 
