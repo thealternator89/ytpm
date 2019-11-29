@@ -23,6 +23,16 @@ router.get('/auth', (request: Request, response: Response) => {
     }
 });
 
+router.get('/auth/validate', (request: Request, response: Response) => {
+    const providedAuthToken = request.query.token;
+
+    if (!providedAuthToken || !userAuthHandler.validateToken(providedAuthToken)) {
+        response.status(HttpStatusCodes.ClientError.Unauthorized).send();
+    } else {
+        response.status(HttpStatusCodes.Success.NoContent).send();
+    }
+});
+
 router.get('/search', async (request: Request, response: Response) => {
     const searchQuery = request.query.q;
     const pageToken = request.query.page;
