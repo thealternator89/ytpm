@@ -211,6 +211,7 @@ router.post('/send_command', (request: Request, response: Response) => {
         case 'PLAY': // Fall Through
         case 'PAUSE': // Fall Through
         case 'NEXTTRACK': // Fall Through
+        case 'RELOAD': //Fall Through
         case 'REPLAYTRACK': queue.setPlayerCommand(upperCommand);
             break;
         default: response.status(HttpStatusCodes.ClientError.BadRequest).send(`Unrecognised command: ${command}`);

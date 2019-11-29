@@ -157,6 +157,10 @@ const handlePlayerCommand = (command: string) => {
                 player.seekTo(0);
                 break;
             }
+            case 'RELOAD': {
+                window.location.reload(true);
+                break;
+            }
             default: console.log('unknown command: ' + command);
         }
     }
