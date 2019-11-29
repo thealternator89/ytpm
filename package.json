@@ -4,10 +4,10 @@
   "description": "Party Mode for YouTube",
   "main": "dist/index.js",
   "scripts": {
-    "build": "npm run buildserver && npm run buildplayer",
+    "build": "npm run build:server && npm run build:player",
     "postbuild": "node build-tasks/copy-views.js",
-    "buildserver": "tsc",
-    "buildplayer": "webpack --mode=production",
+    "build:server": "tsc",
+    "build:player": "webpack --mode=production",
     "buildstart": "npm run build && npm run start",
     "lint": "tslint --project .",
     "start": "node .",

@@ -1,5 +1,7 @@
 root = true
 
-[*.{ts,json,md}]
+[*]
 end_of_line = lf
+
+[*.{ts,json,md}]
 insert_final_newline = true
