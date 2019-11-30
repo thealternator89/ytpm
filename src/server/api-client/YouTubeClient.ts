@@ -5,6 +5,8 @@ import * as rp from 'request-promise';
 import { IYoutubeSearchResults, IYouTubeVideoDetails } from '../models/YouTubeVideoDetails';
 import { envUtil } from '../util/EnvUtil';
 import { youTubeClientCache } from './YouTubeClientCache';
+import { YouTubeChannel, YouTubeList } from '../models/YouTubeList';
+import { logger } from '../util/LogUtil';
 
 const htmlEntities = new AllHtmlEntities();
 
@@ -13,6 +15,8 @@ const SEARCH_RESULT_LIMIT_RELATED = 5;
 
 const AUTOCOMPLETE_URL_BASE = 'http://suggestqueries.google.com/complete/search';
 const MUSIC_TOPIC_ID = '/m/04rlf';
+
+const TAG = 'YOUTUBE_CLIENT:';
 
 const decodeHtml = (input: string) => htmlEntities.decode(input);
 
@@ -108,7 +112,53 @@ class YouTubeClient {
         return results;
     }
 
-    public async getDetails(query: string): Promise<IYouTubeVideoDetails> {
+    public async getChannelDetails(channelIds: string[]): Promise<YouTubeChannel[]> {
+        if (channelIds.length > 50) {
+            logger.warn(`${TAG} getChannelDetails: Requested more than 50 items. YouTube queries are limited to 50 items, results may be unpredictable.`);
+        }
+        let response: GaxiosResponse<youtube_v3.Schema$ChannelListResponse>;
+        try {
+            response = await this.youtube.channels.list({
+                id: channelIds.join(','),
+                part: 'snippet',
+                maxResults: channelIds.length
+            });
+        } catch (error) {
+            throw new Error(`An error occurred retrieving channels: ${error.message}`);
+        }
+        return response.data.items
+            .map((channel) => ({
+                id: channel.id,
+                name: decodeHtml(channel.snippet.title),
+                thumbnail: channel.snippet.thumbnails.medium.url,
+            }));
+    }
+
+    public async getListDetails(listIds: string[]): Promise<YouTubeList[]> {
+        if (listIds.length > 50) {
+            logger.warn(`${TAG} getListDetails: Requested more than 50 items. YouTube queries are limited to 50 items, results may be unpredictable.`);
+        }
+        let response: GaxiosResponse<youtube_v3.Schema$PlaylistListResponse>;
+        try {
+            response = await this.youtube.playlists.list({
+                id: listIds.join(','),
+                part: 'snippet',
+                maxResults: listIds.length
+            });
+        } catch (error) {
+            throw new Error(`An error occurred retrieving playlists': ${error.message}`);
+        }
+
+        return response.data.items
+            .map((list) => ({
+                id: list.id,
+                name: list.snippet.title,
+                thumbnail: list.snippet.thumbnails.medium.url,
+                channel: list.snippet.channelTitle,
+            }));
+    }
+
+    public async getVideoDetails(query: string): Promise<IYouTubeVideoDetails> {
 
         let response: GaxiosResponse<youtube_v3.Schema$VideoListResponse>;
 
