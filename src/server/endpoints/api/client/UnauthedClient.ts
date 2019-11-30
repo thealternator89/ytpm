@@ -2,6 +2,7 @@ import { Request, Response, Router } from "express";
 import { userAuthHandler } from "../../../auth/UserAuthHandler";
 import { youTubeClient } from "../../../api-client/YouTubeClient";
 import { HttpStatusCodes } from "../../../util/HttpStatusCodes";
+import { youTubeClientCache } from "../../../api-client/YouTubeClientCache";
 
 const router = Router();
 
@@ -52,6 +53,14 @@ router.get('/autocomplete', async (request: Request, response: Response) => {
 
     const results = await youTubeClient.getSearchAutoComplete(searchQuery);
     response.json(results);
+});
+
+router.get('/discovery/lists', async (_request: Request, response: Response) => {
+    response.json(await youTubeClientCache.getListDetailsFromCacheOrApi());
+});
+
+router.get('/discovery/channels', async (_request: Request, response: Response) => {
+    response.json(await youTubeClientCache.getChannelDetailsFromCacheOrApi());
 });
 
 export const unauthedClientApiRouter = router;
