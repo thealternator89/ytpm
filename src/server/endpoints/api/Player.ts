@@ -3,7 +3,7 @@ import { playerQueuesManager } from '../../queue/PlayerQueuesManager';
 import moment = require('moment');
 import { PlayerQueue } from '../../queue/PlayerQueue';
 import { MessageBus } from '../../util/MessageBus';
-import { youTubeVideoDetailsCache } from '../../api-client/YouTubeVideoDetailsCache';
+import { youTubeClientCache } from '../../api-client/YouTubeClientCache';
 import { IQueueItem } from '../../models/QueueItem';
 import { PrivacyMode } from '../../enums';
 import { userAuthHandler } from '../../auth/UserAuthHandler';
@@ -81,7 +81,7 @@ router.get('/next_song', async (request: Request, response: Response) => {
         return;
     }
 
-    const videoDetails = await youTubeVideoDetailsCache.getFromCacheOrApi(queueItem.videoId);
+    const videoDetails = await youTubeClientCache.getVideoFromCacheOrApi(queueItem.videoId);
     const userAuthToken = (queueItem as IQueueItem).user;
     let addedBy: string;
 

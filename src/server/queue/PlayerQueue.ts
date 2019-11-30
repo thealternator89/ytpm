@@ -1,6 +1,6 @@
 import * as moment from 'moment';
 import { youTubeClient } from '../api-client/YouTubeClient';
-import { youTubeVideoDetailsCache } from '../api-client/YouTubeVideoDetailsCache';
+import { youTubeClientCache } from '../api-client/YouTubeClientCache';
 import { userAuthHandler } from '../auth/UserAuthHandler';
 import { Constants } from '../constants';
 import { PlayerState, PrivacyMode } from '../enums';
@@ -112,7 +112,7 @@ export class PlayerQueue {
                 offset: additionalData.position,
                 videoId: additionalData.videoId,
             };
-            const videoDetails = await youTubeVideoDetailsCache.getFromCacheOrApi(additionalData.videoId)
+            const videoDetails = await youTubeClientCache.getVideoFromCacheOrApi(additionalData.videoId)
             this.updateState(QueueStateProperty.PLAYING_NOW, videoDetails);
         } else {
             delete this.playerStatus.currentItem;
@@ -169,7 +169,7 @@ export class PlayerQueue {
             return;
         }
 
-        const video = await youTubeVideoDetailsCache.getFromCacheOrApi(item.videoId);
+        const video = await youTubeClientCache.getVideoFromCacheOrApi(item.videoId);
         const user = userAuthHandler.getNameForToken(item.user);
         this.sendMessageToPlayer('SONG_ENQUEUE', {
             video: video,
@@ -394,14 +394,14 @@ export class PlayerQueue {
     private async updateUpNext(): Promise<void> {
         if (this.queue.length > 0) {
             const videoDetails = {
-                ...await youTubeVideoDetailsCache.getFromCacheOrApi(this.queue[0].videoId),
+                ...await youTubeClientCache.getVideoFromCacheOrApi(this.queue[0].videoId),
                 auto: false,
             };
             this.updateState(QueueStateProperty.UP_NEXT, videoDetails);
         } else {
             const nextAutoPlaySong = this.getNextAutoPlaySong();
             const videoDetails = nextAutoPlaySong ? {
-                ...await youTubeVideoDetailsCache.getFromCacheOrApi(nextAutoPlaySong.videoId),
+                ...await youTubeClientCache.getVideoFromCacheOrApi(nextAutoPlaySong.videoId),
                 auto: true,
             } : undefined;
             this.updateState(QueueStateProperty.UP_NEXT, videoDetails);

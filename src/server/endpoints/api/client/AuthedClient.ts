@@ -1,5 +1,5 @@
 import { Request, Response, Router, NextFunction } from 'express';
-import { youTubeVideoDetailsCache } from '../../../api-client/YouTubeVideoDetailsCache';
+import { youTubeClientCache } from '../../../api-client/YouTubeClientCache';
 import { getQueueByAuthToken, getAuthToken } from '../../utilities';
 import { userAuthHandler } from '../../../auth/UserAuthHandler';
 import { Constants as CONSTANTS } from '../../../constants'
@@ -34,7 +34,7 @@ router.get('/poll', async (request: Request, response: Response) => {
         duration: playerStatus.duration,
         playerState: playerStatus.playerState,
         position: playerStatus.position,
-        video: await youTubeVideoDetailsCache.getFromCacheOrApi(playerStatus.videoId),
+        video: await youTubeClientCache.getVideoFromCacheOrApi(playerStatus.videoId),
     });
 });
 
@@ -111,7 +111,7 @@ router.get('/enqueue', async (request: Request, response: Response) => {
         queuePosition = queue.length();
     }
 
-    const details = await youTubeVideoDetailsCache.getFromCacheOrApi(videoId);
+    const details = await youTubeClientCache.getVideoFromCacheOrApi(videoId);
 
     response.type('json').send(JSON.stringify({...details, queuePosition: queuePosition}));
 });
@@ -126,12 +126,12 @@ router.get('/queue_state', async (request: Request, response: Response) => {
 
     const queueItems: IYouTubeVideoDetails[] = [];
     for (const queueItem of queue.getAllQueuedItems()) {
-        queueItems.push(await youTubeVideoDetailsCache.getFromCacheOrApi(queueItem.videoId));
+        queueItems.push(await youTubeClientCache.getVideoFromCacheOrApi(queueItem.videoId));
     }
 
     if (queueItems.length === 0) {
         const upNext = queue.getNextAutoPlayItem();
-        queueItems.push(await youTubeVideoDetailsCache.getFromCacheOrApi(upNext));
+        queueItems.push(await youTubeClientCache.getVideoFromCacheOrApi(upNext));
     }
 
     response.type('json').send(JSON.stringify({
@@ -186,7 +186,7 @@ router.get('/play_history', async (request: Request, response: Response) => {
     }
 
     for (const videoId of historyIds) {
-        historyItems.push(await youTubeVideoDetailsCache.getFromCacheOrApi(videoId));
+        historyItems.push(await youTubeClientCache.getVideoFromCacheOrApi(videoId));
     }
 
     response.type('json').send(JSON.stringify(historyItems));
@@ -258,7 +258,7 @@ router.get('/autoqueue_state', async (request: Request, response: Response) => {
 
     const autoQueueWithYtDetails: any[] = [];
     for (const queueItem of queue.getAutoPlayState()) {
-        const videoDetails = await youTubeVideoDetailsCache.getFromCacheOrApi(queueItem.videoId);
+        const videoDetails = await youTubeClientCache.getVideoFromCacheOrApi(queueItem.videoId);
         autoQueueWithYtDetails.push({
             numberOfSongsUntilAvailableToPlay: queueItem.numberOfSongsUntilAvailableToPlay,
             score: queueItem.score,

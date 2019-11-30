@@ -4,7 +4,7 @@ import { AllHtmlEntities } from 'html-entities';
 import * as rp from 'request-promise';
 import { IYoutubeSearchResults, IYouTubeVideoDetails } from '../models/YouTubeVideoDetails';
 import { envUtil } from '../util/EnvUtil';
-import { youTubeVideoDetailsCache } from './YouTubeVideoDetailsCache';
+import { youTubeClientCache } from './YouTubeClientCache';
 
 const htmlEntities = new AllHtmlEntities();
 
@@ -73,7 +73,7 @@ class YouTubeClient {
         const results = response.data.items
             .map((result) => {
                 const resultVideoDetails = this.getYouTubeVideoDetailsFromApiResponse(result);
-                youTubeVideoDetailsCache.addOrReplaceInCache(resultVideoDetails);
+                youTubeClientCache.addOrReplaceVideoInCache(resultVideoDetails);
                 return resultVideoDetails;
             });
 
@@ -99,7 +99,7 @@ class YouTubeClient {
         const results = response.data.items
             .map((result) => {
                 const resultVideodetails = this.getYouTubeVideoDetailsFromApiResponse(result);
-                youTubeVideoDetailsCache.addOrReplaceInCache(resultVideodetails);
+                youTubeClientCache.addOrReplaceVideoInCache(resultVideodetails);
                 return resultVideodetails;
             });
 
@@ -123,7 +123,7 @@ class YouTubeClient {
         }
 
         const result = this.getYouTubeVideoDetailsFromApiResponse(response.data.items[0]);
-        youTubeVideoDetailsCache.addOrReplaceInCache(result);
+        youTubeClientCache.addOrReplaceVideoInCache(result);
 
         return result;
     }
