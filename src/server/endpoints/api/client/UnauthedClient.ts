@@ -48,6 +48,30 @@ router.get('/search', async (request: Request, response: Response) => {
     response.json(results);
 });
 
+router.get('/search/list', async(request: Request, response: Response) => {
+    const listId = request.query.id;
+    const pageToken = request.query.page;
+
+    if (!listId) {
+        response.status(HttpStatusCodes.ClientError.BadRequest).send('No list ID provided');
+        return;
+    }
+
+    response.json(await youTubeClient.getVideosForPlaylist(listId, pageToken));
+});
+
+router.get('/search/channel', async(request: Request, response: Response) => {
+    const channelId = request.query.id;
+    const pageToken = request.query.page;
+
+    if (!channelId) {
+        response.status(HttpStatusCodes.ClientError.BadRequest).send('No channel ID provided');
+        return;
+    }
+
+    response.json(await youTubeClient.getVideosForChannel(channelId, pageToken));
+});
+
 router.get('/autocomplete', async (request: Request, response: Response) => {
     const searchQuery = request.query.q;
 

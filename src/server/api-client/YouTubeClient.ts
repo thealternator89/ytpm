@@ -89,6 +89,59 @@ class YouTubeClient {
         };
     }
 
+    public async getVideosForChannel(channelId: string, page?: string): Promise<IYoutubeSearchResults> {
+        let response: GaxiosResponse<youtube_v3.Schema$SearchListResponse>;
+        try {
+            response = await this.youtube.search.list({
+                ...this.defaultSearchOptions,
+                maxResults: SEARCH_RESULT_LIMIT_STANDARD,
+                pageToken: page,
+                part: 'snippet',
+                channelId: channelId,
+            });
+        } catch (error) {
+            throw new Error(`An error occurred retrieving videos for channel ${channelId}: ${error.message}`);
+        }
+
+        const results = response.data.items
+            .map((result) => {
+                const resultVideoDetails = this.getYouTubeVideoDetailsFromApiResponse(result);
+                youTubeClientCache.addOrReplaceVideoInCache(resultVideoDetails);
+                return resultVideoDetails;
+            });
+
+        return {
+            nextPageToken: response.data.nextPageToken,
+            results: results,
+        };
+    }
+
+    public async getVideosForPlaylist(playlistId: string, page?: string): Promise<IYoutubeSearchResults> {
+        let response: GaxiosResponse<youtube_v3.Schema$PlaylistItemListResponse>;
+        try {
+            response = await this.youtube.playlistItems.list({
+                maxResults: SEARCH_RESULT_LIMIT_STANDARD,
+                pageToken: page,
+                part: 'snippet',
+                playlistId: playlistId,
+            });
+        } catch (error) {
+            throw new Error(`An error occurred retrieving videos for playlist ${playlistId}: ${error.message}`);
+        }
+
+        const results = response.data.items
+            .map((result) => {
+                const resultVideoDetails = this.getYouTubeVideoDetailsFromApiResponse(result);
+                youTubeClientCache.addOrReplaceVideoInCache(resultVideoDetails);
+                return resultVideoDetails;
+            });
+        
+        return {
+            nextPageToken: response.data.nextPageToken,
+            results: results,
+        }
+    }
+
     public async searchRelatedVideos(videoId: string): Promise<IYouTubeVideoDetails[]> {
         let response: GaxiosResponse<youtube_v3.Schema$SearchListResponse>;
         try {
@@ -204,18 +257,19 @@ class YouTubeClient {
     }
 
     public videoIsMusic(videoDetails: youtube_v3.Schema$Video): boolean {
-        return videoDetails &&
-               videoDetails.topicDetails &&
-               videoDetails.topicDetails.relevantTopicIds &&
-               videoDetails.topicDetails.relevantTopicIds.includes(MUSIC_TOPIC_ID);
+        try {
+            return videoDetails.topicDetails.relevantTopicIds.includes(MUSIC_TOPIC_ID);
+        } catch (error) {
+            return false;
+        }
     }
 
     public videoIsLong(videoDetails: youtube_v3.Schema$Video): boolean {
-        // Duration exists on the videoDetails, and it is greater than 10 mins (10*60*1000 ms)
-        return videoDetails &&
-               videoDetails.contentDetails &&
-               videoDetails.contentDetails.duration &&
-               parseInt(videoDetails.contentDetails.duration) > (10 * 60 * 1000);
+        try {
+            return parseInt(videoDetails.contentDetails.duration) > (10 * 60 * 1000);
+        } catch (error) {
+            return true;
+        }
     }
 
     private addToHistory(query: string) {
@@ -226,30 +280,23 @@ class YouTubeClient {
         }
     }
 
-    // Safely get either a thumbnail url or a stand-in image if the image isn't available.
-    private getThumbnailUrl(thumbnails: any, thumbName: 'default'|'medium'|'high'): string {
-        if (thumbnails && thumbnails[thumbName]) {
-            return thumbnails[thumbName].url;
-        } else {
-            return '/no-art.png';
-        }
-    }
-
     private getYouTubeVideoDetailsFromApiResponse(
-        responseObj: youtube_v3.Schema$Video|youtube_v3.Schema$SearchResult): IYouTubeVideoDetails {
-        // If the id is a string, use it. Otherwise use the videoId property of id.
-        const id: string = (typeof(responseObj.id) === 'string') ? responseObj.id : responseObj.id.videoId;
+        responseObj: youtube_v3.Schema$Video|youtube_v3.Schema$SearchResult|youtube_v3.Schema$PlaylistItem): IYouTubeVideoDetails {
 
         return {
             channelName: decodeHtml(responseObj.snippet.channelTitle),
             description: decodeHtml(responseObj.snippet.description),
             thumbnail: {
-                normal: this.getThumbnailUrl(responseObj.snippet.thumbnails, 'default'),
-                big: this.getThumbnailUrl(responseObj.snippet.thumbnails, 'medium'),
+                normal: responseObj.snippet.thumbnails.default.url,
+                big: responseObj.snippet.thumbnails.medium.url,
             },
             title: decodeHtml(responseObj.snippet.title),
-            videoId: id,
+            videoId: this.getId(responseObj),
         };
+    }
+
+    private getId(responseObj: youtube_v3.Schema$Video|youtube_v3.Schema$SearchResult|youtube_v3.Schema$PlaylistItem): string {
+        return (typeof(responseObj.id) === 'string') ? responseObj.id : responseObj.id.videoId;
     }
 }
 
