@@ -14,6 +14,8 @@ const SEARCH_RESULT_LIMIT_RELATED = 5;
 const AUTOCOMPLETE_URL_BASE = 'http://suggestqueries.google.com/complete/search';
 const MUSIC_TOPIC_ID = '/m/04rlf';
 
+const decodeHtml = (input: string) => htmlEntities.decode(input);
+
 class YouTubeClient {
     private readonly defaultSearchOptions: any = {
         regionCode: 'NZ', // TODO: Maybe allow this to be configured at the queue level
@@ -188,31 +190,15 @@ class YouTubeClient {
         // If the id is a string, use it. Otherwise use the videoId property of id.
         const id: string = (typeof(responseObj.id) === 'string') ? responseObj.id : responseObj.id.videoId;
 
-        return this.decodeHtmlEntities({
-            channelName: responseObj.snippet.channelTitle,
-            description: responseObj.snippet.description,
+        return {
+            channelName: decodeHtml(responseObj.snippet.channelTitle),
+            description: decodeHtml(responseObj.snippet.description),
             thumbnail: {
                 normal: this.getThumbnailUrl(responseObj.snippet.thumbnails, 'default'),
                 big: this.getThumbnailUrl(responseObj.snippet.thumbnails, 'medium'),
             },
-            title: responseObj.snippet.title,
+            title: decodeHtml(responseObj.snippet.title),
             videoId: id,
-        });
-    }
-
-    /**
-     * Decodes any HTML entities (e.g. '&amp;') into the actual character ('&')
-     * Returns a new IYouTubeVideoDetails object with the HTML entities decoded.
-     * Note: only the channelName, description and title properties are decoded.
-     * @param video The video details object to decode
-     * @returns A new video details object with html entities decoded
-     */
-    private decodeHtmlEntities(video: IYouTubeVideoDetails): IYouTubeVideoDetails {
-        return {
-            ...video,
-            channelName: htmlEntities.decode(video.channelName),
-            description: htmlEntities.decode(video.description),
-            title: htmlEntities.decode(video.title),
         };
     }
 }
