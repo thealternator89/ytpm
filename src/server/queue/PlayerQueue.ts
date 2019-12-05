@@ -247,6 +247,7 @@ export class PlayerQueue {
     public setSettings(settings: {autoplay?: boolean, privacyMode?: PrivacyMode}) {
         if (typeof settings.autoplay === 'boolean') {
             this.shouldAutoPlay = settings.autoplay;
+            this.updateUpNext();
         }
         if (settings.privacyMode) {
             this.privacyMode = settings.privacyMode;

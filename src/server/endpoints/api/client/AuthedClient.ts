@@ -140,14 +140,14 @@ router.get('/queue_state', async (request: Request, response: Response) => {
     }));
 });
 
-router.get('/autoplay_blacklist', (request: Request, response: Response) => {
+router.post('/autoplay_blacklist', (request: Request, response: Response) => {
     const queue = getQueueByAuthToken(request, response);
     if (!queue) {
         return;
     }
 
     const videoId: string|undefined = request.query.videoId;
-    let action: string|undefined = request.query.action;
+    let action: string|undefined = request.body.action;
 
     if (!videoId || !action) {
         response.status(HttpStatusCodes.ClientError.BadRequest).send(`'videoId' and 'action' query parameters are required`);
@@ -268,5 +268,16 @@ router.get('/autoqueue_state', async (request: Request, response: Response) => {
 
     response.json(autoQueueWithYtDetails);
 });
+
+router.get('/deauth', async (request: Request, response: Response) => {
+    const token = getAuthToken(request);
+    const queue = userAuthHandler.getQueueForToken(token);
+    const name = userAuthHandler.getNameForToken(token);
+
+    queue.notifyUserEvent(name, 'LEAVE');
+    userAuthHandler.revokeToken(token);
+
+    response.status(HttpStatusCodes.Success.NoContent).send();
+})
 
 export const authedClientApiRouter = router;

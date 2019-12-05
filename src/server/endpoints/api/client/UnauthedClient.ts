@@ -17,7 +17,7 @@ router.get('/auth', (request: Request, response: Response) => {
 
     try {
         const token = userAuthHandler.authenticateNewUser(providedAuthString, providedUserName);
-        response.send(token);
+        response.json({token});
     } catch (error) {
         response.status(HttpStatusCodes.ClientError.Unauthorized).send(`Invalid auth string`);
         return;
@@ -27,10 +27,12 @@ router.get('/auth', (request: Request, response: Response) => {
 router.get('/auth/validate', (request: Request, response: Response) => {
     const providedAuthToken = request.query.token;
 
-    if (!providedAuthToken || !userAuthHandler.validateToken(providedAuthToken)) {
-        response.status(HttpStatusCodes.ClientError.Unauthorized).send();
+    if (!providedAuthToken) {
+        response.status(HttpStatusCodes.ClientError.BadRequest).send('token required');
     } else {
-        response.status(HttpStatusCodes.Success.NoContent).send();
+        response.json({
+            valid: userAuthHandler.validateToken(providedAuthToken),
+        });
     }
 });
 

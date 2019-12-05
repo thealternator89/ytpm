@@ -3,23 +3,22 @@ import { Request, Response, Router } from 'express';
 import * as path from 'path';
 
 import { apiRouter } from './Api';
-import { clientRouter } from './Client';
-import { validateCookie } from './utilities';
 
 const router = Router();
 
+const loadClient = (request: Request, response: Response) => {
+    response.sendFile(path.join(__dirname, '..' , 'views/html/client', 'angular.html'));
+}
+
 router.use('/api', apiRouter);
-router.use('/client', clientRouter);
 
-router.get('/', (request: Request, response: Response) => {
-    response.redirect('/client');
-});
-
-router.get('/client', (request: Request, response: Response) => {
-    if(validateCookie){
-        response.redirect('/client/home');
-    }
-});
+router.get('/', loadClient);
+router.get('/connect', loadClient);
+router.get('/featured', loadClient);
+router.get('/history', loadClient);
+router.get('/home', loadClient);
+router.get('/queue', loadClient);
+router.get('/search', loadClient);
 
 router.get('/player', (request: Request, response: Response) => {
     response.sendFile(path.join(__dirname, '..' , 'views/html/player', 'player.html'));
