@@ -214,7 +214,7 @@ __webpack_require__.r(__webpack_exports__);
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony default export */ __webpack_exports__["default"] = ("<mat-toolbar>\n    <button mat-icon-button (click)=\"homeButton()\"><mat-icon>home</mat-icon></button>\n    Queue\n</mat-toolbar>\n<mat-action-list>\n    <mat-list-item *ngFor=\"let item of state.queue\">\n        <img class=\"thumbnail\" matListAvatar [src]=\"item.thumbnail.normal\" height=\"50\">\n        <h3 id=\"name\" matLine>{{item.title}}</h3>\n        <p id=\"channel\" matLine>{{item.channelName}}</p>\n    </mat-list-item>\n</mat-action-list>\n");
+/* harmony default export */ __webpack_exports__["default"] = ("<mat-toolbar>\n    <button mat-icon-button (click)=\"homeButton()\"><mat-icon>home</mat-icon></button>\n    Queue\n</mat-toolbar>\n<mat-action-list *ngIf=\"state\">\n    <mat-list-item *ngFor=\"let item of state.queue\">\n        <img class=\"thumbnail\" matListAvatar [src]=\"item.thumbnail.normal\" height=\"50\">\n        <h3 id=\"name\" matLine>{{item.title}}</h3>\n        <p id=\"channel\" matLine>{{item.channelName}}</p>\n    </mat-list-item>\n</mat-action-list>\n");
 
 /***/ }),
 
@@ -227,7 +227,7 @@ __webpack_require__.r(__webpack_exports__);
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony default export */ __webpack_exports__["default"] = ("<mat-toolbar>\n  <mat-toolbar-row>\n    <button mat-icon-button (click)=\"homeButton()\"><mat-icon>home</mat-icon></button>\n    Search\n  </mat-toolbar-row>\n  <mat-toolbar-row>\n    <form>\n      <mat-form-field>\n        <input #searchBox matInput (input)=\"onSearchChange($event.target.value)\">\n      </mat-form-field>\n      <button id=\"searchBtn\" mat-icon-button><mat-icon>search</mat-icon></button>\n    </form>\n  </mat-toolbar-row>\n</mat-toolbar>\n<mat-action-list #autocomplete *ngIf=\"searchResults.length === 0\">\n  <mat-list-item *ngFor=\"let suggestion of autoComplete\" (click)=\"search(suggestion)\">\n    <p matLLine>{{suggestion}}</p>\n  </mat-list-item>\n</mat-action-list>\n<mat-action-list #search *ngIf=\"searchResults.length !== 0\">\n    <mat-list-item *ngFor=\"let result of searchResults\" (click)=\"add(result.videoId)\">\n      <img class=\"thumbnail\" matListAvatar [src]=\"result.thumbnail.normal\" height=\"50\">\n      <h3 id=\"name\" matLine>{{result.title}}</h3>\n      <p id=\"channel\" matLine>{{result.channelName}}</p>\n    </mat-list-item>\n</mat-action-list>\n");
+/* harmony default export */ __webpack_exports__["default"] = ("<mat-toolbar>\n  <mat-toolbar-row>\n    <button mat-icon-button (click)=\"homeButton()\"><mat-icon>home</mat-icon></button>\n    Search\n  </mat-toolbar-row>\n  <mat-toolbar-row>\n    <form (ngSubmit)=\"onFormSubmit(searchBox.value, $event)\">\n      <mat-form-field>\n        <input #searchBox matInput (input)=\"onSearchChange($event.target.value)\">\n      </mat-form-field>\n      <button id=\"searchBtn\" mat-icon-button><mat-icon>search</mat-icon></button>\n    </form>\n  </mat-toolbar-row>\n</mat-toolbar>\n<mat-action-list #autoCompleteList *ngIf=\"searchResults.length === 0\">\n  <mat-list-item *ngFor=\"let suggestion of autoComplete\" (click)=\"search(suggestion)\">\n    <p matLLine>{{suggestion}}</p>\n  </mat-list-item>\n</mat-action-list>\n<mat-action-list #searchResultList *ngIf=\"searchResults.length !== 0\">\n    <mat-list-item *ngFor=\"let result of searchResults\" (click)=\"add(result.videoId)\">\n      <img class=\"thumbnail\" matListAvatar [src]=\"result.thumbnail.normal\" height=\"50\">\n      <h3 id=\"name\" matLine>{{result.title}}</h3>\n      <p id=\"channel\" matLine>{{result.channelName}}</p>\n    </mat-list-item>\n</mat-action-list>\n");
 
 /***/ }),
 
@@ -570,36 +570,38 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _angular_platform_browser__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @angular/platform-browser */ "./node_modules/@angular/platform-browser/fesm2015/platform-browser.js");
 /* harmony import */ var _angular_common_http__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @angular/common/http */ "./node_modules/@angular/common/fesm2015/http.js");
 /* harmony import */ var _angular_core__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/fesm2015/core.js");
-/* harmony import */ var _angular_material_badge__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @angular/material/badge */ "./node_modules/@angular/material/esm2015/badge.js");
-/* harmony import */ var _angular_material_button__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @angular/material/button */ "./node_modules/@angular/material/esm2015/button.js");
-/* harmony import */ var _angular_material_button_toggle__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @angular/material/button-toggle */ "./node_modules/@angular/material/esm2015/button-toggle.js");
-/* harmony import */ var _angular_material_card__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @angular/material/card */ "./node_modules/@angular/material/esm2015/card.js");
-/* harmony import */ var _angular_material_dialog__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @angular/material/dialog */ "./node_modules/@angular/material/esm2015/dialog.js");
-/* harmony import */ var _angular_material_icon__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @angular/material/icon */ "./node_modules/@angular/material/esm2015/icon.js");
-/* harmony import */ var _angular_material_input__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! @angular/material/input */ "./node_modules/@angular/material/esm2015/input.js");
-/* harmony import */ var _angular_material_list__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! @angular/material/list */ "./node_modules/@angular/material/esm2015/list.js");
-/* harmony import */ var _angular_material_snack_bar__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! @angular/material/snack-bar */ "./node_modules/@angular/material/esm2015/snack-bar.js");
-/* harmony import */ var _angular_material_tabs__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! @angular/material/tabs */ "./node_modules/@angular/material/esm2015/tabs.js");
-/* harmony import */ var _angular_material_toolbar__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! @angular/material/toolbar */ "./node_modules/@angular/material/esm2015/toolbar.js");
-/* harmony import */ var ngx_webstorage_service__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ngx-webstorage-service */ "./node_modules/ngx-webstorage-service/fesm2015/ngx-webstorage-service.js");
-/* harmony import */ var _app_routing_module__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./app-routing.module */ "./src/app/app-routing.module.ts");
-/* harmony import */ var _app_component__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ./app.component */ "./src/app/app.component.ts");
-/* harmony import */ var _angular_platform_browser_animations__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! @angular/platform-browser/animations */ "./node_modules/@angular/platform-browser/fesm2015/animations.js");
-/* harmony import */ var _page_home_home_component__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! ./page/home/home.component */ "./src/app/page/home/home.component.ts");
-/* harmony import */ var _component_home_nowplaying_nowplaying_component__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! ./component/home/nowplaying/nowplaying.component */ "./src/app/component/home/nowplaying/nowplaying.component.ts");
-/* harmony import */ var _component_home_upnext_upnext_component__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(/*! ./component/home/upnext/upnext.component */ "./src/app/component/home/upnext/upnext.component.ts");
-/* harmony import */ var _component_home_add_add_component__WEBPACK_IMPORTED_MODULE_22__ = __webpack_require__(/*! ./component/home/add/add.component */ "./src/app/component/home/add/add.component.ts");
-/* harmony import */ var _dialog_home_manual_add_manual_add_component__WEBPACK_IMPORTED_MODULE_23__ = __webpack_require__(/*! ./dialog/home/manual-add/manual-add.component */ "./src/app/dialog/home/manual-add/manual-add.component.ts");
-/* harmony import */ var _page_search_search_component__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(/*! ./page/search/search.component */ "./src/app/page/search/search.component.ts");
-/* harmony import */ var _dialog_home_player_qr_player_qr_component__WEBPACK_IMPORTED_MODULE_25__ = __webpack_require__(/*! ./dialog/home/player-qr/player-qr.component */ "./src/app/dialog/home/player-qr/player-qr.component.ts");
-/* harmony import */ var _component_home_playerdetails_playerdetails_component__WEBPACK_IMPORTED_MODULE_26__ = __webpack_require__(/*! ./component/home/playerdetails/playerdetails.component */ "./src/app/component/home/playerdetails/playerdetails.component.ts");
-/* harmony import */ var _page_featured_menu_featured_menu_component__WEBPACK_IMPORTED_MODULE_27__ = __webpack_require__(/*! ./page/featured-menu/featured-menu.component */ "./src/app/page/featured-menu/featured-menu.component.ts");
-/* harmony import */ var _component_util_list_item_list_item_component__WEBPACK_IMPORTED_MODULE_28__ = __webpack_require__(/*! ./component/util/list-item/list-item.component */ "./src/app/component/util/list-item/list-item.component.ts");
-/* harmony import */ var _page_queue_queue_component__WEBPACK_IMPORTED_MODULE_29__ = __webpack_require__(/*! ./page/queue/queue.component */ "./src/app/page/queue/queue.component.ts");
-/* harmony import */ var _page_history_history_component__WEBPACK_IMPORTED_MODULE_30__ = __webpack_require__(/*! ./page/history/history.component */ "./src/app/page/history/history.component.ts");
-/* harmony import */ var _helper_authcheck_authcheck_component__WEBPACK_IMPORTED_MODULE_31__ = __webpack_require__(/*! ./helper/authcheck/authcheck.component */ "./src/app/helper/authcheck/authcheck.component.ts");
-/* harmony import */ var _page_connect_player_connect_player_component__WEBPACK_IMPORTED_MODULE_32__ = __webpack_require__(/*! ./page/connect-player/connect-player.component */ "./src/app/page/connect-player/connect-player.component.ts");
-/* harmony import */ var _dialog_search_add_options_add_options_component__WEBPACK_IMPORTED_MODULE_33__ = __webpack_require__(/*! ./dialog/search/add-options/add-options.component */ "./src/app/dialog/search/add-options/add-options.component.ts");
+/* harmony import */ var _angular_forms__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @angular/forms */ "./node_modules/@angular/forms/fesm2015/forms.js");
+/* harmony import */ var _angular_material_badge__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @angular/material/badge */ "./node_modules/@angular/material/esm2015/badge.js");
+/* harmony import */ var _angular_material_button__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @angular/material/button */ "./node_modules/@angular/material/esm2015/button.js");
+/* harmony import */ var _angular_material_button_toggle__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @angular/material/button-toggle */ "./node_modules/@angular/material/esm2015/button-toggle.js");
+/* harmony import */ var _angular_material_card__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @angular/material/card */ "./node_modules/@angular/material/esm2015/card.js");
+/* harmony import */ var _angular_material_dialog__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @angular/material/dialog */ "./node_modules/@angular/material/esm2015/dialog.js");
+/* harmony import */ var _angular_material_icon__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! @angular/material/icon */ "./node_modules/@angular/material/esm2015/icon.js");
+/* harmony import */ var _angular_material_input__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! @angular/material/input */ "./node_modules/@angular/material/esm2015/input.js");
+/* harmony import */ var _angular_material_list__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! @angular/material/list */ "./node_modules/@angular/material/esm2015/list.js");
+/* harmony import */ var _angular_material_snack_bar__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! @angular/material/snack-bar */ "./node_modules/@angular/material/esm2015/snack-bar.js");
+/* harmony import */ var _angular_material_tabs__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! @angular/material/tabs */ "./node_modules/@angular/material/esm2015/tabs.js");
+/* harmony import */ var _angular_material_toolbar__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! @angular/material/toolbar */ "./node_modules/@angular/material/esm2015/toolbar.js");
+/* harmony import */ var ngx_webstorage_service__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ngx-webstorage-service */ "./node_modules/ngx-webstorage-service/fesm2015/ngx-webstorage-service.js");
+/* harmony import */ var _app_routing_module__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ./app-routing.module */ "./src/app/app-routing.module.ts");
+/* harmony import */ var _app_component__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ./app.component */ "./src/app/app.component.ts");
+/* harmony import */ var _angular_platform_browser_animations__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! @angular/platform-browser/animations */ "./node_modules/@angular/platform-browser/fesm2015/animations.js");
+/* harmony import */ var _page_home_home_component__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! ./page/home/home.component */ "./src/app/page/home/home.component.ts");
+/* harmony import */ var _component_home_nowplaying_nowplaying_component__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(/*! ./component/home/nowplaying/nowplaying.component */ "./src/app/component/home/nowplaying/nowplaying.component.ts");
+/* harmony import */ var _component_home_upnext_upnext_component__WEBPACK_IMPORTED_MODULE_22__ = __webpack_require__(/*! ./component/home/upnext/upnext.component */ "./src/app/component/home/upnext/upnext.component.ts");
+/* harmony import */ var _component_home_add_add_component__WEBPACK_IMPORTED_MODULE_23__ = __webpack_require__(/*! ./component/home/add/add.component */ "./src/app/component/home/add/add.component.ts");
+/* harmony import */ var _dialog_home_manual_add_manual_add_component__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(/*! ./dialog/home/manual-add/manual-add.component */ "./src/app/dialog/home/manual-add/manual-add.component.ts");
+/* harmony import */ var _page_search_search_component__WEBPACK_IMPORTED_MODULE_25__ = __webpack_require__(/*! ./page/search/search.component */ "./src/app/page/search/search.component.ts");
+/* harmony import */ var _dialog_home_player_qr_player_qr_component__WEBPACK_IMPORTED_MODULE_26__ = __webpack_require__(/*! ./dialog/home/player-qr/player-qr.component */ "./src/app/dialog/home/player-qr/player-qr.component.ts");
+/* harmony import */ var _component_home_playerdetails_playerdetails_component__WEBPACK_IMPORTED_MODULE_27__ = __webpack_require__(/*! ./component/home/playerdetails/playerdetails.component */ "./src/app/component/home/playerdetails/playerdetails.component.ts");
+/* harmony import */ var _page_featured_menu_featured_menu_component__WEBPACK_IMPORTED_MODULE_28__ = __webpack_require__(/*! ./page/featured-menu/featured-menu.component */ "./src/app/page/featured-menu/featured-menu.component.ts");
+/* harmony import */ var _component_util_list_item_list_item_component__WEBPACK_IMPORTED_MODULE_29__ = __webpack_require__(/*! ./component/util/list-item/list-item.component */ "./src/app/component/util/list-item/list-item.component.ts");
+/* harmony import */ var _page_queue_queue_component__WEBPACK_IMPORTED_MODULE_30__ = __webpack_require__(/*! ./page/queue/queue.component */ "./src/app/page/queue/queue.component.ts");
+/* harmony import */ var _page_history_history_component__WEBPACK_IMPORTED_MODULE_31__ = __webpack_require__(/*! ./page/history/history.component */ "./src/app/page/history/history.component.ts");
+/* harmony import */ var _helper_authcheck_authcheck_component__WEBPACK_IMPORTED_MODULE_32__ = __webpack_require__(/*! ./helper/authcheck/authcheck.component */ "./src/app/helper/authcheck/authcheck.component.ts");
+/* harmony import */ var _page_connect_player_connect_player_component__WEBPACK_IMPORTED_MODULE_33__ = __webpack_require__(/*! ./page/connect-player/connect-player.component */ "./src/app/page/connect-player/connect-player.component.ts");
+/* harmony import */ var _dialog_search_add_options_add_options_component__WEBPACK_IMPORTED_MODULE_34__ = __webpack_require__(/*! ./dialog/search/add-options/add-options.component */ "./src/app/dialog/search/add-options/add-options.component.ts");
+
 
 
 
@@ -639,48 +641,49 @@ let AppModule = class AppModule {
 AppModule = tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
     Object(_angular_core__WEBPACK_IMPORTED_MODULE_3__["NgModule"])({
         declarations: [
-            _app_component__WEBPACK_IMPORTED_MODULE_17__["AppComponent"],
-            _page_home_home_component__WEBPACK_IMPORTED_MODULE_19__["HomeComponent"],
-            _component_home_nowplaying_nowplaying_component__WEBPACK_IMPORTED_MODULE_20__["NowplayingComponent"],
-            _component_home_upnext_upnext_component__WEBPACK_IMPORTED_MODULE_21__["UpnextComponent"],
-            _component_home_add_add_component__WEBPACK_IMPORTED_MODULE_22__["AddComponent"],
-            _dialog_home_manual_add_manual_add_component__WEBPACK_IMPORTED_MODULE_23__["ManualAddComponent"],
-            _page_search_search_component__WEBPACK_IMPORTED_MODULE_24__["SearchComponent"],
-            _dialog_home_player_qr_player_qr_component__WEBPACK_IMPORTED_MODULE_25__["PlayerQrComponent"],
-            _component_home_playerdetails_playerdetails_component__WEBPACK_IMPORTED_MODULE_26__["PlayerdetailsComponent"],
-            _page_featured_menu_featured_menu_component__WEBPACK_IMPORTED_MODULE_27__["FeaturedMenuComponent"],
-            _component_util_list_item_list_item_component__WEBPACK_IMPORTED_MODULE_28__["ListItemComponent"],
-            _page_queue_queue_component__WEBPACK_IMPORTED_MODULE_29__["QueueComponent"],
-            _page_history_history_component__WEBPACK_IMPORTED_MODULE_30__["HistoryComponent"],
-            _helper_authcheck_authcheck_component__WEBPACK_IMPORTED_MODULE_31__["AuthcheckComponent"],
-            _page_connect_player_connect_player_component__WEBPACK_IMPORTED_MODULE_32__["ConnectPlayerComponent"],
-            _dialog_search_add_options_add_options_component__WEBPACK_IMPORTED_MODULE_33__["AddOptionsComponent"]
+            _app_component__WEBPACK_IMPORTED_MODULE_18__["AppComponent"],
+            _page_home_home_component__WEBPACK_IMPORTED_MODULE_20__["HomeComponent"],
+            _component_home_nowplaying_nowplaying_component__WEBPACK_IMPORTED_MODULE_21__["NowplayingComponent"],
+            _component_home_upnext_upnext_component__WEBPACK_IMPORTED_MODULE_22__["UpnextComponent"],
+            _component_home_add_add_component__WEBPACK_IMPORTED_MODULE_23__["AddComponent"],
+            _dialog_home_manual_add_manual_add_component__WEBPACK_IMPORTED_MODULE_24__["ManualAddComponent"],
+            _page_search_search_component__WEBPACK_IMPORTED_MODULE_25__["SearchComponent"],
+            _dialog_home_player_qr_player_qr_component__WEBPACK_IMPORTED_MODULE_26__["PlayerQrComponent"],
+            _component_home_playerdetails_playerdetails_component__WEBPACK_IMPORTED_MODULE_27__["PlayerdetailsComponent"],
+            _page_featured_menu_featured_menu_component__WEBPACK_IMPORTED_MODULE_28__["FeaturedMenuComponent"],
+            _component_util_list_item_list_item_component__WEBPACK_IMPORTED_MODULE_29__["ListItemComponent"],
+            _page_queue_queue_component__WEBPACK_IMPORTED_MODULE_30__["QueueComponent"],
+            _page_history_history_component__WEBPACK_IMPORTED_MODULE_31__["HistoryComponent"],
+            _helper_authcheck_authcheck_component__WEBPACK_IMPORTED_MODULE_32__["AuthcheckComponent"],
+            _page_connect_player_connect_player_component__WEBPACK_IMPORTED_MODULE_33__["ConnectPlayerComponent"],
+            _dialog_search_add_options_add_options_component__WEBPACK_IMPORTED_MODULE_34__["AddOptionsComponent"]
         ],
         imports: [
             _angular_platform_browser__WEBPACK_IMPORTED_MODULE_1__["BrowserModule"],
+            _angular_forms__WEBPACK_IMPORTED_MODULE_4__["FormsModule"],
             _angular_common_http__WEBPACK_IMPORTED_MODULE_2__["HttpClientModule"],
-            _app_routing_module__WEBPACK_IMPORTED_MODULE_16__["AppRoutingModule"],
-            _angular_platform_browser_animations__WEBPACK_IMPORTED_MODULE_18__["BrowserAnimationsModule"],
-            _angular_material_badge__WEBPACK_IMPORTED_MODULE_4__["MatBadgeModule"],
-            _angular_material_button__WEBPACK_IMPORTED_MODULE_5__["MatButtonModule"],
-            _angular_material_button_toggle__WEBPACK_IMPORTED_MODULE_6__["MatButtonToggleModule"],
-            _angular_material_card__WEBPACK_IMPORTED_MODULE_7__["MatCardModule"],
-            _angular_material_dialog__WEBPACK_IMPORTED_MODULE_8__["MatDialogModule"],
-            _angular_material_input__WEBPACK_IMPORTED_MODULE_10__["MatInputModule"],
-            _angular_material_icon__WEBPACK_IMPORTED_MODULE_9__["MatIconModule"],
-            _angular_material_list__WEBPACK_IMPORTED_MODULE_11__["MatListModule"],
-            _angular_material_snack_bar__WEBPACK_IMPORTED_MODULE_12__["MatSnackBarModule"],
-            _angular_material_tabs__WEBPACK_IMPORTED_MODULE_13__["MatTabsModule"],
-            _angular_material_toolbar__WEBPACK_IMPORTED_MODULE_14__["MatToolbarModule"],
-            ngx_webstorage_service__WEBPACK_IMPORTED_MODULE_15__["StorageServiceModule"],
+            _app_routing_module__WEBPACK_IMPORTED_MODULE_17__["AppRoutingModule"],
+            _angular_platform_browser_animations__WEBPACK_IMPORTED_MODULE_19__["BrowserAnimationsModule"],
+            _angular_material_badge__WEBPACK_IMPORTED_MODULE_5__["MatBadgeModule"],
+            _angular_material_button__WEBPACK_IMPORTED_MODULE_6__["MatButtonModule"],
+            _angular_material_button_toggle__WEBPACK_IMPORTED_MODULE_7__["MatButtonToggleModule"],
+            _angular_material_card__WEBPACK_IMPORTED_MODULE_8__["MatCardModule"],
+            _angular_material_dialog__WEBPACK_IMPORTED_MODULE_9__["MatDialogModule"],
+            _angular_material_input__WEBPACK_IMPORTED_MODULE_11__["MatInputModule"],
+            _angular_material_icon__WEBPACK_IMPORTED_MODULE_10__["MatIconModule"],
+            _angular_material_list__WEBPACK_IMPORTED_MODULE_12__["MatListModule"],
+            _angular_material_snack_bar__WEBPACK_IMPORTED_MODULE_13__["MatSnackBarModule"],
+            _angular_material_tabs__WEBPACK_IMPORTED_MODULE_14__["MatTabsModule"],
+            _angular_material_toolbar__WEBPACK_IMPORTED_MODULE_15__["MatToolbarModule"],
+            ngx_webstorage_service__WEBPACK_IMPORTED_MODULE_16__["StorageServiceModule"],
         ],
         entryComponents: [
-            _dialog_search_add_options_add_options_component__WEBPACK_IMPORTED_MODULE_33__["AddOptionsComponent"],
-            _dialog_home_manual_add_manual_add_component__WEBPACK_IMPORTED_MODULE_23__["ManualAddComponent"],
-            _dialog_home_player_qr_player_qr_component__WEBPACK_IMPORTED_MODULE_25__["PlayerQrComponent"]
+            _dialog_search_add_options_add_options_component__WEBPACK_IMPORTED_MODULE_34__["AddOptionsComponent"],
+            _dialog_home_manual_add_manual_add_component__WEBPACK_IMPORTED_MODULE_24__["ManualAddComponent"],
+            _dialog_home_player_qr_player_qr_component__WEBPACK_IMPORTED_MODULE_26__["PlayerQrComponent"]
         ],
         providers: [],
-        bootstrap: [_app_component__WEBPACK_IMPORTED_MODULE_17__["AppComponent"]]
+        bootstrap: [_app_component__WEBPACK_IMPORTED_MODULE_18__["AppComponent"]]
     })
 ], AppModule);
 
@@ -947,8 +950,11 @@ let UpnextComponent = class UpnextComponent {
         if (this.queueLength < 100) {
             return `${this.queueLength}`;
         }
-        else {
+        else if (this.queueLength > 100) {
             return '😁';
+        }
+        else {
+            return '😖';
         }
     }
     queueLengthBadgeColor() {
@@ -1342,8 +1348,7 @@ let ConnectPlayerComponent = class ConnectPlayerComponent {
         });
     }
     signIn(name, key) {
-        this.ytpmService.auth(name, key);
-        this.router.navigateByUrl('/');
+        this.ytpmService.auth(name, key).subscribe(() => this.router.navigateByUrl('/'));
     }
 };
 ConnectPlayerComponent.ctorParameters = () => [
@@ -1514,6 +1519,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "./node_modules/tslib/tslib.es6.js");
 /* harmony import */ var _angular_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/fesm2015/core.js");
 /* harmony import */ var src_app_ytpm_service__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! src/app/ytpm.service */ "./src/app/ytpm.service.ts");
+/* harmony import */ var rxjs__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! rxjs */ "./node_modules/rxjs/_esm2015/index.js");
+
 
 
 
@@ -1529,19 +1536,25 @@ let HomeComponent = class HomeComponent {
             playerCode: '',
             queueLength: NaN,
         };
+        this.statusSub = new rxjs__WEBPACK_IMPORTED_MODULE_3__["Subscription"]();
     }
     ngOnInit() {
         this.getStatus();
     }
+    ngOnDestroy() {
+        this.statusSub.unsubscribe();
+    }
     getStatus(lastUpdated = 0) {
-        this.ytpmService.getStatus(lastUpdated).subscribe(status => {
+        this.statusSub.unsubscribe();
+        this.statusSub = new rxjs__WEBPACK_IMPORTED_MODULE_3__["Subscription"]();
+        this.statusSub.add(this.ytpmService.getStatus(lastUpdated).subscribe(status => {
             let since = lastUpdated;
             if (status) {
                 this.status = Object.assign({ playingNow: {}, upNext: {}, playerStatus: "UNKNOWN" }, status);
                 since = status.lastUpdated;
             }
             this.getStatus(since);
-        });
+        }));
     }
 };
 HomeComponent.ctorParameters = () => [
@@ -1663,6 +1676,7 @@ let SearchComponent = class SearchComponent {
     }
     ngOnInit() {
         this.searchField.nativeElement.focus();
+        this.onSearchChange('');
     }
     homeButton() {
         this.router.navigateByUrl('/home');
@@ -1670,6 +1684,10 @@ let SearchComponent = class SearchComponent {
     onSearchChange(autoCompleteTerm) {
         this.searchResults = [];
         this.ytpmService.getAutoComplete(autoCompleteTerm).subscribe((results) => this.autoComplete = results);
+    }
+    onFormSubmit(searchTerm, event) {
+        event.preventDefault();
+        this.search(searchTerm);
     }
     search(searchTerm) {
         this.searchField.nativeElement.value = searchTerm;
@@ -1721,8 +1739,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "./node_modules/tslib/tslib.es6.js");
 /* harmony import */ var _angular_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/fesm2015/core.js");
 /* harmony import */ var rxjs__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! rxjs */ "./node_modules/rxjs/_esm2015/index.js");
-/* harmony import */ var ngx_webstorage_service__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ngx-webstorage-service */ "./node_modules/ngx-webstorage-service/fesm2015/ngx-webstorage-service.js");
-/* harmony import */ var _angular_common_http__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @angular/common/http */ "./node_modules/@angular/common/fesm2015/http.js");
+/* harmony import */ var rxjs_operators__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! rxjs/operators */ "./node_modules/rxjs/_esm2015/operators/index.js");
+/* harmony import */ var ngx_webstorage_service__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ngx-webstorage-service */ "./node_modules/ngx-webstorage-service/fesm2015/ngx-webstorage-service.js");
+/* harmony import */ var _angular_common_http__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @angular/common/http */ "./node_modules/@angular/common/fesm2015/http.js");
+
 
 
 
@@ -1733,72 +1753,126 @@ let YtpmService = class YtpmService {
     constructor(http, storage) {
         this.http = http;
         this.storage = storage;
-        this.baseUrl = '/api/client';
+        this.baseUrl = 'http://ytpm.thealternator.nz/api/client';
         this.token = '';
         this.token = storage.get(AUTH_TOKEN_STORAGE_KEY);
     }
     getStatus(lastUpdate = 0) {
-        return this.http.get(`${this.baseUrl}/a/poll/v2?token=${this.token}&since=${lastUpdate}`);
+        const url = this.buildUrl(`${this.baseUrl}/a/poll/v2`, {
+            'token': this.token,
+            'since': `${lastUpdate}`
+        });
+        return this.http.get(url).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["catchError"])(this.handleError('getStatus')));
     }
     getChannels() {
-        return this.http.get(`${this.baseUrl}/discovery/channels`);
+        const url = this.buildUrl(`${this.baseUrl}/discovery/channels`);
+        return this.http.get(url);
     }
     getLists() {
-        return this.http.get(`${this.baseUrl}/discovery/lists`);
+        const url = this.buildUrl(`${this.baseUrl}/discovery/lists`);
+        return this.http.get(url);
     }
     getQueue() {
-        return this.http.get(`${this.baseUrl}/a/queue_state?token=${this.token}`);
+        const url = this.buildUrl(`${this.baseUrl}/a/queue_state`, {
+            'token': this.token,
+        });
+        return this.http.get(url);
     }
     getHistory() {
-        return this.http.get(`${this.baseUrl}/a/play_history?token=${this.token}`);
+        const url = this.buildUrl(`${this.baseUrl}/a/play_history`, {
+            'token': this.token,
+        });
+        return this.http.get(url);
     }
     getAutoComplete(term) {
-        return this.http.get(`${this.baseUrl}/autocomplete?q=${encodeURIComponent(term)}`);
+        const url = this.buildUrl(`${this.baseUrl}/autocomplete`, {
+            'q': term
+        });
+        return this.http.get(url);
     }
     getSearchResults(term, page) {
-        const pageQs = page ? `&page=${page}` : '';
-        return this.http.get(`${this.baseUrl}/search?q=${encodeURIComponent(term)}${pageQs}`);
+        const url = this.buildUrl(`${this.baseUrl}/search`, {
+            'q': term,
+            'page': page
+        });
+        return this.http.get(url);
     }
     sendCommand(command) {
-        this.http.post(`${this.baseUrl}/a/send_command?token=${this.token}`, { command: command }).subscribe(() => undefined);
+        const url = this.buildUrl(`${this.baseUrl}/a/send_command`, {
+            'token': this.token
+        });
+        this.http.post(url, { command: command }).subscribe(() => undefined);
     }
     checkToken() {
         if (!this.token) {
             return Object(rxjs__WEBPACK_IMPORTED_MODULE_2__["of"])({ valid: false });
         }
-        return this.http.get(`${this.baseUrl}/auth/validate?token=${this.token}`);
+        const url = this.buildUrl(`${this.baseUrl}/auth/validate`, {
+            'token': this.token,
+        });
+        return this.http.get(url);
     }
     auth(name, key) {
-        this.http.get(`${this.baseUrl}/auth?auth=${key}&name=${name}`).subscribe((response) => {
-            this.setToken(response.token);
+        const url = this.buildUrl(`${this.baseUrl}/auth`, {
+            'auth': key,
+            'name': name,
         });
+        return this.http.get(url).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["tap"])((response) => this.setToken(response.token)));
     }
     deauth() {
         if (!this.token) {
             return;
         }
-        this.http.get(`${this.baseUrl}/a/deauth?token=${this.token}`).subscribe(() => undefined);
+        const url = this.buildUrl(`${this.baseUrl}/a/deauth`, {
+            'token': this.token
+        });
+        console.log(url);
+        this.http.get(url).subscribe(() => undefined);
         this.storage.remove(AUTH_TOKEN_STORAGE_KEY);
     }
     addToQueue(args) {
-        let addToFront = args.front ? `&next=true` : '';
-        let noInfluence = args.noinfluence ? `&noinfluence=true` : '';
-        return this.http.get(`${this.baseUrl}/a/enqueue?token=${this.token}&videoId=${args.videoId}${addToFront}${noInfluence}`);
+        const url = this.buildUrl(`${this.baseUrl}/a/enqueue`, {
+            'token': this.token,
+            'videoId': args.videoId,
+            'next': args.front ? 'true' : undefined,
+            'noinfluence': args.noinfluence ? 'true' : undefined,
+        });
+        console.log(url);
+        return this.http.get(url);
+    }
+    handleError(operation = 'operation', result) {
+        return (error) => {
+            // TODO: identify if the error is a 403 (auth) or generic error.
+            // If 403, remove token and redirect to login screen.
+            return Object(rxjs__WEBPACK_IMPORTED_MODULE_2__["of"])(result);
+        };
     }
     setToken(token) {
         this.storage.set(AUTH_TOKEN_STORAGE_KEY, token);
         this.token = token;
     }
+    buildUrl(base, params = {}) {
+        let url = base;
+        let first = true;
+        for (const key in params) {
+            const value = params[key];
+            if (params.hasOwnProperty(key) && value) {
+                url += `${first ? '?' : '&'}${encodeURIComponent(key)}=${encodeURIComponent(value)}`;
+                first = false;
+            }
+        }
+        return url;
+    }
 };
 YtpmService.ctorParameters = () => [
-    { type: _angular_common_http__WEBPACK_IMPORTED_MODULE_4__["HttpClient"] },
-    { type: undefined, decorators: [{ type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Inject"], args: [ngx_webstorage_service__WEBPACK_IMPORTED_MODULE_3__["LOCAL_STORAGE"],] }] }
+    { type: _angular_common_http__WEBPACK_IMPORTED_MODULE_5__["HttpClient"] },
+    { type: undefined, decorators: [{ type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Inject"], args: [ngx_webstorage_service__WEBPACK_IMPORTED_MODULE_4__["LOCAL_STORAGE"],] }] }
 ];
 YtpmService = tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
     Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Injectable"])({
         providedIn: 'root'
     }),
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__param"](1, Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Inject"])(ngx_webstorage_service__WEBPACK_IMPORTED_MODULE_3__["LOCAL_STORAGE"]))
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__param"](1, Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Inject"])(ngx_webstorage_service__WEBPACK_IMPORTED_MODULE_4__["LOCAL_STORAGE"]))
 ], YtpmService);
 
 
