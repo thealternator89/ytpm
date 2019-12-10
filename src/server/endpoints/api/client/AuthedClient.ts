@@ -129,11 +129,6 @@ router.get('/queue_state', async (request: Request, response: Response) => {
         queueItems.push(await youTubeClientCache.getVideoFromCacheOrApi(queueItem.videoId));
     }
 
-    if (queueItems.length === 0) {
-        const upNext = queue.getNextAutoPlayItem();
-        queueItems.push(await youTubeClientCache.getVideoFromCacheOrApi(upNext));
-    }
-
     response.type('json').send(JSON.stringify({
         autoPlayEnabled: queue.getShouldAutoPlay(),
         queue: queueItems,

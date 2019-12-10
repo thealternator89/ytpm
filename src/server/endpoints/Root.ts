@@ -12,6 +12,7 @@ const loadClient = (request: Request, response: Response) => {
 
 router.use('/api', apiRouter);
 
+// Handle all endpoints used by the angular app, to ensure we don't weirdly 404 a valid url
 router.get('/', loadClient);
 router.get('/connect', loadClient);
 router.get('/featured', loadClient);
