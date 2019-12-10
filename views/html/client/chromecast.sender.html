@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>YTPM - Chromecast</title>
+        <meta charset="UTF-8">
+        <link rel="icon" type="image/png" href="/favicon.png">
+        <script>
+            window['__onGCastApiAvailable'] = function(isAvailable) {
+                if (isAvailable) {
+                    initializeCastApi();
+                    var castSession = cast.framework.CastContext.getInstance().getCurrentSession();
+                }
+            };
+
+            initializeCastApi = function() {
+                cast.framework.CastContext.getInstance().setOptions({
+                    receiverApplicationId: '63B60A05',
+                    autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED
+                });
+            };
+        </script>
+        <script src="//www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1"></script>
+    </head>
+    <body>
+        <google-cast-launcher></google-cast-launcher>
+    </body>
+</html>
