@@ -21,23 +21,6 @@ router.use((request: Request, response: Response, next: NextFunction) => {
     next();
 });
 
-router.get('/poll', async (request: Request, response: Response) => {
-    const queue = getQueueByAuthToken(request, response);
-    if (!queue) {
-        response.status(HttpStatusCodes.ServerError.InternalServerError).send('Queue not found');
-        return;
-    }
-
-    const playerStatus = queue.getPlayerState();
-
-    response.json({
-        duration: playerStatus.duration,
-        playerState: playerStatus.playerState,
-        position: playerStatus.position,
-        video: await youTubeClientCache.getVideoFromCacheOrApi(playerStatus.videoId),
-    });
-});
-
 router.get('/poll/v2', async (request: Request, response: Response) => {
     const queue = getQueueByAuthToken(request, response);
     if (!queue) {

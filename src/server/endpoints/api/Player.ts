@@ -21,8 +21,6 @@ router.post(`/update`, async (request: Request, response: Response) => {
     const eventTime = moment.unix(request.body.time);
 
     queue.updatePlayerState(eventName.toUpperCase(), eventTime, {
-        duration: request.body.duration,
-        position: request.body.position,
         videoId: request.body.videoId,
     });
 

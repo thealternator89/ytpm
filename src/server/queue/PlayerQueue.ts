@@ -25,9 +25,7 @@ export class PlayerQueue {
         status: PlayerState,
         updated: moment.Moment,
         currentItem?: {
-            videoId: string,
-            offset?: number,
-            duration?: number,
+            videoId: string
         },
     };
 
@@ -72,7 +70,7 @@ export class PlayerQueue {
         this.queueState.queueLength = this.queue.length;
 
         let updated = new Date().getTime();
-        if (updated === this.queueState.lastUpdated) {
+        if (updated <= this.queueState.lastUpdated) {
             // Increment the time the last update occurred to force the client to update if multiple updates occur within a short time
             updated++;
         }
@@ -90,8 +88,6 @@ export class PlayerQueue {
         updateTime: moment.Moment,
         additionalData?: {
             videoId: string,
-            position: number,
-            duration: number,
         }): Promise<void> {
         this.touched();
         // The current playerStatus has a newer updateTime than the one we're setting. Ignore it
@@ -108,8 +104,6 @@ export class PlayerQueue {
 
         if (additionalData) {
             this.playerStatus.currentItem = {
-                duration: additionalData.duration,
-                offset: additionalData.position,
                 videoId: additionalData.videoId,
             };
             const videoDetails = await youTubeClientCache.getVideoFromCacheOrApi(additionalData.videoId)
@@ -119,26 +113,6 @@ export class PlayerQueue {
         }
 
         this.updateState(QueueStateProperty.PLAYER_STATUS, newPlayerState);
-    }
-
-    public getPlayerState(): {playerState: PlayerState, videoId?: string, position?: number, duration?: number} {
-        const currentItem = this.playerStatus.currentItem;
-
-        let videoId;
-        const position = this.getPositionFromPlayerState();
-        let duration;
-
-        if (currentItem) {
-            videoId = currentItem.videoId;
-            duration = currentItem.duration;
-        }
-
-        return {
-            duration: duration,
-            playerState: this.playerStatus.status,
-            position: position,
-            videoId: videoId,
-        };
     }
 
     public preventAutoPlay(videoId: string): void {
@@ -325,22 +299,6 @@ export class PlayerQueue {
         this.sendMessageToPlayer(eventName, {
             name: name
         });
-    }
-
-    private getPositionFromPlayerState(): number|undefined {
-        const playerStatus = this.playerStatus;
-
-        if (playerStatus.status === PlayerState.PAUSED) {
-            return playerStatus.currentItem.offset;
-        } else if (playerStatus.status === PlayerState.PLAYING) {
-            const secsSinceUpdate = moment.duration(moment().diff(playerStatus.updated)).asSeconds();
-            const position = secsSinceUpdate + playerStatus.currentItem.offset;
-            if (!Number.isNaN(position)) {
-                return position;
-            }
-        } else {
-            return undefined;
-        }
     }
 
     private sendMessageToPlayer(type: EventType, options: any) {

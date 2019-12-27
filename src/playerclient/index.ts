@@ -281,12 +281,7 @@ async function onPlayerStateChange(event: {data: any}) {
             break;
         }
         case PlayerState.PLAYING: {
-            const playerTime = await player.getCurrentTime();
-            const playerDuration = await player.getDuration();
-
             const data = {
-                duration: playerDuration,
-                position: playerTime,
                 videoId: currentVideo,
             };
 
@@ -341,27 +336,28 @@ document.getElementById('invisible_curtain').ondblclick = () => {
 };
 
 function enterFullscreen() {
-    const elem = document.documentElement as any;
-    if (elem.requestFullscreen) {
-        elem.requestFullscreen();
-    } else if (elem.mozRequestFullScreen) { /* Firefox */
-        elem.mozRequestFullScreen();
-    } else if (elem.webkitRequestFullscreen) { /* Chrome, Safari and Opera */
-        elem.webkitRequestFullscreen();
-    } else if (elem.msRequestFullscreen) { /* IE/Edge */
-        elem.msRequestFullscreen();
-    }
+    runFirstValidFunction(document.documentElement, 
+        'requestFullscreen',        // Default
+        'mozRequestFullScreen',     // Firefox, Seamonkey, etc.
+        'webkitRequestFullscreen',  // Brave, Chrome, Opera, Safari, etc.
+        'msRequestFullscreen'       // Edge (maybe IE?)
+    );
 }
 
 function exitFullscreen() {
-    const doc = document as any;
-    if (doc.exitFullscreen) {
-        doc.exitFullscreen();
-      } else if (doc.mozCancelFullScreen) { /* Firefox */
-        doc.mozCancelFullScreen();
-      } else if (doc.webkitExitFullscreen) { /* Chrome, Safari and Opera */
-        doc.webkitExitFullscreen();
-      } else if (doc.msExitFullscreen) { /* IE/Edge */
-        doc.msExitFullscreen();
-      }
+    runFirstValidFunction(document,
+        'exitFullscreen',           // Default
+        'mozCancelFullScreen',      // Firefox, Seamonkey, etc.
+        'webkitExitFullscreen',     // Brave, Chrome, Opera, Safari, etc.
+        'msExitFullscreen'          // Edge, (maybe IE?)
+    );
+}
+
+function runFirstValidFunction(obj: any, ...funcNames: string[]) {
+    for (const func of funcNames) {
+        if (obj[func]) {
+            obj[func]();
+            return;
+        }
+    }
 }
