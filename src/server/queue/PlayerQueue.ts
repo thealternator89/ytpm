@@ -312,6 +312,9 @@ export class PlayerQueue {
         this.autoQueueBlacklist[queueItem.videoId] = this.playHistory.length + MIN_PLAYS_BEFORE_AVAILABLE_TO_AUTOPLAY;
         this.playHistory.unshift(queueItem.videoId);
 
+        // Ensure the playHistory has max 25 items
+        this.playHistory = this.playHistory.slice(0,25);
+
         // If this song is on the autoplay queue, reset its score.
         if (this.autoPlayItems[queueItem.videoId]) {
             this.autoPlayItems[queueItem.videoId].score = 0;
