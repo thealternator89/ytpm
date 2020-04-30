@@ -34,7 +34,7 @@
     "googleapis": "^43.0.0",
     "html-entities": "^1.2.1",
     "ip": "^1.1.5",
-    "jquery": "^3.4.1",
+    "jquery": "^3.5.0",
     "moment": "^2.22.2",
     "randomstring": "^1.1.5",
     "request": "^2.88.0",
