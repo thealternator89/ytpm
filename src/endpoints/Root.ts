@@ -6,8 +6,8 @@ import { apiRouter } from './Api';
 
 const router = Router();
 
-const loadClient = (request: Request, response: Response) => {
-    response.sendFile(path.join(__dirname, '..' , 'views/html/client', 'angular.html'));
+const loadClient = (_request: Request, response: Response) => {
+    response.sendFile(path.join(__dirname, '..', '..' , 'static', 'mobile', 'index.html'));
 }
 
 router.use('/api', apiRouter);
