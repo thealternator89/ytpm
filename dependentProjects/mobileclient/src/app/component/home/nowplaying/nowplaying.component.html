@@ -1,0 +1,18 @@
+<mat-card>
+  <div class="card-heading">Now Playing</div>
+  <div *ngIf="!isValid()" id="content">
+    <mat-card-title>Nothing Playing</mat-card-title>
+    <mat-card-subtitle>Add a song to the queue</mat-card-subtitle>
+  </div>
+  <div *ngIf="isValid()" id="content">
+    <mat-card-title>{{nowPlaying.title}}</mat-card-title>
+    <mat-card-subtitle>{{nowPlaying.channelName}}</mat-card-subtitle>
+  </div>
+  <mat-card-actions *ngIf="isValid()">
+    <button mat-icon-button (click)="replayClick()"><mat-icon>replay</mat-icon></button>
+    <button mat-mini-fab (click)="playPauseClick()"><mat-icon>{{status === "PLAYING" ? "pause" : "play_arrow"}}</mat-icon></button>
+    <button mat-icon-button (click)="skipClick()"><mat-icon>skip_next</mat-icon></button>
+  </mat-card-actions>
+  <div *ngIf="isValid()" id="overlay"></div>
+  <img *ngIf="isValid()" id="coverimage" [src]="nowPlaying.thumbnail?.big || ''">
+</mat-card>

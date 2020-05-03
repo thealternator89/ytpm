@@ -1,0 +1,35 @@
+/* You can add global styles to this file, and also import other style files */
+
+html, body {
+  height: 100%;
+}
+
+body {
+  margin: 0px;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  background-color: #2C2C2C;
+}
+
+mat-card {
+  margin: 10px;
+  overflow: hidden;
+  padding: 0px;
+}
+
+.card-heading {
+  position: absolute;
+  top: 5px;
+  right: 10px;
+  color: rgba(255, 255, 255, 0.5);
+  text-align: right;
+  font-size: 8pt;
+  text-transform: uppercase;
+  z-index: 100;
+}
+
+mat-toolbar {
+  position: sticky;
+  position: -webkit-sticky; /* For macOS/iOS Safari */
+  top: 0; /* Sets the sticky toolbar to be on top */
+  z-index: 1000; /* Ensure that your app's content doesn't overlap the toolbar */
+}

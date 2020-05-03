@@ -1,0 +1,32 @@
+#logo-container {
+    margin-top: 100px;
+    text-align: center;
+}
+
+#logo {
+    font-size: 40pt;
+    font-weight: bold;
+    color: white;
+    background-color: #f00;
+    padding: 15px;
+    border-radius: 15px;
+}
+
+#heading {
+    font-size: 18pt;
+    color: lightgray;
+    text-align: center;
+    margin-top: 50px;
+}
+
+#keyInput {
+    text-transform:uppercase;
+}
+
+mat-form-field {
+    display: block;
+    width: 70%;
+    min-width: 250px;
+    margin-left: auto;
+    margin-right: auto;
+}

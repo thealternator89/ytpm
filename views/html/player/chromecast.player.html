@@ -30,7 +30,10 @@
     <div id="NoMusicError" style="visibility:hidden;">No music to play.<br>Add music to the queue to see it here.</div>
     <script src="/player.js" type="text/javascript"></script>
     <script>
-        cast.framework.CastReceiverContext.getInstance().start();
+        // TODO need to test if this works? Theoretically should prevent timeout.
+        let options = new cast.framework.CastReceiverOptions();
+        options.disableIdleTimeout = true;
+        cast.framework.CastReceiverContext.getInstance().start(options);
     </script>
 </body>
 </html>

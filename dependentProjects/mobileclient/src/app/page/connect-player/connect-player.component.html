@@ -1,0 +1,20 @@
+
+<div id="logo-container">
+    <span id="logo">YTPM</span>
+</div>
+
+<p id="heading">Connect to a Player</p>
+
+<div style="text-align: center;">
+    <mat-form-field appearance="fill">
+        <mat-label>Code on TV</mat-label>
+        <input #key id="keyInput" matInput placeholder="ABC23" required minlength="5" maxlength="5" autocomplete="off" [value]="playerKey">
+        <mat-icon matSuffix>tv</mat-icon>
+    </mat-form-field>
+    <mat-form-field appearance="fill">
+        <mat-label>Your Name</mat-label>
+        <input #name matInput required>
+        <mat-icon matSuffix>person</mat-icon>
+    </mat-form-field>
+    <button mat-raised-button (click)="signIn(name.value, key.value)">Connect</button>
+</div>

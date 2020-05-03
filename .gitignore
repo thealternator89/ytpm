@@ -1,6 +1,7 @@
 node_modules
 dist
 .vscode
-static/player.js
+static/player/player.js*
+static/mobile
 .DS_Store
 .idea/

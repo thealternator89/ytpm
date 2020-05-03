@@ -1,0 +1,11 @@
+<mat-toolbar>
+    <button mat-icon-button (click)="homeButton()"><mat-icon>home</mat-icon></button>
+    History
+</mat-toolbar>
+<mat-action-list>
+    <mat-list-item *ngFor="let item of historyItems">
+        <img class="thumbnail" matListAvatar [src]="item.thumbnail.normal" height="50">
+        <h3 id="name" matLine>{{item.title}}</h3>
+        <p id="channel" matLine>{{item.channelName}}</p>
+    </mat-list-item>
+</mat-action-list>

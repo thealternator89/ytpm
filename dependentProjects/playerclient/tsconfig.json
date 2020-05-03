@@ -5,19 +5,18 @@
         "removeComments": true,
         "preserveConstEnums": true,
         "sourceMap": true,
+        "esModuleInterop": true,
         "typeRoots": [
             "node_modules/@types"
         ],    
         "types": [
             "node"
-        ],
-        "outDir": "dist"
+        ]
     },
     "include": [
         "src/**/*"
     ],
     "exclude": [
-        "dependentProjects",
         "node_modules"
     ]
 }

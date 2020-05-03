@@ -1,0 +1,14 @@
+<mat-card>
+  <div class="card-heading">Up Next</div>
+  <div *ngIf="isValid()">
+    <mat-card-title>{{upNext.title}}<span id="auto" *ngIf="upNext.auto">auto</span></mat-card-title>
+    <mat-card-subtitle>{{upNext.channelName}}</mat-card-subtitle>
+  </div>
+  <div *ngIf="!isValid()">
+    <mat-card-title>Nothing up next</mat-card-title>
+  </div>
+  <mat-card-actions>
+    <button mat-flat-button (click)="clickQueue()"><mat-icon [matBadge]="queueLengthBadgeContent()" [matBadgeColor]="queueLengthBadgeColor()">queue_music</mat-icon><br>Queue</button>
+    <button mat-flat-button (click)="clickHistory()"><mat-icon>history</mat-icon><br>History</button>
+  </mat-card-actions>
+</mat-card>

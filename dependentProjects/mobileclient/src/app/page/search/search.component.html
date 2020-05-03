@@ -1,0 +1,26 @@
+<mat-toolbar>
+  <mat-toolbar-row>
+    <button mat-icon-button (click)="homeButton()"><mat-icon>home</mat-icon></button>
+    Search
+  </mat-toolbar-row>
+  <mat-toolbar-row>
+    <form (ngSubmit)="onFormSubmit(searchBox.value, $event)">
+      <mat-form-field>
+        <input #searchBox matInput (input)="onSearchChange($event.target.value)">
+      </mat-form-field>
+      <button id="searchBtn" mat-icon-button><mat-icon>search</mat-icon></button>
+    </form>
+  </mat-toolbar-row>
+</mat-toolbar>
+<mat-action-list #autoCompleteList *ngIf="searchResults.length === 0">
+  <mat-list-item *ngFor="let suggestion of autoComplete" (click)="search(suggestion)">
+    <p matLLine>{{suggestion}}</p>
+  </mat-list-item>
+</mat-action-list>
+<mat-action-list #searchResultList *ngIf="searchResults.length !== 0">
+    <mat-list-item *ngFor="let result of searchResults" (click)="add(result.videoId)">
+      <img class="thumbnail" matListAvatar [src]="result.thumbnail.normal" height="50">
+      <h3 id="name" matLine>{{result.title}}</h3>
+      <p id="channel" matLine>{{result.channelName}}</p>
+    </mat-list-item>
+</mat-action-list>
