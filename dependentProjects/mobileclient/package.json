@@ -12,7 +12,7 @@
   },
   "private": true,
   "dependencies": {
-    "@angular-devkit/build-angular": "^0.901.4",
+    "@angular-devkit/build-angular": "^0.803.24",
     "@angular/animations": "~8.2.3",
     "@angular/cdk": "~8.2.0",
     "@angular/cli": "^8.3.26",
@@ -48,5 +48,8 @@
     "karma-coverage-istanbul-reporter": "~2.0.1",
     "karma-jasmine": "~2.0.1",
     "karma-jasmine-html-reporter": "^1.4.0"
+  },
+  "resolutions": {
+    "@babel/preset-env": "7.5.5"
   }
 }
