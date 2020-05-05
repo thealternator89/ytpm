@@ -10,23 +10,45 @@
 </head>
 <body>
     <div id="invisible_curtain"></div>
-    <div id="auth_info_panel" style="visibility: hidden;">
-        <div id="auth_header">Add to the queue:</div>
+    <div id="first_launch" class="hidden">
+        <div id="bg"></div>
+        <div id="header">
+            <p>Welcome to</p>
+            <div class="logo">YTPM</div>
+            <h1 id="connect-heading">Connect to the player to begin:</h1>
+        </div>
+        <div id="main">
+            <div class="flex-col" id="left-panel">
+                <img id="login-qr" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https%3A%2F%2Fytpm.thealternator.nz%2F%3Fkey%3DABC12">
+            </div>
+            <div class="flex-col" id="right-panel">
+                <ol>
+                    <li>Go to <span id="host-x">ytpm.thealternator.nz</span></li>
+                    <li>Enter the code: <span id="pass_phrase-x">ABC12</span></li>
+                    <li>Add music to the queue</li>
+                    <li>Start Listening!</li>
+                </ol>
+            </div>
+        </div>
+        <div id="footer">
+            YTPM uses YouTube for content. This service is not created by or endorsed by YouTube or any content providers.<br>Made with ❤️ in NZ
+        </div>
+    </div>
+    <div id="auth_info_panel" class="hidden">
+        <div id="auth_header">Add to the queue</div>
         <div id="host"></div>
         <div id="pass_phrase"></div>
     </div>
     <div id="played_song" style="top: -120px;">
-        <img id="played_thumb" src="" alt="Video Thumbnail" width="120" height="90">
         <div id="played_title"></div>
         <div id="played_added_by"></div>
     </div>
-    <div id="toast" style="visibility: hidden;">
+    <div id="toast" class="hidden">
         <i id="toast_icon" class="material-icons" aria-hidden="true" style="vertical-align: bottom;"></i>
         <span id="toast_text"></span>
     </div>
     <div id="pausedOsd"><i id="pausedIcon" class="material-icons" aria-hidden="true">pause</i></div>
-    <div id="loading_curtain" style="visibility:hidden;"></div>
-    <div id="NoMusicError" style="visibility:hidden;">No music to play.<br>Add music to the queue to see it here.</div>
+    <div id="loading_curtain" class="hidden"></div>
     <script src="/player/player.js" type="text/javascript"></script>
 </body>
 </html>
