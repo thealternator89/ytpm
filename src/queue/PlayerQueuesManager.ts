@@ -3,6 +3,7 @@ import { PlayerQueue } from './PlayerQueue';
 import * as moment from 'moment';
 import * as randomstring from 'randomstring';
 import uuid = require('uuid');
+import {keyContainsBadWord} from './QueueKeyFilter';
 
 const QUEUE_KEY_LENGTH_CHARS = 5;
 const MAX_KEY_GENERATION_ATTEMPTS = 10;
@@ -37,7 +38,7 @@ class PlayerQueuesManager {
         // If we collide 10 times, we should just throw an error - This can only occur with more than 30K queues
         for (let i = 0; i < MAX_KEY_GENERATION_ATTEMPTS; i++) {
             const newKey = generatePreSharedKey();
-            if (!this.playerQueues[newKey]) {
+            if (!this.playerQueues[newKey] && !keyContainsBadWord(newKey)) {
                 const playerToken = uuid.v4();
                 const queue = new PlayerQueue(newKey, playerToken);
                 this.playerQueues[newKey] = queue;
