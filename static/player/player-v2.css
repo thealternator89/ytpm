@@ -161,17 +161,19 @@ body {
     position: absolute;
     z-index: 100;
     bottom: 15px;
-    left: 0px;
-    right: 0px;
+    left: 0;
+    right: 0;
     text-align: center;
 }
 
 #host-x {
     font-weight: bold;
+    font-size: 22pt;
 }
 
 #pass_phrase-x {
     font-weight: bold;
+    font-size: 22pt;
 }
 
 #left-panel {
@@ -195,4 +197,30 @@ body {
     right: 0px;
     bottom: 0px;
     left: 0px;
+}
+
+#added_song {
+    position: absolute;
+    bottom: 20px;
+    z-index: 50;
+    color: white;
+    left: 20px;
+    background-color: #333;
+    border-radius: 5px;
+    overflow: hidden;
+    width: 320px;
+}
+
+#added_song_content {
+    padding: 10px;
+}
+
+#added_song_title {
+    margin-left: 5px;
+    font-size: 12pt;
+}
+
+#added_song_user {
+    font-size: 9pt;
+    margin-top: 5px;
 }

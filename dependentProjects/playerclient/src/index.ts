@@ -4,19 +4,14 @@ import $ from 'jquery';
 import YouTubePlayer from 'youtube-player';
 
 import { PlayerState } from './enums';
+import {IBeaconData} from './models/beacon-data';
+import {IVideoDetails} from './models/video-details';
 
-// NOTE: This is temporary until we split out general things into another src subdirectory
-// tslint:disable-next-line:interface-over-type-literal
-type VideoDetails = {videoId: string, title: string, description: string,
-    thumbnail: {
-        normal?: string,
-        big?: string,
-    }, channelName: string};
+import {toastManager} from './toast-manager';
 
 let playerToken;
 
-// TODO add type def for additional data
-function sendBeacon(eventName: string, additionalData?: any) {
+function sendBeacon(eventName: string, additionalData?: IBeaconData) {
     const timestamp = Math.round((new Date()).getTime() / 1000);
     const url = '/api/player/update?token=' + playerToken;
     const dataObj = {event: eventName, time: timestamp};
@@ -44,7 +39,6 @@ window.onbeforeunload = () => {
     sendBeacon('unloaded');
     return null;
 };
-
 
 let player;
 let currentVideo;
@@ -95,7 +89,7 @@ const startPoll = (function poll() {
                 const timeSinceRequestStarted = new Date().getTime() - requestStart;
 
                 if (error === 'Bad Request') {
-                    showToast('Authentication failure - Player will reload in 10 seconds.', 'error', -1);
+                    toastManager.showToast('Authentication failure - Player will reload in 10 seconds.', 'error', -1);
                     allowPoll = false;
                     setTimeout(() => {
                         location.reload();
@@ -107,14 +101,14 @@ const startPoll = (function poll() {
                     subsequentFailures++;
                     console.error(`${error || 'Unknown Error'} occurred - Time: ${timeSinceRequestStarted}`);
                     if (subsequentFailures > 5 && !notifiedServerDown) {
-                        showToast('Connection to server lost', 'error', -1);
+                        toastManager.showToast('Connection to server lost', 'error', -1);
                         notifiedServerDown = true;
                     }
                 }
             },
             success: (response) => {
                 if (notifiedServerDown) {
-                    showToast('Connection re-established');
+                    toastManager.showToast('Connection re-established');
                     notifiedServerDown = false;
                 }
 
@@ -128,7 +122,7 @@ const startPoll = (function poll() {
 
                 switch (event) {
                     case 'SONG_ENQUEUE': {
-                        showToast(`${response.addedBy} added: ${response.video.title}`, 'queue');
+                        toastManager.showVideoAddedNotification(response.video, response.addedBy, response.position);
                         break;
                     }
                     case 'PLAYER_COMMAND': {
@@ -136,15 +130,15 @@ const startPoll = (function poll() {
                         break;
                     }
                     case 'TOAST': {
-                        showToast(response.message);
+                        toastManager.showToast(response.message);
                         break;
                     }
                     case 'USER_JOIN': {
-                        showToast(`${response.name} joined`, 'person_add');
+                        toastManager.showToast(`${response.name} joined`, 'person_add');
                         break;
                     }
                     case 'USER_LEAVE': {
-                        showToast(`${response.name} left`, 'person_outline');
+                        toastManager.showToast(`${response.name} left`, 'person_outline');
                         break;
                     }
                     default: {
@@ -178,7 +172,7 @@ const handlePlayerCommand = (command: string) => {
                 break;
             }
             case 'RELOAD': {
-                window.location.reload(true);
+                window.location.reload();
                 break;
             }
             default: console.log('unknown command: ' + command);
@@ -216,7 +210,7 @@ function show(elem: JQuery<HTMLElement>) {
     elem.removeClass('hidden');
 }
 
-function playSong(song: {video: VideoDetails, addedBy: string}) {
+function playSong(song: {video: IVideoDetails, addedBy: string}) {
     $('<div id="player"></div>').appendTo(document.body);
     currentVideo = song.video.videoId;
     player = YouTubePlayer('player', {
@@ -245,28 +239,6 @@ function showSongInfoPanel(title: string, addedBy: string) {
             songInfoPanelElem.css('top', '-120px');
         });
     }, 7000);
-}
-
-/**
- * Show a toast on screen.
- * @param text The text to display
- * @param iconName The icon to display
- * @param timeout The time to display the toast.
- * If this is '-1', the toast will not disappear until a new toast is displayed
- */
-function showToast(text: string, iconName: string = 'info', timeout: number = 3000) {
-    $('#toast_icon').text(iconName);
-    $('#toast_text').text(text);
-
-    const toastElem = $('#toast');
-
-    show(toastElem);
-
-    if (timeout !== -1) {
-        setTimeout(() => {
-            hide(toastElem);
-        }, timeout);
-    }
 }
 
 async function onPlayerStateChange(event: {data: any}) {
