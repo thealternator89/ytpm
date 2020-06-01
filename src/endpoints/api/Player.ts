@@ -35,8 +35,16 @@ router.get('/poll', (request: Request, response: Response) => {
 
     const queueKey = queue.getKey();
 
+    const keepAliveFunc = () => {
+        response.write('0', 'UTF-8');
+    };
+
+    const intervalId = setInterval(keepAliveFunc, 55000);
+
     const processEventFunc = (update: IPlayerPollResponse) => {
-        response.json(update);
+        response.write(JSON.stringify(update), 'UTF-8');
+        response.end();
+        clearInterval(intervalId);
     };
 
     MessageBus.once(`player:${queueKey}`, processEventFunc);
@@ -44,7 +52,10 @@ router.get('/poll', (request: Request, response: Response) => {
     // Clean up if the client disconnects before we respond
     request.on('close', () => {
         MessageBus.removeListener(`player:${queueKey}`, processEventFunc);
+        clearInterval(intervalId);
     });
+
+    keepAliveFunc();
 });
 
 router.get('/register', (request: Request, response: Response) => {

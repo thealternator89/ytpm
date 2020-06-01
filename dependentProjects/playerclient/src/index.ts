@@ -87,7 +87,7 @@ const startPoll = (function poll() {
         requestStart = new Date().getTime();
         $.ajax({
             complete: poll,
-            dataType: 'json',
+            dataType: 'text',
             error: (req, status, error) => {
                 const timeSinceRequestStarted = new Date().getTime() - requestStart;
 
@@ -109,14 +109,16 @@ const startPoll = (function poll() {
                     }
                 }
             },
-            success: (response) => {
+            success: (response: string) => {
+                const data = JSON.parse(response.replace(/^0+/, ''));
+
                 if (notifiedServerDown) {
                     toastManager.showToast('Connection re-established');
                     notifiedServerDown = false;
                 }
 
-                console.log(response);
-                const event = response.event;
+                console.log(data);
+                const event = data.event;
 
                 // If a song was enqueued and we're not currently playing a song, get a new song to play.
                 if ((typeof(player) === 'undefined' || player === null) && event === 'SONG_ENQUEUE') {
@@ -125,23 +127,23 @@ const startPoll = (function poll() {
 
                 switch (event) {
                     case 'SONG_ENQUEUE': {
-                        toastManager.showVideoAddedNotification(response.video, response.addedBy, response.position);
+                        toastManager.showVideoAddedNotification(data.video, data.addedBy, data.position);
                         break;
                     }
                     case 'PLAYER_COMMAND': {
-                        handlePlayerCommand(response.command);
+                        handlePlayerCommand(data.command);
                         break;
                     }
                     case 'TOAST': {
-                        toastManager.showToast(response.message);
+                        toastManager.showToast(data.message);
                         break;
                     }
                     case 'USER_JOIN': {
-                        toastManager.showToast(`${response.name} joined`, 'person_add');
+                        toastManager.showToast(`${data.name} joined`, 'person_add');
                         break;
                     }
                     case 'USER_LEAVE': {
-                        toastManager.showToast(`${response.name} left`, 'person_outline');
+                        toastManager.showToast(`${data.name} left`, 'person_outline');
                         break;
                     }
                     default: {
