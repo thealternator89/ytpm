@@ -6,10 +6,13 @@ import YouTubePlayer from 'youtube-player';
 import { PlayerState } from './enums';
 import {IBeaconData} from './models/beacon-data';
 import {IVideoDetails} from './models/video-details';
+import {setUpMouseMoveManager} from './mouse-move-manager';
 
 import {toastManager} from './toast-manager';
 
 let playerToken;
+
+setUpMouseMoveManager();
 
 function sendBeacon(eventName: string, additionalData?: IBeaconData) {
     const timestamp = Math.round((new Date()).getTime() / 1000);
