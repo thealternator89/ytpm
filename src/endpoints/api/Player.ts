@@ -39,7 +39,7 @@ router.get('/poll', (request: Request, response: Response) => {
         response.write('0', 'UTF-8');
     };
 
-    const intervalId = setInterval(keepAliveFunc, 55000);
+    const intervalId = setInterval(keepAliveFunc, 45000);
 
     const processEventFunc = (update: IPlayerPollResponse) => {
         response.write(JSON.stringify(update), 'UTF-8');
