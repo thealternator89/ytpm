@@ -3,10 +3,10 @@
 <head>
     <title>YTPM</title>
     <meta charset="UTF-8">
-    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="icon" type="image/png" href="/player/favicon.png">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" crossorigin="anonymous">
-    <link rel=stylesheet type=text/css href=/animate.css>
-    <link rel=stylesheet type=text/css href=/player-v2.css>
+    <link rel=stylesheet type=text/css href=/player/animate.css>
+    <link rel=stylesheet type=text/css href=/player/player-v2.css>
     <script src="//www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js"></script>
 </head>
 <body>
@@ -28,7 +28,7 @@
     <div id="pausedOsd"><i id="pausedIcon" class="material-icons" aria-hidden="true">pause</i></div>
     <div id="loading_curtain" style="visibility:hidden;"></div>
     <div id="NoMusicError" style="visibility:hidden;">No music to play.<br>Add music to the queue to see it here.</div>
-    <script src="/player.js" type="text/javascript"></script>
+    <script src="/player/player.js" type="text/javascript"></script>
     <script>
         // TODO need to test if this works? Theoretically should prevent timeout.
         let options = new cast.framework.CastReceiverOptions();
