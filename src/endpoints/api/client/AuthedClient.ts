@@ -86,7 +86,7 @@ router.get('/enqueue', async (request: Request, response: Response) => {
         videoId: videoId,
     };
 
-    let queuePosition = 1;
+    let queuePosition = 0;
     if (addNext) {
         queue.addToFront(queueItem);
     } else {

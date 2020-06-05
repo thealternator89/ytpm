@@ -24,9 +24,9 @@ export class YtpmService {
 
   getStatus(lastUpdate: number = 0): Observable<QueueStatus> {
     const url = this.buildUrl(`${this.baseUrl}/a/poll/v2`, {
-      'token': this.token,
-      'since': `${lastUpdate}`
-    })
+      token: this.token,
+      since: `${lastUpdate}`
+    });
 
     return this.http.get<QueueStatus>(url).pipe(
       catchError(this.handleError<QueueStatus>('getStatus'))

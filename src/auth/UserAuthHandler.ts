@@ -1,6 +1,9 @@
-import * as uuid from 'uuid';
+import * as randomstring from 'randomstring';
 import { PlayerQueue } from '../queue/PlayerQueue';
 import { playerQueuesManager } from '../queue/PlayerQueuesManager';
+
+const TOKEN_LENGTH = 8;
+const MAX_TOKEN_GENERATION_ATTEMPTS = 5;
 
 interface IUserDetails { name: string; queue: string; }
 
@@ -12,7 +15,8 @@ class UserAuthHandler {
         if (!playerQueuesManager.queueExistsForKey(queue)) {
             throw new Error('Invalid key');
         }
-        const token = reformatToken(uuid.v4());
+
+        const token = this.generateToken();
         this.authedUsers[token] = {
             name: name,
             queue: queue,
@@ -21,15 +25,11 @@ class UserAuthHandler {
     }
 
     public revokeToken(token: string): void {
-        const toRemoveToken = reformatToken(token);
-        delete this.authedUsers[toRemoveToken];
+        delete this.authedUsers[token];
     }
 
-    public validateToken(token: string): boolean {
-        if (token && this.getUser(token)) {
-            return true;
-        }
-        return false;
+    public validateToken(token?: string): boolean {
+        return !!this.getUser(token);
     }
 
     public getNameForToken(token: string): string|undefined {
@@ -42,22 +42,23 @@ class UserAuthHandler {
     }
 
     private getUser(token?: string): IUserDetails|undefined {
-        token = reformatToken(token);
         return token ? this.authedUsers[token] : undefined;
     }
-}
 
-function reformatToken(token?: string): string|undefined {
-    if (!token) {
-        return undefined;
-    }
-    const formattedToken = token.toLowerCase();
-    if (/^[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}$/.test(formattedToken)) {
-        return formattedToken;
-    } else if (/^[0-9a-f]{32}$/.test(formattedToken)) {
-        return formattedToken.replace(/^(.{8})(.{4})(.{4})(.{4})(.{12})$/, '$1-$2-$3-$4-$5');
-    } else {
-        throw new Error(`Unable to reformat invalid UUID: ${token}`);
+    private generateToken(): string {
+        for (let i = 0; i < MAX_TOKEN_GENERATION_ATTEMPTS; i++) {
+            const generated = randomstring.generate({
+                capitalization: 'lowercase',
+                charset: 'alphanumeric',
+                length: TOKEN_LENGTH,
+                readable: false,
+            });
+
+            if (!this.authedUsers[generated]) {
+                return generated;
+            }
+        }
+        throw new Error(`Failed to generate a new unique token after ${MAX_TOKEN_GENERATION_ATTEMPTS} attempts`);
     }
 }
 
