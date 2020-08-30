@@ -22,7 +22,7 @@ app.use((err, request, response, next) => {
 });
 
 app.use((request: express.Request, response: express.Response, next: express.NextFunction) => {
-    logger.info(`${request.ip} - ${request.method} ${request.path}`);
+    logger.info(`${request.protocol} ${request.ip} - ${request.method} ${request.path}`);
     next();
 });
 

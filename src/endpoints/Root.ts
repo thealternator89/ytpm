@@ -14,12 +14,12 @@ router.use('/api', apiRouter);
 
 // Handle all endpoints used by the angular app, to ensure we don't weirdly 404 a valid url
 router.get('/', loadClient);
-router.get('/connect', loadClient);
-router.get('/featured', loadClient);
-router.get('/history', loadClient);
-router.get('/home', loadClient);
-router.get('/queue', loadClient);
-router.get('/search', loadClient);
+router.get('/mobile/connect', loadClient);
+router.get('/mobile/featured', loadClient);
+router.get('/mobile/history', loadClient);
+router.get('/mobile/home', loadClient);
+router.get('/mobile/queue', loadClient);
+router.get('/mobile/search', loadClient);
 
 router.get('/cast', (request: Request, response: Response) => {
     response.sendFile(path.join(__dirname, '..' , 'views/html/client', 'chromecast.sender.html'));
